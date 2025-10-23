@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Perfil: {{ usuario.username }}</h3>
+<ul class="list-group">
+  <li class="list-group-item"><strong>Nombre:</strong> {{ usuario.first_name }} {{ usuario.last_name }}</li>
+  <li class="list-group-item"><strong>RUT:</strong> {{ usuario.rut }}</li>
+  <li class="list-group-item"><strong>Email:</strong> {{ usuario.email }}</li>
+  <li class="list-group-item"><strong>Teléfono:</strong> {{ usuario.telefono }}</li>
+  <li class="list-group-item"><strong>Rol:</strong> {{ usuario.rol }}</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Detalle Paciente{% endblock %}
+{% block content %}
+<h2>Detalle Paciente</h2>
+<table class="table">
+  <tr><th>RUT</th><td>{{ paciente.rut }}</td></tr>
+  <tr><th>Nombre</th><td>{{ paciente.nombre }}</td></tr>
+  <tr><th>Fecha nacimiento</th><td>{{ paciente.fecha_nacimiento }}</td></tr>
+  <tr><th>Sexo</th><td>{{ paciente.get_sexo_display }}</td></tr>
+  <tr><th>Domicilio</th><td>{{ paciente.domicilio }}</td></tr>
+  <tr><th>Comuna</th><td>{{ paciente.comuna }}</td></tr>
+  <tr><th>Teléfono</th><td>{{ paciente.telefono }}</td></tr>
+  <tr><th>Establecimiento</th><td>{{ paciente.establecimiento_salud }}</td></tr>
+  <tr><th>Fecha diagnóstico</th><td>{{ paciente.fecha_diagnostico|default:'-' }}</td></tr>
+  <tr><th>Tipo TBC</th><td>{{ paciente.tipo_tbc }}</td></tr>
+  <tr><th>Estado</th><td>{{ paciente.estado }}</td></tr>
+</table>
+<a href="{% url 'pacientes:editar' paciente.pk %}" class="btn btn-warning">Editar</a>
+<a href="{% url 'pacientes:eliminar' paciente.pk %}" class="btn btn-danger">Eliminar</a>
+<a href="{% url 'pacientes:lista' %}" class="btn btn-secondary">Volver</a>
+{% endblock %}

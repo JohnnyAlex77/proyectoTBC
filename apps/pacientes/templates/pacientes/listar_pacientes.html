@@ -1,0 +1,114 @@
+<!-- templates/pacientes/listar.html -->
+{% extends 'base.html' %}
+
+{% block title %}Pacientes - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-people-fill text-primary me-2"></i>Pacientes
+        </h2>
+        <p class="text-muted mb-0">Gestión de pacientes con tuberculosis</p>
+    </div>
+    
+    <div>
+        <a class="btn btn-outline-secondary me-2" href="{% url 'pacientes:buscar' %}">
+            <i class="bi bi-search me-1"></i>Buscar
+        </a>
+        <a class="btn btn-primary" href="{% url 'pacientes:crear' %}">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo Paciente
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-list-ul me-2"></i>Lista de Pacientes
+        </h5>
+    </div>
+    
+    <div class="card-body">
+        {% if pacientes %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>RUT</th>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Fecha Diagnóstico</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pacientes %}
+                    <tr>
+                        <td class="fw-bold">{{ p.rut }}</td>
+                        <td>{{ p.nombre }}</td>
+                        <td>{{ p.get_edad }} años</td>
+                        <td>{{ p.fecha_diagnostico|default:"-"|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if p.estado == 'activo' %}bg-success
+                                {% elif p.estado == 'suspendido' %}bg-warning
+                                {% elif p.estado == 'egresado' %}bg-info
+                                {% elif p.estado == 'abandono' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ p.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a class="btn btn-outline-primary" 
+                                   href="{% url 'pacientes:detalle' p.pk %}"
+                                   title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a class="btn btn-outline-warning" 
+                                   href="{% url 'pacientes:editar' p.pk %}"
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a class="btn btn-outline-danger" 
+                                   href="{% url 'pacientes:eliminar' p.pk %}"
+                                   title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación (para futuro) -->
+        <nav aria-label="Paginación de pacientes">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">Anterior</a>
+                </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">No hay pacientes registrados</h4>
+            <p class="text-muted">Comienza agregando el primer paciente al sistema.</p>
+            <a href="{% url 'pacientes:crear' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Registrar Primer Paciente
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
