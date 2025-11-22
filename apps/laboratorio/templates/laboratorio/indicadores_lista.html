@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Indicadores de Laboratorio - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Indicadores de Laboratorio</h4>
+        <a href="{% url 'laboratorio:indicadores_crear' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevos Indicadores
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="periodo_filter" class="form-label">Período (YYYY-MM)</label>
+                <input type="text" class="form-control" id="periodo_filter" placeholder="2024-01" value="{{ request.GET.periodo }}">
+            </div>
+            <div class="col-md-4">
+                <label for="laboratorio_filter" class="form-label">Laboratorio</label>
+                <select class="form-select" id="laboratorio_filter">
+                    <option value="">Todos los laboratorios</option>
+                    {% for lab in laboratorios %}
+                    <option value="{{ lab.id }}" {% if request.GET.laboratorio == lab.id|stringformat:"i" %}selected{% endif %}>
+                        {{ lab.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" onclick="filtrarIndicadores()">Filtrar</button>
+                    <a href="{% url 'laboratorio:indicadores_lista' %}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de indicadores -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Laboratorio</th>
+                        <th>Período</th>
+                        <th>Muestras Recibidas</th>
+                        <th>Muestras Procesadas</th>
+                        <th>Positivos</th>
+                        <th>Contaminación %</th>
+                        <th>Tiempo Respuesta (h)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for indicador in indicadores %}
+                    <tr>
+                        <td>{{ indicador.laboratorio.nombre }}</td>
+                        <td><strong>{{ indicador.periodo }}</strong></td>
+                        <td class="text-center">{{ indicador.muestras_recibidas }}</td>
+                        <td class="text-center">{{ indicador.muestras_procesadas }}</td>
+                        <td class="text-center">
+                            <span class="badge {% if indicador.positivos > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                {{ indicador.positivos }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if indicador.contaminacion_porcentaje > 5 %}bg-danger{% elif indicador.contaminacion_porcentaje > 2 %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ indicador.contaminacion_porcentaje }}%
+                            </span>
+                        </td>
+                        <td class="text-center">{{ indicador.tiempo_respuesta_promedio }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'laboratorio:indicadores_editar' indicador.pk %}" class="btn btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                <a href="{% url 'laboratorio:indicadores_eliminar' indicador.pk %}" class="btn btn-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle"></i> No hay indicadores registrados.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen -->
+        {% if indicadores %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h5>Resumen General</h5>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body text-center">
+                                <h4>{{ total_muestras_recibidas }}</h4>
+                                <p class="mb-0">Total Muestras Recibidas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-white bg-success">
+                            <div class="card-body text-center">
+                                <h4>{{ total_muestras_procesadas }}</h4>
+                                <p class="mb-0">Total Procesadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body text-center">
+                                <h4>{{ total_positivos }}</h4>
+                                <p class="mb-0">Total Positivos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body text-center">
+                                <h4>{{ promedio_contaminacion|floatformat:2 }}%</h4>
+                                <p class="mb-0">Contaminación Promedio</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-white bg-info">
+                            <div class="card-body text-center">
+                                <h4>{{ promedio_tiempo_respuesta|floatformat:1 }}h</h4>
+                                <p class="mb-0">Tiempo Respuesta Promedio</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-white bg-secondary">
+                            <div class="card-body text-center">
+                                <h4>{{ tasa_positividad|floatformat:2 }}%</h4>
+                                <p class="mb-0">Tasa Positividad</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filtrarIndicadores() {
+    const periodo = document.getElementById('periodo_filter').value;
+    const laboratorio = document.getElementById('laboratorio_filter').value;
+    
+    let url = '{% url "laboratorio:indicadores_lista" %}?';
+    const params = [];
+    
+    if (periodo) params.push(`periodo=${periodo}`);
+    if (laboratorio) params.push(`laboratorio=${laboratorio}`);
+    
+    window.location.href = url + params.join('&');
+}
+</script>
+{% endblock %}

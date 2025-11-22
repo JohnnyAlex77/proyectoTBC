@@ -3,6 +3,7 @@
 {% block title %}Eliminar Contacto - Sistema TBC{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
@@ -28,7 +29,6 @@
             <h5 class="alert-heading">¡Precaución!</h5>
             <p class="mb-0">Estás a punto de eliminar permanentemente el siguiente contacto:</p>
         </div>
-
         <div class="card mb-4">
             <div class="card-body">
                 <h6 class="card-title">Información del Contacto</h6>
@@ -38,14 +38,12 @@
                 <p class="mb-0"><strong>Parentesco:</strong> {{ contacto.parentesco }}</p>
             </div>
         </div>
-
         <p class="text-danger fw-bold">¿Estás seguro que deseas eliminar este contacto? Esta acción no se puede deshacer.</p>
-
         <form method="post">
             {% csrf_token %}
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash me-1"></i>Sí, eliminar contacto
+                    <i class="bi bi-trash me-1"></i>Eliminar contacto
                 </button>
                 <a href="{% url 'contactos:detalle' contacto.pk %}" class="btn btn-secondary">
                     <i class="bi bi-x-circle me-1"></i>Cancelar
@@ -54,4 +52,5 @@
         </form>
     </div>
 </div>
+
 {% endblock %}

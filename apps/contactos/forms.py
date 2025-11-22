@@ -5,13 +5,13 @@ class ContactoForm(forms.ModelForm):
     class Meta:
         model = ContactosContacto
         fields = [
-            'rut_contacto', 
-            'nombre_contacto', 
+            'rut_contacto',
+            'nombre_contacto',
             'paciente_indice',
-            'parentesco', 
-            'tipo_contacto', 
+            'parentesco',
+            'tipo_contacto',
             'fecha_registro',
-            'telefono', 
+            'telefono',
             'estado_estudio'
         ]
         widgets = {
@@ -26,9 +26,8 @@ class ContactoForm(forms.ModelForm):
             'paciente_indice': forms.Select(attrs={
                 'class': 'form-control'
             }),
-            'parentesco': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ej: Hijo/a, Esposo/a, Padre, etc.'
+            'parentesco': forms.Select(attrs={
+                'class': 'form-control'
             }),
             'tipo_contacto': forms.Select(attrs={
                 'class': 'form-control'
@@ -45,11 +44,27 @@ class ContactoForm(forms.ModelForm):
                 'class': 'form-control'
             }),
         }
-    
+        labels = {
+            'rut_contacto': 'RUT Contacto',
+            'nombre_contacto': 'Nombre Completo',
+            'paciente_indice': 'Paciente Índice',
+            'parentesco': 'Parentesco',
+            'tipo_contacto': 'Tipo de Contacto',
+            'fecha_registro': 'Fecha de Registro',
+            'telefono': 'Teléfono',
+            'estado_estudio': 'Estado del Estudio',
+        }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Personalizar labels si es necesario
-        self.fields['paciente_indice'].label = "Paciente Índice"
-        self.fields['rut_contacto'].label = "RUT Contacto"
-        self.fields['nombre_contacto'].label = "Nombre Contacto"
-        self.fields['estado_estudio'].label = "Estado del Estudio"
+        # Campos opcionales
+        self.fields['telefono'].required = False
+        
+        # Si es una instancia existente, hacer el RUT de solo lectura
+        if self.instance and self.instance.pk:
+            self.fields['rut_contacto'].widget.attrs['readonly'] = True
+            self.fields['rut_contacto'].widget.attrs['class'] = 'form-control bg-light'
+        else:
+            # Establecer fecha actual como valor por defecto para nuevos contactos
+            from datetime import date
+            self.fields['fecha_registro'].initial = date.today()

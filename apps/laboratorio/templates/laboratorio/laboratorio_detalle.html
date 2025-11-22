@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Detalle Laboratorio - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">{{ object.nombre }}</h4>
+        <div>
+            <a href="{% url 'laboratorio:laboratorio_editar' object.pk %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+            <a href="{% url 'laboratorio:laboratorio_eliminar' object.pk %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash"></i> Eliminar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Información General</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Tipo:</th>
+                        <td>{{ object.get_tipo_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Responsable:</th>
+                        <td>{{ object.responsable }}</td>
+                    </tr>
+                    <tr>
+                        <th>Teléfono:</th>
+                        <td>{{ object.telefono }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ object.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Estado:</th>
+                        <td>
+                            <span class="badge {% if object.activo %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ object.activo|yesno:"Activo,Inactivo" }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5>Ubicación</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Dirección:</th>
+                        <td>{{ object.direccion }}</td>
+                    </tr>
+                    <tr>
+                        <th>Comuna:</th>
+                        <td>{{ object.comuna }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fecha Registro:</th>
+                        <td>{{ object.fecha_registro|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Controles de Calidad</h5>
+                <a href="{% url 'laboratorio:control_calidad_crear' %}?laboratorio={{ object.pk }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nuevo Control
+                </a>
+            </div>
+            
+            {% with controles=object.laboratoriocontrolcalidad_set.all %}
+            {% if controles %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha Control</th>
+                            <th>Tipo Control</th>
+                            <th>Resultado</th>
+                            <th>Responsable</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for control in controles %}
+                        <tr>
+                            <td>{{ control.fecha_control|date:"d/m/Y" }}</td>
+                            <td>{{ control.get_tipo_control_display }}</td>
+                            <td>
+                                <span class="badge {% if control.resultado == 'satisfactorio' %}bg-success{% elif control.resultado == 'insatisfactorio' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ control.get_resultado_display }}
+                                </span>
+                            </td>
+                            <td>{{ control.usuario_responsable.get_full_name }}</td>
+                            <td>
+                                <a href="{% url 'laboratorio:control_calidad_detalle' control.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No hay controles de calidad registrados para este laboratorio.
+            </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+{% endblock %}

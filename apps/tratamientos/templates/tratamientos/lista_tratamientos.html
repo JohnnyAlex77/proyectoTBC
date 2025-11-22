@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Tratamientos - Sistema TBC{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-pills text-primary me-2"></i>Gestion de Tratamientos
+        </h1>
+        <a href="{% url 'tratamientos:crear' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nuevo Tratamiento
+        </a>
+    </div>
+
+    <!-- Estadísticas REALES -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Tratamientos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tratamientos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-pills fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Tratamientos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tratamientos_activos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-play-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Completados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tratamientos_completados }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Dosis Pendientes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ dosis_pendientes_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Filtros
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="activos" {% if request.GET.estado == 'activos' %}selected{% endif %}>Activos</option>
+                        <option value="completados" {% if request.GET.estado == 'completados' %}selected{% endif %}>Completados</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Paciente</label>
+                    <select name="paciente" class="form-select">
+                        <option value="">Todos los pacientes</option>
+                        {% for paciente in pacientes %}
+                        <option value="{{ paciente.id }}" {% if request.GET.paciente == paciente.id|stringformat:"s" %}selected{% endif %}>
+                            {{ paciente.nombre }} - {{ paciente.rut }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Esquema</label>
+                    <select name="esquema" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="HRZE" {% if request.GET.esquema == 'HRZE' %}selected{% endif %}>HRZE</option>
+                        <option value="HRE" {% if request.GET.esquema == 'HRE' %}selected{% endif %}>HRE</option>
+                        <option value="HR" {% if request.GET.esquema == 'HR' %}selected{% endif %}>HR</option>
+                        <option value="Personalizado" {% if request.GET.esquema == 'Personalizado' %}selected{% endif %}>Personalizado</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'tratamientos:lista' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Tratamientos -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Lista de Tratamientos
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if tratamientos %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>RUT</th>
+                            <th>Esquema</th>
+                            <th>Fecha Inicio</th>
+                            <th>Duración</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tratamiento in tratamientos %}
+                        <tr>
+                            <td class="fw-bold">#{{ tratamiento.id }}</td>
+                            <td>
+                                <strong>{{ tratamiento.paciente.nombre }}</strong>
+                                <br>
+                                <small class="text-muted">{{ tratamiento.paciente.establecimiento_salud }}</small>
+                            </td>
+                            <td>{{ tratamiento.paciente.rut }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ tratamiento.esquema }}</span>
+                            </td>
+                            <td>{{ tratamiento.fecha_inicio|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ tratamiento.duracion_dias }} días</span>
+                            </td>
+                            <td>
+                                {% if tratamiento.esta_activo %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-warning">{{ tratamiento.resultado_final }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'tratamientos:detalle' tratamiento.pk %}" class="btn btn-outline-primary" title="Ver detalle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'tratamientos:editar' tratamiento.pk %}" class="btn btn-outline-secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                    <a href="{% url 'tratamientos:eliminar' tratamiento.pk %}" class="btn btn-outline-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-pills fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No hay tratamientos registrados</h5>
+                <p class="text-muted">Comienza creando el primer tratamiento para un paciente.</p>
+                <a href="{% url 'tratamientos:crear' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Primer Tratamiento
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

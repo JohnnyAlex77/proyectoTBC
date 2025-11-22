@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Medicamento - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación de Medicamento
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-pills fa-4x text-danger mb-3"></i>
+                        <h4 class="text-danger">¿Estás seguro de eliminar este medicamento?</h4>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Advertencia:</strong> Esta acción eliminará el medicamento del esquema de tratamiento y todas las dosis asociadas.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body text-start">
+                            <h6 class="card-title">Información del Medicamento:</h6>
+                            <p class="mb-1"><strong>Medicamento:</strong> {{ esquema.medicamento }}</p>
+                            <p class="mb-1"><strong>Dosis:</strong> {{ esquema.dosis_mg }} mg</p>
+                            <p class="mb-1"><strong>Frecuencia:</strong> {{ esquema.frecuencia }}</p>
+                            <p class="mb-1"><strong>Fase:</strong> {{ esquema.fase }}</p>
+                            <p class="mb-1"><strong>Paciente:</strong> {{ esquema.tratamiento.paciente.nombre }}</p>
+                            <p class="mb-0"><strong>Dosis registradas:</strong> {{ esquema.dosis_administradas.count }}</p>
+                        </div>
+                    </div>
+
+                    {% if esquema.dosis_administradas.count > 0 %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Nota:</strong> Este medicamento tiene {{ esquema.dosis_administradas.count }} dosis registradas que también serán eliminadas.
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'tratamientos:detalle' esquema.tratamiento.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Sí, Eliminar Medicamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

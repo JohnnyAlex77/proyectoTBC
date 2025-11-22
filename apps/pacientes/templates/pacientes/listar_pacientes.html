@@ -72,11 +72,13 @@
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
                                 <a class="btn btn-outline-danger" 
                                    href="{% url 'pacientes:eliminar' p.pk %}"
                                    title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

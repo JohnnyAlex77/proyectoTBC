@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendario de Dosis - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-calendar-alt text-primary me-2"></i>Calendario de Administración de Dosis
+        </h1>
+        <div class="btn-group">
+            <a href="{% url 'tratamientos:control_dosis' %}" class="btn btn-outline-primary">
+                <i class="fas fa-list me-2"></i>Vista Lista
+            </a>
+            <a href="{% url 'tratamientos:dosis_pendientes' %}" class="btn btn-warning">
+                <i class="fas fa-clock me-2"></i>Pendientes
+            </a>
+        </div>
+    </div>
+
+    <!-- Controles del Calendario -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Enero 2024
+                    </h6>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm">
+                            Hoy
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="btn-group ms-2">
+                        <button class="btn btn-outline-secondary btn-sm active">Mes</button>
+                        <button class="btn btn-outline-secondary btn-sm">Semana</button>
+                        <button class="btn btn-outline-secondary btn-sm">Día</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="card">
+        <div class="card-body p-0">
+            <!-- Días de la semana -->
+            <div class="row g-0 text-center border-bottom">
+                <div class="col border-end bg-light py-2">
+                    <strong>Lunes</strong>
+                </div>
+                <div class="col border-end bg-light py-2">
+                    <strong>Martes</strong>
+                </div>
+                <div class="col border-end bg-light py-2">
+                    <strong>Miércoles</strong>
+                </div>
+                <div class="col border-end bg-light py-2">
+                    <strong>Jueves</strong>
+                </div>
+                <div class="col border-end bg-light py-2">
+                    <strong>Viernes</strong>
+                </div>
+                <div class="col border-end bg-light py-2">
+                    <strong>Sábado</strong>
+                </div>
+                <div class="col bg-light py-2">
+                    <strong>Domingo</strong>
+                </div>
+            </div>
+
+            <!-- Semanas -->
+            {% for week in "12345" %}
+            <div class="row g-0 border-bottom">
+                {% for day in "1234567" %}
+                <div class="col border-end min-height-150 p-2 {% if forloop.last %}border-end-0{% endif %}">
+                    <!-- Número del día -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold {% if day == '15' %}text-primary{% endif %}">
+                            {{ forloop.parentloop.counter0|add:1|add:forloop.counter0|add:1 }}
+                        </span>
+                        {% if day == '15' %}
+                        <span class="badge bg-primary">Hoy</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Eventos/Dosis del día -->
+                    <div class="events-container">
+                        <!-- Dosis de la mañana -->
+                        <div class="event-item mb-1">
+                            <div class="dosis-card dosis-pendiente p-1 small">
+                                <i class="fas fa-syringe me-1"></i>
+                                <strong>Juan Pérez</strong>
+                                <br>
+                                <small>Isoniazida 300mg</small>
+                                <br>
+                                <small class="text-muted">08:00 AM</small>
+                            </div>
+                        </div>
+
+                        <!-- Dosis de la tarde -->
+                        <div class="event-item mb-1">
+                            <div class="dosis-card dosis-completada p-1 small">
+                                <i class="fas fa-check me-1"></i>
+                                <strong>María González</strong>
+                                <br>
+                                <small>Rifampicina 600mg</small>
+                                <br>
+                                <small class="text-muted">02:00 PM</small>
+                            </div>
+                        </div>
+
+                        <!-- Más dosis indicator -->
+                        {% if day == '3' or day == '5' %}
+                        <div class="text-center">
+                            <small class="text-muted">+2 más</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Leyenda
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="dosis-completada me-2 p-1" style="width: 20px; height: 20px;"></div>
+                                <span>Dosis Administrada</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="dosis-pendiente me-2 p-1" style="width: 20px; height: 20px;"></div>
+                                <span>Dosis Pendiente</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="dosis-atrasada me-2 p-1" style="width: 20px; height: 20px;"></div>
+                                <span>Dosis Atrasada</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="badge bg-primary me-2">Hoy</div>
+                                <span>Día Actual</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.min-height-150 {
+    min-height: 150px;
+}
+
+.dosis-card {
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dosis-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dosis-completada {
+    background-color: #d1edff;
+    border-left: 3px solid #007bff;
+}
+
+.dosis-pendiente {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+.dosis-atrasada {
+    background-color: #f8d7da;
+    border-left: 3px solid #dc3545;
+}
+
+.event-item {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.border-end-0 {
+    border-right: 0 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar interactividad al calendario
+    const dosisCards = document.querySelectorAll('.dosis-card');
+    
+    dosisCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Aquí iría la lógica para mostrar detalles de la dosis
+            alert('Funcionalidad: Mostrar detalles de dosis y opción de administrar');
+        });
+    });
+});
+</script>
+{% endblock %}

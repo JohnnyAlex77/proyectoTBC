@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard Laboratorio - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Dashboard de Laboratorio</h2>
+    </div>
+</div>
+
+<!-- Tarjetas de Resumen -->
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_laboratorios }}</h4>
+                        <p class="mb-0">Laboratorios Activos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-flask fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ controles_mes }}</h4>
+                        <p class="mb-0">Controles Este Mes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clipboard-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ positivos_mes }}</h4>
+                        <p class="mb-0">Positivos Este Mes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-vial fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ controles_satisfactorios }}</h4>
+                        <p class="mb-0">Controles Satisfactorios</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Últimos Controles de Calidad -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Últimos Controles de Calidad</h5>
+            </div>
+            <div class="card-body">
+                {% if ultimos_controles %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Laboratorio</th>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for control in ultimos_controles %}
+                            <tr>
+                                <td>{{ control.laboratorio.nombre }}</td>
+                                <td>{{ control.fecha_control|date:"d/m/Y" }}</td>
+                                <td>{{ control.get_tipo_control_display }}</td>
+                                <td>
+                                    <span class="badge {% if control.resultado == 'satisfactorio' %}bg-success{% elif control.resultado == 'insatisfactorio' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ control.get_resultado_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No hay controles de calidad registrados.
+                </div>
+                {% endif %}
+                <div class="text-end">
+                    <a href="{% url 'laboratorio:control_calidad_lista' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todos los Controles
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos Positivos -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Últimos Positivos Detectados</h5>
+            </div>
+            <div class="card-body">
+                {% if ultimos_positivos %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Fecha</th>
+                                <th>Muestra</th>
+                                <th>Laboratorio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for positivo in ultimos_positivos %}
+                            <tr>
+                                <td>{{ positivo.paciente.nombre }}</td>
+                                <td>{{ positivo.fecha_deteccion|date:"d/m/Y" }}</td>
+                                <td>{{ positivo.get_tipo_muestra_display }}</td>
+                                <td>{{ positivo.laboratorio_referencia.nombre }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No hay positivos registrados en el tarjetero.
+                </div>
+                {% endif %}
+                <div class="text-end">
+                    <a href="{% url 'laboratorio:tarjetero_lista' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Tarjetero Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'laboratorio:laboratorio_crear' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus"></i> Nuevo Laboratorio
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'laboratorio:control_calidad_crear' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-clipboard-check"></i> Nuevo Control
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'laboratorio:tarjetero_crear' %}" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-vial"></i> Nuevo Positivo
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'laboratorio:indicadores_crear' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-chart-bar"></i> Nuevos Indicadores
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

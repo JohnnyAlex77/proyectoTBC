@@ -1,0 +1,191 @@
+<!-- apps/examenes/templates/examenes/lista_examenes.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Exámenes Bacteriológicos - Sistema TBC{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<h1 class="h3 text-gray-800">
+    <i class="fas fa-microscope me-2"></i>Exámenes Bacteriológicos
+</h1>
+<a href="{% url 'examenes:crear_examen' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>Nuevo Examen
+</a>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+    <form method="get" class="row g-3">
+    <div class="col-md-4">
+    <input type="text" name="q" class="form-control" placeholder="Buscar por paciente..." value="{{ query }}">
+    </div>
+
+<div class="col-md-3">
+    <select name="tipo_examen" class="form-select">
+    <option value="">Todos los tipos</option>
+    {% for choice in TIPO_EXAMEN_CHOICES %}
+    <option value="{{ choice.0 }}"
+    {% if tipo_examen == choice.0 %}selected{% endif %}>
+    {{ choice.1 }}
+    </option>
+    {% endfor %}
+</select>
+
+</div>
+
+<div class="col-md-3">
+<select name="resultado" class="form-select">
+<option value="">Todos los resultados</option>
+{% for choice in RESULTADO_CHOICES %}
+<option value="{{ choice.0 }}"
+{% if resultado == choice.0 %}selected{% endif %}>
+{{ choice.1 }}  
+</option>
+{% endfor %}
+</select>
+</div>
+
+<div class="col-md-2">
+<button type="submit" class="btn btn-outline-primary w-100">
+<i class="fas fa-search me-1"></i>Filtrar
+</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Tabla de Exámenes -->
+<div class="card shadow">
+<div class="card-body">
+
+{% if page_obj %}
+<div class="table-responsive">
+<table class="table table-hover">
+<thead class="table-light">
+<tr>
+<th>Paciente</th>
+<th>Tipo Examen</th>
+<th>Muestra</th>
+<th>Fecha Toma</th>
+<th>Resultado</th>
+<th>Sensibilidad</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for examen in page_obj %}
+<tr>
+<td>
+    <!-- CORRECCIÓN: Acceso correcto a los campos del paciente según el modelo -->
+    <strong>{{ examen.paciente.nombre }}</strong>
+    <br>
+    <small class="text-muted">
+        RUT: {{ examen.paciente.rut }}
+    </small>
+    <br>
+    <small class="text-muted">
+        Edad: {{ examen.paciente.get_edad }} años
+    </small>
+</td>
+<td>
+<span class="badge bg-info">{{ examen.get_tipo_examen_display }}</span>
+</td>
+<td>{{ examen.get_tipo_muestra_display }}</td>
+<td>{{ examen.fecha_toma_muestra|date:"d/m/Y" }}</td>
+<td>
+{% if examen.resultado == 'POSITIVO' %}
+<span class="badge bg-danger">{{ examen.get_resultado_display }}</span>
+{% elif examen.resultado == 'NEGATIVO' %}
+<span class="badge bg-success">{{ examen.get_resultado_display }}</span>
+{% elif examen.resultado == 'PENDIENTE' %}
+<span class="badge bg-warning">{{ examen.get_resultado_display }}</span>
+{% else %}
+<span class="badge bg-secondary">{{ examen.get_resultado_display }}</span>
+{% endif %}
+</td>
+<td>
+{% if examen.sensibilidad %}
+<span class="badge bg-dark">{{ examen.get_sensibilidad_display }}</span>
+{% else %}
+<span class="text-muted">-</span>
+{% endif %}
+</td>
+<td>
+<div class="btn-group btn-group-sm">
+<a href="{% url 'examenes:detalle_examen' examen.id %}"
+class="btn btn-outline-primary" title="Ver detalle">
+<i class="fas fa-eye"></i>
+</a>
+<a href="{% url 'examenes:editar_examen' examen.id %}"
+class="btn btn-outline-warning" title="Editar">
+<i class="fas fa-edit"></i>
+</a>
+
+{% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+<a href="{% url 'examenes:eliminar_examen' examen.id %}"
+class="btn btn-outline-danger" title="Eliminar">
+<i class="fas fa-trash"></i>
+</a>
+{% endif %}
+</div>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- Paginación -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginación">
+<ul class="pagination justify-content-center mt-4">
+{% if page_obj.has_previous %}
+<li class="page-item">
+<a class="page-link"
+href="?page=1{% if query %}&q={{ query }}{% endif %}{% if tipo_examen %}&tipo_examen={{ tipo_examen }}{% endif %}{% if resultado %}&resultado={{ resultado }}{% endif %}">Primera</a>
+</li>
+<li class="page-item">
+<a class="page-link"
+href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_examen %}&tipo_examen={{ tipo_examen }}{% endif %}{% if resultado %}&resultado={{ resultado }}{% endif %}">Anterior</a>
+</li>
+{% endif %}
+
+<li class="page-item active">
+<span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+</li>
+
+{% if page_obj.has_next %}
+<li class="page-item">
+<a class="page-link"
+href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_examen %}&tipo_examen={{ tipo_examen }}{% endif %}{% if resultado %}&resultado={{ resultado }}{% endif %}">Siguiente</a>
+</li>
+<li class="page-item">
+<a class="page-link"
+href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if tipo_examen %}&tipo_examen={{ tipo_examen }}{% endif %}{% if resultado %}&resultado={{ resultado }}{% endif %}">Última</a>
+</li>
+{% endif %}
+</ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+<i class="fas fa-microscope fa-3x text-muted mb-3"></i>
+<h4 class="text-muted">No se encontraron exámenes</h4>
+<p class="text-muted">No hay exámenes bacteriológicos registrados con los filtros aplicados.</p>
+<a href="{% url 'examenes:crear_examen' %}" class="btn btn-primary mt-2">
+<i class="fas fa-plus me-2"></i>Crear Primer Examen
+</a>
+</div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if contacto %}Editar Contacto{% else %}Registrar Nuevo Contacto{% endif %} - Sistema TBC{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-12 col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        {% if contacto %}Editar Contacto{% else %}Registrar Nuevo Contacto{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Columna 1: Datos del Contacto -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-id-card me-2"></i>Datos del Contacto
+                                </h5>
+                                
+                                {% if contacto %}
+                                <!-- Mostrar RUT en modo lectura cuando se edita -->
+                                <div class="mb-3">
+                                    <label class="form-label">RUT:</label>
+                                    <input type="text" class="form-control bg-light" value="{{ contacto.rut_contacto }}" readonly>
+                                    <small class="form-text text-muted">El RUT no se puede modificar</small>
+                                </div>
+                                {% else %}
+                                <!-- Campo RUT normal para nuevo contacto -->
+                                <div class="mb-3">
+                                    {{ form.rut_contacto.label_tag }}
+                                    {{ form.rut_contacto }}
+                                    {% if form.rut_contacto.help_text %}
+                                    <small class="form-text text-muted">{{ form.rut_contacto.help_text }}</small>
+                                    {% endif %}
+                                    {% for error in form.rut_contacto.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    {{ form.nombre_contacto.label_tag }}
+                                    {{ form.nombre_contacto }}
+                                    {% for error in form.nombre_contacto.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.telefono.label_tag }}
+                                    {{ form.telefono }}
+                                    {% for error in form.telefono.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.parentesco.label_tag }}
+                                    {{ form.parentesco }}
+                                    {% for error in form.parentesco.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Columna 2: Relación y Estudio -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-users me-2"></i>Relación y Estudio
+                                </h5>
+
+                                <div class="mb-3">
+                                    {{ form.paciente_indice.label_tag }}
+                                    {{ form.paciente_indice }}
+                                    {% for error in form.paciente_indice.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.tipo_contacto.label_tag }}
+                                    {{ form.tipo_contacto }}
+                                    {% for error in form.tipo_contacto.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.fecha_registro.label_tag }}
+                                    {{ form.fecha_registro }}
+                                    {% for error in form.fecha_registro.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.estado_estudio.label_tag }}
+                                    {{ form.estado_estudio }}
+                                    {% for error in form.estado_estudio.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-info-circle me-2"></i>Información Adicional
+                                </h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Tipos de Contacto:</strong><br>
+                                    <strong>Intradomiciliario:</strong> Personas que viven en el mismo domicilio.<br>
+                                    <strong>Extradomiciliario:</strong> Personas con contacto frecuente fuera del domicilio.<br>
+                                    <strong>Laboral/Escolar:</strong> Contactos en lugar de trabajo o estudio.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% if contacto %}{% url 'contactos:detalle' contacto.pk %}{% else %}{% url 'contactos:lista' %}{% endif %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if contacto %}Actualizar Contacto{% else %}Registrar Contacto{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.border-bottom {
+    border-color: #0d6efd !important;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+
+{% endblock %}

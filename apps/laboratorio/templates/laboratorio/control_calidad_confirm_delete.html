@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Eliminar Control de Calidad - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Eliminar Control de Calidad</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <h5>¿Está seguro que desea eliminar el control de calidad?</h5>
+            <p class="mb-0"><strong>{{ object.laboratorio.nombre }}</strong> - {{ object.fecha_control|date:"d/m/Y" }}</p>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6>Detalles del Control:</h6>
+                <p><strong>Laboratorio:</strong> {{ object.laboratorio.nombre }}</p>
+                <p><strong>Fecha Control:</strong> {{ object.fecha_control|date:"d/m/Y" }}</p>
+                <p><strong>Tipo Control:</strong> {{ object.get_tipo_control_display }}</p>
+                <p><strong>Resultado:</strong> {{ object.get_resultado_display }}</p>
+                <p><strong>Responsable:</strong> {{ object.usuario_responsable.get_full_name }}</p>
+                {% if object.observaciones %}
+                <p><strong>Observaciones:</strong> {{ object.observaciones }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'laboratorio:control_calidad_lista' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Eliminar Control</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

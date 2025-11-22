@@ -1,21 +1,192 @@
-{% extends "base.html" %}
-{% block title %}Editar Paciente{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Paciente - Sistema TBC{% endblock %}
+
 {% block content %}
-<h2>Editar Paciente</h2>
-<form method="post" novalidate>
-  {% csrf_token %}
-  <div class="row">
-    {% for field in form %}
-      <div class="mb-3 col-md-6">
-        <label class="form-label">{{ field.label }}</label>
-        {{ field }}
-        {% for error in field.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-    {% endfor %}
-  </div>
-  <button class="btn btn-primary" type="submit">Actualizar</button>
-  <a href="{% url 'pacientes:detalle' paciente.pk %}" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-12 col-lg-10">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Paciente: {{ paciente.nombre }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Columna 1: Datos Personales -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-id-card me-2"></i>Datos Personales
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    {{ form.rut.label_tag }}
+                                    {{ form.rut }}
+                                    {% for error in form.rut.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.nombre.label_tag }}
+                                    {{ form.nombre }}
+                                    {% for error in form.nombre.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.fecha_nacimiento.label_tag }}
+                                    {{ form.fecha_nacimiento }}
+                                    {% for error in form.fecha_nacimiento.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.sexo.label_tag }}
+                                    {{ form.sexo }}
+                                    {% for error in form.sexo.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.telefono.label_tag }}
+                                    {{ form.telefono }}
+                                    {% for error in form.telefono.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Columna 2: Dirección y Contacto -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-home me-2"></i>Dirección y Contacto
+                                </h5>
+
+                                <div class="mb-3">
+                                    {{ form.domicilio.label_tag }}
+                                    {{ form.domicilio }}
+                                    {% for error in form.domicilio.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.comuna.label_tag }}
+                                    {{ form.comuna }}
+                                    {% for error in form.comuna.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.establecimiento_salud.label_tag }}
+                                    {{ form.establecimiento_salud }}
+                                    {% for error in form.establecimiento_salud.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Segunda fila: Datos Médicos -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-stethoscope me-2"></i>Datos del Diagnóstico
+                                </h5>
+
+                                <div class="mb-3">
+                                    {{ form.fecha_diagnostico.label_tag }}
+                                    {{ form.fecha_diagnostico }}
+                                    {% for error in form.fecha_diagnostico.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.tipo_tbc.label_tag }}
+                                    {{ form.tipo_tbc }}
+                                    {% for error in form.tipo_tbc.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.estado.label_tag }}
+                                    {{ form.estado }}
+                                    {% for error in form.estado.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">
+                                    <i class="fas fa-flask me-2"></i>Exámenes de Laboratorio
+                                </h5>
+
+                                <div class="mb-3">
+                                    {{ form.baciloscopia_inicial.label_tag }}
+                                    {{ form.baciloscopia_inicial }}
+                                    {% for error in form.baciloscopia_inicial.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.cultivo_inicial.label_tag }}
+                                    {{ form.cultivo_inicial }}
+                                    {% for error in form.cultivo_inicial.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.poblacion_prioritaria.label_tag }}
+                                    {{ form.poblacion_prioritaria }}
+                                    {% for error in form.poblacion_prioritaria.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'pacientes:lista' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-2"></i>
+                                        Actualizar Paciente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

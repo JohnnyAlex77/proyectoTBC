@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-syringe me-2"></i>{{ titulo }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Información del Medicamento -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Paciente:</strong><br>
+                                {{ esquema.tratamiento.paciente.nombre }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Medicamento:</strong><br>
+                                {{ esquema.medicamento }} - {{ esquema.dosis_mg }}mg
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Frecuencia:</strong> {{ esquema.frecuencia }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Fase:</strong> {{ esquema.fase }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Campo Fecha Dosis -->
+                                <div class="mb-3">
+                                    <label for="{{ form.fecha_dosis.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-calendar me-2 text-primary"></i>
+                                        Fecha de Administración
+                                    </label>
+                                    {{ form.fecha_dosis }}
+                                    {% for error in form.fecha_dosis.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Campo Hora Administración -->
+                                <div class="mb-3">
+                                    <label for="{{ form.hora_administracion.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-clock me-2 text-success"></i>
+                                        Hora de Administración
+                                    </label>
+                                    {{ form.hora_administracion }}
+                                    {% for error in form.hora_administracion.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campo Administrada -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.administrada }}
+                                <label class="form-check-label fw-bold" for="{{ form.administrada.id_for_label }}">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    ¿Dosis Administrada?
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Marque esta casilla si la dosis fue efectivamente administrada al paciente.
+                            </small>
+                        </div>
+
+                        <!-- Campo Observaciones -->
+                        <div class="mb-3">
+                            <label for="{{ form.observaciones.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-sticky-note me-2 text-info"></i>
+                                Observaciones
+                            </label>
+                            {{ form.observaciones }}
+                            <small class="form-text text-muted">
+                                Registre cualquier observación relevante sobre la administración.
+                            </small>
+                            {% for error in form.observaciones.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Información del Registro -->
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-user me-2"></i>
+                            <strong>Registro a nombre de:</strong> {{ user.get_full_name }}
+                            <br>
+                            <small class="text-muted">Esta acción quedará registrada en el historial del tratamiento.</small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'tratamientos:detalle' esquema.tratamiento.pk %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-2"></i>Registrar Dosis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer hora actual por defecto
+    const horaInput = document.getElementById('{{ form.hora_administracion.id_for_label }}');
+    if (horaInput && !horaInput.value) {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        horaInput.value = `${hours}:${minutes}`;
+    }
+
+    // Establecer fecha actual por defecto
+    const fechaInput = document.getElementById('{{ form.fecha_dosis.id_for_label }}');
+    if (fechaInput && !fechaInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        fechaInput.value = today;
+    }
+
+    // Validar que si está marcado como administrado, tenga hora
+    const administradaCheckbox = document.getElementById('{{ form.administrada.id_for_label }}');
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        if (administradaCheckbox.checked && !horaInput.value) {
+            e.preventDefault();
+            alert('Debe especificar la hora de administración cuando la dosis está marcada como administrada.');
+            horaInput.focus();
+        }
+    });
+});
+</script>
+{% endblock %}
