@@ -1,0 +1,262 @@
+<!-- apps/examenes/templates/examenes/detalle_examen.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Detalle Examen - Sistema TBC{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<h1 class="h3 text-gray-800">
+    <i class="fas fa-microscope me-2"></i>Detalle Examen Bacteriológico
+</h1>
+
+<div class="btn-group">
+    <a href="{% url 'examenes:editar_examen' examen.id %}" class="btn btn-warning">
+        <i class="fas fa-edit me-2"></i>Editar
+    </a>
+    <a href="{% url 'examenes:lista_examenes' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver
+    </a>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-8">
+<!-- Información Principal -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2"></i>Información del Examen
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Paciente:</strong><br>
+                <!-- CORRECCIÓN: Acceso correcto según el modelo -->
+                <span class="fw-bold fs-5">{{ examen.paciente.nombre }}</span>
+                <br>
+                <span class="text-muted">
+                    RUT: {{ examen.paciente.rut }}
+                </span>
+                <br>
+                <span class="text-muted">
+                    Edad: {{ examen.paciente.get_edad }} años
+                </span>
+                <br>
+                <span class="text-muted">
+                    Sexo: {{ examen.paciente.get_sexo_display }}
+                </span>
+                </p>
+                
+                <p><strong>Tipo de Examen:</strong><br>
+                <span class="badge bg-info fs-6">{{ examen.get_tipo_examen_display }}</span>
+                </p>
+                
+                <p><strong>Tipo de Muestra:</strong><br>
+                <span class="badge bg-secondary fs-6">{{ examen.get_tipo_muestra_display }}</span>
+                {% if examen.otro_tipo_muestra %}
+                <br>
+                <small class="text-muted">Especificación: {{ examen.otro_tipo_muestra }}</small>
+                {% endif %}
+                </p>
+            </div>
+
+            <div class="col-md-6">
+                <p><strong>Fecha Solicitud:</strong><br>
+                {{ examen.fecha_solicitud|date:"d/m/Y" }} 
+                </p>
+                
+                <p><strong>Fecha Toma Muestra:</strong><br>
+                {{ examen.fecha_toma_muestra|date:"d/m/Y" }} 
+                </p>
+                
+                <p><strong>Fecha Ingreso Laboratorio:</strong><br>
+                {% if examen.fecha_ingreso_laboratorio %}
+                {{ examen.fecha_ingreso_laboratorio|date:"d/m/Y" }} 
+                {% else %}
+                <span class="text-muted">No registrada</span>
+                {% endif %}
+                </p>
+
+                <p><strong>Fecha Resultado:</strong><br>
+                {% if examen.fecha_resultado %}
+                {{ examen.fecha_resultado|date:"d/m/Y" }} 
+                {% else %}
+                <span class="text-muted">Pendiente</span>
+                {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resultados -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-file-medical me-2"></i>Resultados
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Resultado:</strong><br>
+                {% if examen.resultado == 'POSITIVO' %}
+                <span class="badge bg-danger fs-6">{{ examen.get_resultado_display }}</span>
+                {% elif examen.resultado == 'NEGATIVO' %}
+                <span class="badge bg-success fs-6">{{ examen.get_resultado_display }}</span>
+                {% elif examen.resultado == 'PENDIENTE' %}
+                <span class="badge bg-warning fs-6">{{ examen.get_resultado_display }}</span>
+                {% else %}
+                <span class="badge bg-secondary fs-6">{{ examen.get_resultado_display }}</span>
+                {% endif %}
+                </p>
+            </div>
+
+            <div class="col-md-4">
+                <p><strong>Resultado Cuantitativo:</strong><br>
+                {% if examen.resultado_cuantitativo %}
+                <span class="badge bg-dark fs-6">{{ examen.resultado_cuantitativo }}</span>
+                {% else %}
+                <span class="text-muted">No aplica</span>
+                {% endif %}
+                </p>
+            </div>
+
+            <div class="col-md-4">
+                <p><strong>Sensibilidad:</strong><br>
+                {% if examen.sensibilidad %}
+                <span class="badge bg-dark fs-6">{{ examen.get_sensibilidad_display }}</span>
+                {% else %}
+                <span class="text-muted">No disponible</span>
+                {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Resultado Cualitativo -->
+        {% if examen.resultado_cualitativo %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <p><strong>Resultado Cualitativo:</strong></p>
+                <div class="alert alert-light border">
+                    {{ examen.resultado_cualitativo|linebreaks }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Observaciones -->
+        {% if examen.observaciones_muestra or examen.observaciones_resultado %}
+        <div class="row mt-4">
+            {% if examen.observaciones_muestra %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Observaciones de la Muestra
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ examen.observaciones_muestra|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if examen.observaciones_resultado %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Observaciones del Resultado
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ examen.observaciones_resultado|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+<!-- Sidebar -->
+<div class="col-lg-4">
+<!-- Estado -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-warning">
+        <h5 class="card-title mb-0 text-white">
+            <i class="fas fa-clipboard-check me-2"></i>Estado del Examen
+        </h5>
+    </div>
+    <div class="card-body text-center">
+        <div class="mb-3">
+            <i class="fas fa-microscope fa-3x text-primary mb-3"></i>
+            <h4>{{ examen.get_estado_examen_display }}</h4>
+        </div>
+        {% if examen.estado_examen == 'PENDIENTE' %}
+        <div class="alert alert-warning">
+            <small>Esperando resultados del laboratorio</small>
+        </div>
+        {% elif examen.estado_examen == 'COMPLETADO' %}
+        <div class="alert alert-success">
+            <small>Resultados disponibles</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Información de Registro -->
+<div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-user me-2"></i>Información de Registro
+        </h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Registrado por:</strong><br>
+        {{ examen.usuario_registro.get_full_name|default:examen.usuario_registro.username }}
+        </p>
+        <p><strong>Fecha de Registro:</strong><br>
+        {{ examen.fecha_registro|date:"d/m/Y H:i" }}
+        </p>
+        <p><strong>Última Actualización:</strong><br>
+        {{ examen.fecha_actualizacion|date:"d/m/Y H:i" }}  
+        </p>  
+    </div>  
+</div>
+
+<!-- Botón Eliminar para Administradores -->
+{% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+<div class="card shadow mt-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-trash me-2"></i>Eliminar Examen
+        </h5>
+    </div>
+    <div class="card-body text-center">
+        <p class="text-muted small mb-3">
+            Esta acción no se puede deshacer. Todos los datos del examen serán eliminados permanentemente.
+        </p>
+        <a href="{% url 'examenes:eliminar_examen' examen.id %}" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-trash me-2"></i>Eliminar Examen
+        </a>
+    </div>
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+
+{% endblock %}

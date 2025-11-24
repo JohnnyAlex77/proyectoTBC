@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Principal - SISTEMA TBC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header del Dashboard -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0">Dashboard Epidemiológico</h1>
+            <p class="text-muted">Indicadores en tiempo real - 
+                {% if user.is_authenticated %}
+                    {{ user.get_full_name|default:user.username }}
+                {% else %}
+                    Sistema TBC
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{% url 'indicadores:indicadores_cohorte' %}" class="btn btn-outline-primary">Indicadores Cohorte</a>
+                <a href="{% url 'indicadores:indicadores_operacionales' %}" class="btn btn-outline-primary">Indicadores Operacionales</a>
+                <a href="{% url 'indicadores:reportes_gerenciales' %}" class="btn btn-outline-primary">Reportes</a>
+                <a href="{% url 'indicadores:alertas_lista' %}" class="btn btn-outline-primary">Alertas</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen con Datos Reales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Pacientes Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pacientes_activos }}</div>
+                            <div class="text-xs text-muted">Total registrados: {{ total_pacientes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-injured fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Éxito Tratamiento
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ exito_actual }}%</div>
+                            <div class="text-xs {% if exito_actual >= 85 %}text-success{% else %}text-danger{% endif %}">
+                                Meta: >85%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Tratamientos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tratamientos_activos }}</div>
+                            <div class="text-xs text-muted">En curso</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-pills fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Alertas Pendientes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ alertas_pendientes|length }}</div>
+                            <div class="text-xs text-muted">Por resolver</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos Principales -->
+    <div class="row">
+        <!-- Gráfico de Evolución de Indicadores -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Evolución Trimestral - Indicadores Clave</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" 
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" 
+                             aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Opciones:</div>
+                            <a class="dropdown-item" href="{% url 'indicadores:indicadores_cohorte' %}">
+                                Ver detalle completo
+                            </a>
+                            <a class="dropdown-item" href="{% url 'indicadores:descargar_reporte_cohorte' %}">
+                                Exportar datos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="evolucionIndicadoresChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas y Notificaciones -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">Alertas Recientes</h6>
+                    <a href="{% url 'indicadores:alertas_lista' %}" class="btn btn-sm btn-warning">
+                        Ver todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert-list">
+                        {% for alerta in alertas_pendientes %}
+                        <div class="alert alert-{{ alerta.nivel|lower }} alert-dismissible fade show mb-2" role="alert">
+                            <strong>{{ alerta.get_tipo_display }}</strong><br>
+                            {{ alerta.titulo }}
+                            <small class="d-block text-muted mt-1">
+                                {{ alerta.fecha_creacion|timesince }} atrás
+                            </small>
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted py-3">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i><br>
+                            No hay alertas pendientes
+                        </p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Acciones Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <a href="{% url 'indicadores:indicadores_cohorte' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-chart-bar"></i><br>
+                                Cohorte
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="{% url 'indicadores:indicadores_operacionales' %}" class="btn btn-outline-success btn-block">
+                                <i class="fas fa-cogs"></i><br>
+                                Operacionales
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="{% url 'indicadores:indicadores_prevencion' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-shield-alt"></i><br>
+                                Prevención
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="{% url 'indicadores:reportes_gerenciales' %}" class="btn btn-outline-warning btn-block">
+                                <i class="fas fa-file-export"></i><br>
+                                Reportes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicadores Detallados -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Indicadores PROCET Detallados</h6>
+                    <a href="{% url 'indicadores:reportes_gerenciales' %}" class="btn btn-sm btn-primary">
+                        Generar Reporte
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tablaIndicadores">
+                            <thead>
+                                <tr>
+                                    <th>Indicador</th>
+                                    <th>Meta</th>
+                                    <th>Actual</th>
+                                    <th>Variación</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Éxito Tratamiento</td>
+                                    <td>> 85%</td>
+                                    <td>{{ exito_actual }}%</td>
+                                    <td class="{% if exito_actual >= 85 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if exito_actual >= 85 %}+{% else %}-{% endif %}{{ exito_actual|floatformat:1 }}%
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if exito_actual >= 85 %}badge-success{% else %}badge-danger{% endif %}">
+                                            {% if exito_actual >= 85 %}Cumple{% else %}No cumple{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Abandono Tratamiento</td>
+                                    <td>< 5%</td>
+                                    <td>{{ abandono_actual }}%</td>
+                                    <td class="{% if abandono_actual <= 5 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if abandono_actual <= 5 %}-{% else %}+{% endif %}{{ abandono_actual|floatformat:1 }}%
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if abandono_actual <= 5 %}badge-success{% else %}badge-danger{% endif %}">
+                                            {% if abandono_actual <= 5 %}Cumple{% else %}No cumple{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pacientes en Tratamiento</td>
+                                    <td>-</td>
+                                    <td>{{ pacientes_activos }}</td>
+                                    <td class="text-info">Activos</td>
+                                    <td>
+                                        <span class="badge badge-info">En seguimiento</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Contactos por Estudiar</td>
+                                    <td>< 10</td>
+                                    <td>{{ contactos_pendientes }}</td>
+                                    <td class="{% if contactos_pendientes < 10 %}text-success{% else %}text-warning{% endif %}">
+                                        {{ contactos_pendientes }} pendientes
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if contactos_pendientes < 10 %}badge-success{% else %}badge-warning{% endif %}">
+                                            {% if contactos_pendientes < 10 %}Óptimo{% else %}Por mejorar{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gráfico de evolución de indicadores
+const ctx = document.getElementById('evolucionIndicadoresChart').getContext('2d');
+const evolucionChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ trimestres|safe }},
+        datasets: [
+            {
+                label: 'Éxito Tratamiento (%)',
+                data: {{ tasas_exito|safe }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                fill: true,
+                tension: 0.4
+            },
+            {
+                label: 'Abandono (%)',
+                data: {{ tasas_abandono|safe }},
+                borderColor: '#e74a3b',
+                backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                fill: true,
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ': ' + context.parsed.y + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

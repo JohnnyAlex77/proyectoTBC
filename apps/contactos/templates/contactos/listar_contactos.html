@@ -3,6 +3,7 @@
 {% block title %}Contactos - Sistema TBC{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
@@ -10,7 +11,6 @@
         </h2>
         <p class="text-muted mb-0">Gestión de contactos de pacientes con TBC</p>
     </div>
-    
     <div>
         <a class="btn btn-outline-secondary me-2" href="{% url 'contactos:buscar' %}">
             <i class="bi bi-search me-1"></i>Buscar
@@ -27,7 +27,6 @@
             <i class="bi bi-list-ul me-2"></i>Lista de Contactos
         </h5>
     </div>
-    
     <div class="card-body">
         {% if contactos %}
         <div class="table-responsive">
@@ -35,7 +34,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>RUT</th>
-                        <th>Nombre</th>
+                        <th>Nombres</th>
                         <th>Paciente Índice</th>
                         <th>Parentesco</th>
                         <th>Tipo Contacto</th>
@@ -52,32 +51,27 @@
                         <td>{{ c.parentesco }}</td>
                         <td>{{ c.tipo_contacto }}</td>
                         <td>
-                            <span class="badge 
-                                {% if c.estado_estudio == 'completado' %}bg-success
-                                {% elif c.estado_estudio == 'pendiente' %}bg-warning
-                                {% elif c.estado_estudio == 'en_progreso' %}bg-info
-                                {% elif c.estado_estudio == 'rechazado' %}bg-danger
-                                {% else %}bg-secondary{% endif %}">
+                            <span class="badge {% if c.estado_estudio == 'completado' %}bg-success
+                            {% elif c.estado_estudio == 'pendiente' %}bg-warning
+                            {% elif c.estado_estudio == 'en_progreso' %}bg-info
+                            {% elif c.estado_estudio == 'rechazado' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
                                 {{ c.estado_estudio|title }}
                             </span>
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <a class="btn btn-outline-primary" 
-                                   href="{% url 'contactos:detalle' c.pk %}"
-                                   title="Ver detalle">
+                                <a class="btn btn-outline-primary" href="{% url 'contactos:detalle' c.pk %}" title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a class="btn btn-outline-warning" 
-                                   href="{% url 'contactos:editar' c.pk %}"
-                                   title="Editar">
+                                <a class="btn btn-outline-warning" href="{% url 'contactos:editar' c.pk %}" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a class="btn btn-outline-danger" 
-                                   href="{% url 'contactos:eliminar' c.pk %}"
-                                   title="Eliminar">
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                <a class="btn btn-outline-danger" href="{% url 'contactos:eliminar' c.pk %}" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -97,4 +91,5 @@
         {% endif %}
     </div>
 </div>
+
 {% endblock %}

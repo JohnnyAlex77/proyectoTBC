@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Indicadores - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">{% if object %}Editar{% else %}Crear{% endif %} Indicadores de Laboratorio</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.laboratorio.id_for_label }}" class="form-label">Laboratorio</label>
+                        {{ form.laboratorio }}
+                        {% if form.laboratorio.errors %}
+                        <div class="text-danger">{{ form.laboratorio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.periodo.id_for_label }}" class="form-label">Período</label>
+                        {{ form.periodo }}
+                        {% if form.periodo.errors %}
+                        <div class="text-danger">{{ form.periodo.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.periodo.help_text }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.muestras_recibidas.id_for_label }}" class="form-label">Muestras Recibidas</label>
+                        {{ form.muestras_recibidas }}
+                        {% if form.muestras_recibidas.errors %}
+                        <div class="text-danger">{{ form.muestras_recibidas.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.muestras_procesadas.id_for_label }}" class="form-label">Muestras Procesadas</label>
+                        {{ form.muestras_procesadas }}
+                        {% if form.muestras_procesadas.errors %}
+                        <div class="text-danger">{{ form.muestras_procesadas.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.positivos.id_for_label }}" class="form-label">Positivos</label>
+                        {{ form.positivos }}
+                        {% if form.positivos.errors %}
+                        <div class="text-danger">{{ form.positivos.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.contaminacion_porcentaje.id_for_label }}" class="form-label">Contaminación (%)</label>
+                        {{ form.contaminacion_porcentaje }}
+                        {% if form.contaminacion_porcentaje.errors %}
+                        <div class="text-danger">{{ form.contaminacion_porcentaje.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.contaminacion_porcentaje.help_text }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.tiempo_respuesta_promedio.id_for_label }}" class="form-label">Tiempo Respuesta Promedio (horas)</label>
+                        {{ form.tiempo_respuesta_promedio }}
+                        {% if form.tiempo_respuesta_promedio.errors %}
+                        <div class="text-danger">{{ form.tiempo_respuesta_promedio.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.tiempo_respuesta_promedio.help_text }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'laboratorio:indicadores_lista' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Actualizar{% else %}Crear{% endif %} Indicadores
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formato de período
+    const periodoInput = document.getElementById('{{ form.periodo.id_for_label }}');
+    if (periodoInput) {
+        periodoInput.addEventListener('blur', function() {
+            const pattern = /^\d{4}-\d{2}$/;
+            if (this.value && !pattern.test(this.value)) {
+                this.setCustomValidity('El período debe tener el formato YYYY-MM (ej: 2024-01)');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

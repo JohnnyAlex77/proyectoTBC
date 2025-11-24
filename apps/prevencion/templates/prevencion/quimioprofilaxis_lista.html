@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quimioprofilaxis - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Quimioprofilaxis</h4>
+        <a href="{% url 'prevencion:quimioprofilaxis_crear' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva Quimioprofilaxis
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <select class="form-select" id="filtro-estado" onchange="filtrarPorEstado()">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_curso">En Curso</option>
+                    <option value="completado">Completado</option>
+                    <option value="suspendido">Suspendido</option>
+                    <option value="abandonado">Abandonado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Buscar paciente..." id="busqueda-paciente">
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-striped" id="tabla-quimioprofilaxis">
+                <thead>
+                    <tr>
+                        <th>Paciente/Contacto</th>
+                        <th>Medicamento</th>
+                        <th>Fecha Inicio</th>
+                        <th>Adherencia</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for qp in quimioprofilaxis %}
+                    <tr data-estado="{{ qp.estado }}" data-paciente="{% if qp.paciente %}{{ qp.paciente.nombre }}{% else %}{{ qp.contacto.nombre }}{% endif %}">
+                        <td>
+                            {% if qp.paciente %}
+                                <strong>{{ qp.paciente.nombre }}</strong>
+                                <br><small class="text-muted">Paciente</small>
+                            {% else %}
+                                <strong>{{ qp.contacto.nombre }}</strong>
+                                <br><small class="text-muted">Contacto</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ qp.get_medicamento_display }}</span>
+                            <br><small>{{ qp.esquema }}</small>
+                        </td>
+                        <td>
+                            {{ qp.fecha_inicio|date:"d/m/Y" }}
+                            {% if qp.fecha_termino_real %}
+                                <br><small>Fin: {{ qp.fecha_termino_real|date:"d/m/Y" }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                    {% with width=qp.adherencia_porcentaje %}
+                                    <div class="progress-bar
+                                        {% if qp.adherencia_porcentaje >= 90 %}bg-success
+                                        {% elif qp.adherencia_porcentaje >= 70 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        style="width: {{ width }}%">
+                                    </div>
+                                    {% endwith %}
+                                </div>
+                                <span class="badge
+                                    {% if qp.adherencia_porcentaje >= 90 %}bg-success
+                                    {% elif qp.adherencia_porcentaje >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ qp.adherencia_porcentaje }}%
+                                </span>
+                            </div>
+                            {% if qp.efectos_adversos %}
+                                <small class="text-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> Efectos adversos
+                                </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if qp.estado == 'completado' %}bg-success
+                                {% elif qp.estado == 'en_curso' %}bg-primary
+                                {% elif qp.estado == 'pendiente' %}bg-secondary
+                                {% elif qp.estado == 'suspendido' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ qp.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'prevencion:quimioprofilaxis_detalle' qp.pk %}" 
+                                   class="btn btn-info" title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'prevencion:quimioprofilaxis_editar' qp.pk %}" 
+                                   class="btn btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                <form method="post" action="{% url 'prevencion:quimioprofilaxis_eliminar' qp.pk %}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('¿Está seguro de que desea eliminar esta quimioprofilaxis?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if qp.estado == 'en_curso' %}
+                                <a href="{% url 'prevencion:seguimiento_crear' %}?quimioprofilaxis={{ qp.pk }}" 
+                                   class="btn btn-success" title="Registrar seguimiento">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <br>No hay quimioprofilaxis registradas
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Paginación">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function filtrarPorEstado() {
+    const estado = document.getElementById('filtro-estado').value;
+    const filas = document.querySelectorAll('#tabla-quimioprofilaxis tbody tr');
+    
+    filas.forEach(fila => {
+        if (estado === '' || fila.getAttribute('data-estado') === estado) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+document.getElementById('busqueda-paciente').addEventListener('input', function(e) {
+    const busqueda = e.target.value.toLowerCase();
+    const filas = document.querySelectorAll('#tabla-quimioprofilaxis tbody tr');
+    
+    filas.forEach(fila => {
+        const paciente = fila.getAttribute('data-paciente').toLowerCase();
+        if (paciente.includes(busqueda)) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const estado = urlParams.get('estado');
+    if (estado) {
+        document.getElementById('filtro-estado').value = estado;
+        filtrarPorEstado();
+    }
+});
+</script>
+{% endblock %}

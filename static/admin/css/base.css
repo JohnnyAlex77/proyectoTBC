@@ -1,0 +1,245 @@
+/* static/admin/css/base.css - VERSIÓN MEJORADA */
+:root {
+    --primary: #417690;
+    --secondary: #79aec8;
+    --accent: #f5dd5d;
+    --body-bg: #f8f9fa;
+    --text-color: #333;
+}
+
+/* Reset y base */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-color);
+    background-color: var(--body-bg);
+}
+
+/* Header */
+#header {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 40px;
+    overflow: hidden;
+}
+
+#branding h1 {
+    margin: 0;
+    padding: 5px 0;
+    font-weight: 300;
+    font-size: 24px;
+}
+
+#branding h1 a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#branding h1 a:hover {
+    color: var(--accent);
+}
+
+/* User tools */
+#user-tools {
+    float: right;
+    padding: 0;
+    margin: 0 0 0 20px;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: right;
+}
+
+#user-tools a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+#user-tools a:hover {
+    color: #fff;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    background: var(--secondary);
+    padding: 10px 40px;
+    border: none;
+    color: #c4dce8;
+    font-size: 13px;
+}
+
+.breadcrumbs a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    color: var(--accent);
+}
+
+/* Content */
+#content {
+    padding: 20px 40px;
+}
+
+#content-main {
+    float: left;
+    width: 100%;
+}
+
+/* Forms */
+.form-row {
+    overflow: hidden;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.submit-row {
+    padding: 12px 14px;
+    margin: 0 0 20px;
+    background: #f8f8f8;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    text-align: right;
+}
+
+.submit-row input {
+    margin: 0 0 0 5px;
+}
+
+/* Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: 500;
+}
+
+/* Modules */
+.module {
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+}
+
+.module h2 {
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--secondary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+/* Alerts */
+.errornote {
+    background: #ba2121;
+    color: #fff;
+    padding: 10px 12px;
+    margin: 0 0 10px;
+    border-radius: 4px;
+}
+
+ul.messagelist {
+    padding: 0;
+    margin: 0;
+}
+
+ul.messagelist li {
+    list-style: none;
+    padding: 10px 12px;
+    margin: 0 0 10px;
+    border-radius: 4px;
+}
+
+ul.messagelist li.success {
+    background: #dfd;
+    color: #030;
+}
+
+ul.messagelist li.error {
+    background: #ffefef;
+    color: #600;
+}
+
+/* Buttons */
+.button, input[type="submit"], input[type="button"] {
+    background: var(--primary);
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.button:hover, input[type="submit"]:hover, input[type="button"]:hover {
+    background: var(--secondary);
+}
+
+.button.default {
+    background: #447e9b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #header {
+        padding: 10px 20px;
+    }
+    
+    #content {
+        padding: 10px 20px;
+    }
+    
+    .breadcrumbs {
+        padding: 10px 20px;
+    }
+}
+
+/* Nav sidebar */
+#nav-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+#nav-sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.toggle-nav-sidebar {
+    position: absolute;
+    top: 10px;
+    right: -40px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    cursor: pointer;
+}

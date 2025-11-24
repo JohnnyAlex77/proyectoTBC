@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Nuevo Seguimiento - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Nuevo Seguimiento</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Información del Seguimiento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.tipo_seguimiento.id_for_label }}" class="form-label">Tipo de Seguimiento *</label>
+                                {% render_field form.tipo_seguimiento class="form-select" %}
+                                {% for error in form.tipo_seguimiento.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3" id="quimioprofilaxis-field">
+                                <label for="{{ form.quimioprofilaxis.id_for_label }}" class="form-label">Quimioprofilaxis</label>
+                                {% render_field form.quimioprofilaxis class="form-select" %}
+                                {% for error in form.quimioprofilaxis.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3" id="vacunacion-field" style="display: none;">
+                                <label for="{{ form.vacunacion.id_for_label }}" class="form-label">Vacunación</label>
+                                {% render_field form.vacunacion class="form-select" %}
+                                {% for error in form.vacunacion.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.fecha_seguimiento.id_for_label }}" class="form-label">Fecha Seguimiento *</label>
+                                {% render_field form.fecha_seguimiento class="form-control" type="date" %}
+                                {% for error in form.fecha_seguimiento.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Resultados y Observaciones</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.resultado.id_for_label }}" class="form-label">Resultado *</label>
+                                {% render_field form.resultado class="form-control" rows="4" placeholder="Describa los resultados del seguimiento..." %}
+                                {% for error in form.resultado.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.observaciones.id_for_label }}" class="form-label">Observaciones</label>
+                                {% render_field form.observaciones class="form-control" rows="3" placeholder="Observaciones adicionales..." %}
+                                {% for error in form.observaciones.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.proximo_control.id_for_label }}" class="form-label">Próximo Control</label>
+                                {% render_field form.proximo_control class="form-control" type="date" %}
+                                {% for error in form.proximo_control.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'prevencion:quimioprofilaxis_lista' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Crear Seguimiento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSeguimientoField = document.getElementById('{{ form.tipo_seguimiento.id_for_label }}');
+    const quimioprofilaxisField = document.getElementById('quimioprofilaxis-field');
+    const vacunacionField = document.getElementById('vacunacion-field');
+
+    function toggleFields() {
+        if (tipoSeguimientoField.value === 'quimioprofilaxis') {
+            quimioprofilaxisField.style.display = 'block';
+            vacunacionField.style.display = 'none';
+        } else if (tipoSeguimientoField.value === 'vacunacion') {
+            quimioprofilaxisField.style.display = 'none';
+            vacunacionField.style.display = 'block';
+        } else {
+            quimioprofilaxisField.style.display = 'none';
+            vacunacionField.style.display = 'none';
+        }
+    }
+
+    tipoSeguimientoField.addEventListener('change', toggleFields);
+    toggleFields();
+});
+</script>
+{% endblock %}

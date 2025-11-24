@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dosis Pendientes - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-clock text-warning me-2"></i>Dosis Pendientes de Administración
+        </h1>
+        <div class="btn-group">
+            <a href="{% url 'tratamientos:control_dosis' %}" class="btn btn-outline-primary">
+                <i class="fas fa-syringe me-2"></i>Control de Dosis
+            </a>
+            <a href="{% url 'tratamientos:calendario_dosis' %}" class="btn btn-outline-info">
+                <i class="fas fa-calendar me-2"></i>Ver Calendario
+            </a>
+        </div>
+    </div>
+
+    <!-- Alertas Importantes -->
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Atención:</strong> Tienes <strong>{{ dosis_pendientes|length }}</strong> dosis pendientes de administración para los próximos 7 días.
+    </div>
+
+    <!-- Filtros Rápidos -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-danger mb-1">2</h3>
+                    <p class="mb-0 text-muted">Dosis para Hoy</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-warning mb-1">5</h3>
+                    <p class="mb-0 text-muted">Próximos 3 días</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-info mb-1">8</h3>
+                    <p class="mb-0 text-muted">Esta Semana</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Dosis Pendientes -->
+    <div class="card">
+        <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Dosis Pendientes ({{ dosis_pendientes|length }})
+            </h5>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="showAll">
+                <label class="form-check-label text-white" for="showAll">
+                    Mostrar todas
+                </label>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if dosis_pendientes %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Medicamento</th>
+                            <th>Dosis</th>
+                            <th>Frecuencia</th>
+                            <th>Urgencia</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dosis in dosis_pendientes %}
+                        <tr class="{% if dosis.fecha_dosis == fecha_hoy %}table-warning{% endif %}">
+                            <td>
+                                <strong>{{ dosis.fecha_dosis|date:"d/m/Y" }}</strong>
+                                {% if dosis.fecha_dosis == fecha_hoy %}
+                                <br>
+                                <span class="badge bg-danger">HOY</span>
+                                {% elif dosis.fecha_dosis < fecha_hoy %}
+                                <br>
+                                <span class="badge bg-danger">ATRASADA</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ dosis.esquema_medicamento.tratamiento.paciente.nombre }}</strong>
+                                <br>
+                                <small class="text-muted">{{ dosis.esquema_medicamento.tratamiento.paciente.rut }}</small>
+                            </td>
+                            <td>
+                                {{ dosis.esquema_medicamento.medicamento }}
+                                <br>
+                                <small class="text-muted">{{ dosis.esquema_medicamento.fase }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ dosis.esquema_medicamento.dosis_mg }} mg</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ dosis.esquema_medicamento.frecuencia }}</span>
+                            </td>
+                            <td>
+                                {% if dosis.fecha_dosis == fecha_hoy %}
+                                <span class="badge bg-danger">Alta</span>
+                                {% elif dosis.fecha_dosis <= fecha_limite %}
+                                <span class="badge bg-warning">Media</span>
+                                {% else %}
+                                <span class="badge bg-success">Baja</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'tratamientos:registrar_dosis' dosis.esquema_medicamento.pk %}" 
+                                       class="btn btn-success" title="Administrar dosis">
+                                        <i class="fas fa-syringe me-1"></i>Administrar
+                                    </a>
+                                    <a href="{% url 'tratamientos:detalle' dosis.esquema_medicamento.tratamiento.pk %}" 
+                                       class="btn btn-outline-primary" title="Ver tratamiento">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resumen por Prioridad -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card border-danger">
+                        <div class="card-body text-center">
+                            <h4 class="text-danger mb-1">2</h4>
+                            <p class="mb-0">Para Hoy</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-warning">
+                        <div class="card-body text-center">
+                            <h4 class="text-warning mb-1">3</h4>
+                            <p class="mb-0">Próximos 2 días</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <h4 class="text-success mb-1">7</h4>
+                            <p class="mb-0">Resto de la semana</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4 class="text-success">¡Excelente!</h4>
+                <p class="text-muted">No hay dosis pendientes para los próximos 7 días.</p>
+                <a href="{% url 'tratamientos:control_dosis' %}" class="btn btn-primary">
+                    <i class="fas fa-syringe me-2"></i>Ir a Control de Dosis
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recordatorios Importantes -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Recordatorios
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Verificar stock</strong> de Isoniazida para la próxima semana.
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>2 pacientes</strong> requieren visita domiciliaria esta semana.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Estadísticas Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Tasa de adherencia:</strong> 92%
+                    </p>
+                    <p class="mb-2">
+                        <strong>Dosis administradas este mes:</strong> 145
+                    </p>
+                    <p class="mb-2">
+                        <strong>Pacientes en tratamiento activo:</strong> 8
+                    </p>
+                    <p class="mb-0">
+                        <strong>Próxima revisión de stock:</strong> 22/01/2024
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtro para mostrar todas/prioritarias
+    const showAllCheckbox = document.getElementById('showAll');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    showAllCheckbox.addEventListener('change', function() {
+        tableRows.forEach(row => {
+            if (!this.checked) {
+                // Mostrar solo prioritarias (hoy y atrasadas)
+                const isPriority = row.classList.contains('table-warning') || 
+                                 row.querySelector('.badge.bg-danger');
+                row.style.display = isPriority ? '' : 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
+    });
+
+    // Inicializar mostrando solo prioritarias
+    showAllCheckbox.dispatchEvent(new Event('change'));
+});
+</script>
+
+<style>
+.table-warning {
+    background-color: #fff3cd !important;
+}
+
+.badge {
+    font-size: 0.7em;
+}
+</style>
+{% endblock %}

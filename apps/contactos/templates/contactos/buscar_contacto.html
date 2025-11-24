@@ -3,6 +3,7 @@
 {% block title %}Buscar Contactos - Sistema TBC{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
@@ -23,25 +24,24 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label for="q" class="form-label">Buscar por nombre o RUT:</label>
-                    <input type="text" class="form-control" id="q" name="q" 
-                           value="{{ query }}" placeholder="Nombre o RUT del contacto...">
+                    <input type="text" class="form-control" id="q" name="q" value="{{ query }}" placeholder="Nombre o RUT del contacto...">
                 </div>
                 <div class="col-md-3">
                     <label for="estado" class="form-label">Estado del estudio:</label>
                     <select class="form-select" id="estado" name="estado">
                         <option value="">Todos los estados</option>
-                        <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendientes</option>
                         <option value="en_progreso" {% if estado_filtro == 'en_progreso' %}selected{% endif %}>En Progreso</option>
-                        <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completado</option>
-                        <option value="rechazado" {% if estado_filtro == 'rechazado' %}selected{% endif %}>Rechazado</option>
+                        <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completados</option>
+                        <option value="rechazado" {% if estado_filtro == 'rechazado' %}selected{% endif %}>Rechazados</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label for="tipo" class="form-label">Tipo de contacto:</label>
                     <select class="form-select" id="tipo" name="tipo">
                         <option value="">Todos los tipos</option>
-                        <option value="intradomiciliario" {% if tipo_filtro == 'intradomiciliario' %}selected{% endif %}>Intradomiciliario</option>
-                        <option value="extradomiciliario" {% if tipo_filtro == 'extradomiciliario' %}selected{% endif %}>Extradomiciliario</option>
+                        <option value="intradomiciliario" {% if tipo_filtro == 'intradomiciliario' %}selected{% endif %}>Intradomiciliarios</option>
+                        <option value="extradomiciliario" {% if tipo_filtro == 'extradomiciliario' %}selected{% endif %}>Extradomiciliarios</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -62,7 +62,6 @@
             <span class="badge bg-primary ms-2">{{ contactos.count }} resultado(s)</span>
         </h5>
     </div>
-    
     <div class="card-body">
         {% if contactos %}
         <div class="table-responsive">
@@ -70,7 +69,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>RUT</th>
-                        <th>Nombre</th>
+                        <th>Nombres</th>
                         <th>Paciente Índice</th>
                         <th>Parentesco</th>
                         <th>Tipo Contacto</th>
@@ -87,27 +86,27 @@
                         <td>{{ c.parentesco }}</td>
                         <td>{{ c.tipo_contacto }}</td>
                         <td>
-                            <span class="badge 
-                                {% if c.estado_estudio == 'completado' %}bg-success
-                                {% elif c.estado_estudio == 'pendiente' %}bg-warning
-                                {% elif c.estado_estudio == 'en_progreso' %}bg-info
-                                {% elif c.estado_estudio == 'rechazado' %}bg-danger
-                                {% else %}bg-secondary{% endif %}">
+                            <span class="badge {% if c.estado_estudio == 'completado' %}bg-success
+                            {% elif c.estado_estudio == 'pendiente' %}bg-warning
+                            {% elif c.estado_estudio == 'en_progreso' %}bg-info
+                            {% elif c.estado_estudio == 'rechazado' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
                                 {{ c.estado_estudio|title }}
                             </span>
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <a class="btn btn-outline-primary" 
-                                   href="{% url 'contactos:detalle' c.pk %}"
-                                   title="Ver detalle">
+                                <a class="btn btn-outline-primary" href="{% url 'contactos:detalle' c.pk %}" title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a class="btn btn-outline-warning" 
-                                   href="{% url 'contactos:editar' c.pk %}"
-                                   title="Editar">
+                                <a class="btn btn-outline-warning" href="{% url 'contactos:editar' c.pk %}" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                <a class="btn btn-outline-danger" href="{% url 'contactos:eliminar' c.pk %}" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -125,4 +124,5 @@
     </div>
 </div>
 {% endif %}
+
 {% endblock %}

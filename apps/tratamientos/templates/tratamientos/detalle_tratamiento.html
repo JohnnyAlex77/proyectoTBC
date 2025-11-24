@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Tratamiento {{ tratamiento.id }} - Sistema TBC{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Header SIMPLIFICADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-pills text-primary me-2"></i>Tratamiento #{{ tratamiento.id }}
+        </h1>
+        <a href="{% url 'tratamientos:lista' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Tratamientos
+            </a>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-lg-8">
+            <!-- Tarjeta de Información del Tratamiento -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información del Tratamiento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" width="40%">Paciente:</td>
+                                    <td>{{ tratamiento.paciente.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">RUT:</td>
+                                    <td>{{ tratamiento.paciente.rut }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Establecimiento:</td>
+                                    <td>{{ tratamiento.paciente.establecimiento_salud }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Esquema:</td>
+                                    <td><span class="badge bg-info">{{ tratamiento.esquema }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" width="40%">Fecha Inicio:</td>
+                                    <td>{{ tratamiento.fecha_inicio|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Término Estimado:</td>
+                                    <td>{{ tratamiento.fecha_termino_estimada|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% if tratamiento.fecha_termino_real %}
+                                <tr>
+                                    <td class="fw-bold">Término Real:</td>
+                                    <td>{{ tratamiento.fecha_termino_real|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td class="fw-bold">Peso:</td>
+                                    <td>{{ tratamiento.peso_kg }} kg</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Estado:</td>
+                                    <td>
+                                        {% if tratamiento.esta_activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ tratamiento.resultado_final }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% if tratamiento.observaciones %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>Observaciones:</strong>
+                            <p class="mb-0">{{ tratamiento.observaciones }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Esquemas de Medicamento -->
+            <div class="card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-prescription-bottle me-2"></i>Medicamentos del Esquema
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ tratamiento.esquemas_medicamento.count }} medicamentos</span>
+                </div>
+                <div class="card-body">
+                    {% if tratamiento.esquemas_medicamento.exists %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Medicamento</th>
+                                    <th>Dosis</th>
+                                    <th>Frecuencia</th>
+                                    <th>Fase</th>
+                                    <th>Duración</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for esquema in tratamiento.esquemas_medicamento.all %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ esquema.medicamento }}</strong>
+                                    </td>
+                                    <td>{{ esquema.dosis_mg }} mg</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ esquema.frecuencia }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ esquema.fase }}</span>
+                                    </td>
+                                    <td>{{ esquema.duracion_semanas }} semanas</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'tratamientos:registrar_dosis' esquema.pk %}" class="btn btn-outline-success" title="Registrar dosis">
+                                                <i class="fas fa-syringe"></i>
+                                            </a>
+                                            {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                            <a href="{% url 'tratamientos:eliminar_esquema' esquema.pk %}" class="btn btn-outline-danger" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-prescription-bottle fa-2x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay medicamentos registrados</h5>
+                        <p class="text-muted">Agrega medicamentos al esquema de tratamiento.</p>
+                        <a href="{% url 'tratamientos:crear_esquema' tratamiento.pk %}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Agregar Primer Medicamento
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-lg-4">
+            <!-- Información del Registro -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Información de Registro
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Registrado por:</strong><br>
+                        {{ tratamiento.usuario_registro.get_full_name }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Fecha de registro:</strong><br>
+                        {{ tratamiento.fecha_registro|date:"d/m/Y H:i" }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Duración total:</strong><br>
+                        {{ tratamiento.duracion_dias }} días
+                    </p>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'tratamientos:crear_esquema' tratamiento.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-2"></i>Agregar Medicamento
+                        </a>
+                        <a href="{% url 'tratamientos:dosis_pendientes' %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-syringe me-2"></i>Ver Dosis Pendientes
+                        </a>
+                        <a href="{% url 'tratamientos:editar' tratamiento.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-2"></i>Editar Tratamiento
+                        </a>
+                        {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                        <a href="{% url 'tratamientos:eliminar' tratamiento.pk %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash me-2"></i>Eliminar Tratamiento
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

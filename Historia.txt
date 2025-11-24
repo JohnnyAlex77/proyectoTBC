@@ -1,0 +1,93 @@
+# historia_paciente_demo.txt
+HISTORIA CLÍNICA DEMOSTRATIVA - SISTEMA TBC
+
+PACIENTE: Carlos Antonio Rojas Mendoza
+RUT: 17.654.321-0
+EDAD: 42 años
+FECHA NACIMIENTO: 15 de marzo de 1983 (CORREGIR: 15 de marzo de 1982)
+OCUPACIÓN: Constructor civil
+DOMICILIO: Av. Los Constructores 2345, Pudahuel, Santiago
+TELÉFONO: +56987654321
+
+ANTECEDENTES EPIDEMIOLÓGICOS:
+- Trabaja en construcción con exposición a polvo de sílice
+- Vive con esposa y 2 hijos (8 y 12 años)
+- Contacto con persona con TB confirmada en trabajo
+- Hábito tabáquico: 10 cigarrillos/día x 15 años
+- Consumo ocasional de alcohol
+
+MOTIVO DE CONSULTA:
+Tos productiva de 3 semanas de evolución, fiebre vespertina, pérdida de peso de 5 kg en último mes, sudoración nocturna.
+
+EVOLUCIÓN CLÍNICA:
+
+ENERO 2025:
+- 10/01/2025: Consulta por tos y fiebre en SAPU
+- 12/01/2025: Radiografía de tórax - Infiltrado cavitado lóbulo superior derecho
+- 13/01/2025: Baciloscopia de esputo - POSITIVO (3+)
+- 15/01/2025: Cultivo de esputo - POSITIVO para M. tuberculosis
+- 16/01/2025: GeneXpert - POSITIVO para MTB, sensible a Rifampicina
+- 18/01/2025: Diagnóstico confirmado de Tuberculosis Pulmonar
+
+TRATAMIENTO INICIADO:
+- 20/01/2025: Inicio de tratamiento HRZE (Fase intensiva)
+- Esquema: Isoniazida 300mg, Rifampicina 600mg, Pirazinamida 1500mg, Etambutol 1200mg
+- Modalidad: TAES (Tratamiento directamente observado)
+- Peso inicial: 68 kg
+
+ESTUDIO DE CONTACTOS:
+- Esposa: Elena Rojas (RUT: 18.765.432-1) - PPD negativo
+- Hijo mayor: Diego Rojas (12 años) - PPD negativo  
+- Hijo menor: Sofía Rojas (8 años) - PPD negativo
+- Compañero de trabajo: Miguel Torres - En estudio
+
+EVOLUCIÓN POST-TRATAMIENTO:
+- 15/02/2025: Baciloscopia de control - POSITIVO (1+)
+- 20/02/2025: Mejoría clínica significativa, ganancia de peso 2 kg
+- 15/03/2025: Baciloscopia de control - NEGATIVO
+- 20/03/2025: Cultivo de control - NEGATIVO
+- Continuación fase de continuación: HR por 4 meses
+
+DATOS PARA INGRESAR AL SISTEMA:
+
+MÓDULO PACIENTES:
+- RUT: 17.654.321-0
+- Nombre: Carlos Antonio Rojas Mendoza
+- Fecha Nacimiento: 15/03/1982 (CORREGIDO)
+- Sexo: Masculino
+- Domicilio: Av. Los Constructores 2345, Pudahuel
+- Comuna: Pudahuel
+- Teléfono: +56987654321
+- Establecimiento: CESFAM Pudahuel
+- Fecha Diagnóstico: 18/01/2025
+- Tipo TBC: Pulmonar
+- Baciloscopia Inicial: Positivo
+- Cultivo Inicial: Positivo
+- Población Prioritaria: Trabajador con exposición a sílice
+- Estado: En tratamiento
+
+MÓDULO TRATAMIENTOS:
+- Esquema: HRZE
+- Fecha Inicio: 20/01/2025
+- Fecha Término Estimada: 20/07/2025
+- Peso: 68 kg
+
+MÓDULO EXAMENES:
+- 12/01/2025: Radiografía - Infiltrado cavitado LSD
+- 13/01/2025: Baciloscopia - Positivo (3+)
+- 15/01/2025: Cultivo - Positivo
+- 16/01/2025: GeneXpert - MTB sensible
+- 15/02/2025: Baciloscopia control - Positivo (1+)
+- 15/03/2025: Baciloscopia control - Negativo
+
+MÓDULO CONTACTOS:
+- Elena Rojas (esposa) - Estudiado, sin TB
+- Diego Rojas (hijo) - Estudiado, sin TB  
+- Sofía Rojas (hija) - Estudiado, sin TB
+- Miguel Torres (compañero) - Pendiente
+
+INDICADORES A GENERAR:
+- Tiempo diagnóstico: 8 días
+- Tratamiento supervisado: SI
+- Adherencia: 100%
+- Conversión bacteriológica: A los 2 meses

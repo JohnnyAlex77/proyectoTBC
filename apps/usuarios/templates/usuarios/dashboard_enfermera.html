@@ -1,0 +1,200 @@
+{% extends 'usuarios/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-user-nurse me-2 text-info"></i>
+        Dashboard - Enfermera
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'pacientes:lista' %}" class="btn btn-sm btn-outline-info">
+                <i class="fas fa-user-injured me-1"></i>Pacientes
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-syringe me-1"></i>Administrar Dosis
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas para Enfermera -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ pacientes_cuidado|default:"15" }}</h4>
+                        <p class="card-text">Pacientes a Cargo</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-injured fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ dosis_hoy|default:"8" }}</h4>
+                        <p class="card-text">Dosis para Hoy</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-syringe fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ controles_pendientes|default:"3" }}</h4>
+                        <p class="card-text">Controles Pendientes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-notes-medical fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ visitas_hoy|default:"5" }}</h4>
+                        <p class="card-text">Visitas Programadas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-home fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>Acciones de Enfermería
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-info text-start">
+                        <i class="fas fa-syringe me-2"></i>Administrar Medicamentos
+                    </a>
+                    <a href="{% url 'pacientes:lista' %}" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-injured me-2"></i>Registrar Signos Vitales
+                    </a>
+                    <a href="#" class="btn btn-outline-success text-start">
+                        <i class="fas fa-home me-2"></i>Visita Domiciliaria
+                    </a>
+                    <a href="#" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-clipboard-list me-2"></i>Registro de Evolución
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Recordatorios de Hoy
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>09:00 AM</strong> - Control a Juan Pérez
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>11:30 AM</strong> - Administración de medicamentos
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>02:00 PM</strong> - Visita domiciliaria sector norte
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>04:30 PM</strong> - Revisión de historiales
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Actividad Reciente
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-syringe text-success me-2"></i>
+                            Medicamento administrado a Ana López
+                        </div>
+                        <small class="text-muted">Hace 1 hora</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-notes-medical text-primary me-2"></i>
+                            Signos vitales registrados
+                        </div>
+                        <small class="text-muted">Ayer</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-home text-info me-2"></i>
+                            Visita domiciliaria completada
+                        </div>
+                        <small class="text-muted">Hace 2 días</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-user-plus text-warning me-2"></i>
+                            Nuevo paciente ingresado
+                        </div>
+                        <small class="text-muted">Hace 3 días</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>Información Profesional
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Rol:</strong> <span class="badge bg-info">{{ usuario.get_rol_display }}</span></p>
+                <p><strong>Establecimiento:</strong> {{ usuario.establecimiento }}</p>
+                <p><strong>Área:</strong> Atención Primaria / Control TBC</p>
+                <p><strong>Contacto:</strong> {{ usuario.telefono|default:"No registrado" }}</p>
+                <p><strong>Turno:</strong> Diurno (08:00 - 17:00)</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

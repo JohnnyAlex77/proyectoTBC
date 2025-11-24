@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Eliminar Indicadores - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Eliminar Indicadores</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <h5>¿Está seguro que desea eliminar estos indicadores?</h5>
+            <p class="mb-0"><strong>{{ object.laboratorio.nombre }}</strong> - {{ object.periodo }}</p>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6>Detalles de los Indicadores:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Laboratorio:</strong> {{ object.laboratorio.nombre }}</p>
+                        <p><strong>Período:</strong> {{ object.periodo }}</p>
+                        <p><strong>Muestras Recibidas:</strong> {{ object.muestras_recibidas }}</p>
+                        <p><strong>Muestras Procesadas:</strong> {{ object.muestras_procesadas }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Positivos:</strong> {{ object.positivos }}</p>
+                        <p><strong>Contaminación:</strong> {{ object.contaminacion_porcentaje }}%</p>
+                        <p><strong>Tiempo Respuesta:</strong> {{ object.tiempo_respuesta_promedio }} horas</p>
+                        <p><strong>Fecha Registro:</strong> {{ object.fecha_registro|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'laboratorio:indicadores_lista' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Eliminar Indicadores</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

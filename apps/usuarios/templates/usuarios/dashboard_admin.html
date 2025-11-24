@@ -1,0 +1,160 @@
+{% extends 'usuarios/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+        Dashboard - Administrador
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'usuarios:lista' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-users me-1"></i>Gestión de Usuarios
+            </a>
+            <a href="{% url 'pacientes:lista' %}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-user-injured me-1"></i>Ver Pacientes
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Usuarios
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ total_usuarios|default:"0" }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Pacientes Activos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ total_pacientes|default:"0" }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-injured fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Tratamientos Activos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ total_tratamientos|default:"0" }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-pills fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Contactos Pendientes
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ contactos_pendientes|default:"0" }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-rocket me-2"></i>Acciones Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'usuarios:crear' %}" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario
+                    </a>
+                    <a href="{% url 'pacientes:lista' %}" class="btn btn-outline-success text-start">
+                        <i class="fas fa-plus-circle me-2"></i>Registrar Nuevo Paciente
+                    </a>
+                    <a href="#" class="btn btn-outline-info text-start">
+                        <i class="fas fa-chart-bar me-2"></i>Ver Reportes
+                    </a>
+                    <a href="#" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-cog me-2"></i>Configuración del Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información del Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong><i class="fas fa-user me-2 text-primary"></i>Tu Rol:</strong>
+                    <span class="badge bg-primary ms-2">{{ usuario.get_rol_display }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong><i class="fas fa-hospital me-2 text-success"></i>Establecimiento:</strong>
+                    <br>{{ usuario.establecimiento }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="fas fa-calendar me-2 text-info"></i>Último Acceso:</strong>
+                    <br>{{ usuario.user.last_login|date:"d/m/Y H:i"|default:"Primer acceso" }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="fas fa-shield-alt me-2 text-warning"></i>Permisos:</strong>
+                    <br>Acceso completo al sistema
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
