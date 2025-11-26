@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Control de Calidad - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Control de Calidad</h4>
+        <a href="{% url 'laboratorio:control_calidad_crear' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Control
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="laboratorio_filter" class="form-label">Filtrar por Laboratorio</label>
+                <select class="form-select" id="laboratorio_filter" onchange="filtrarControles()">
+                    <option value="">Todos los laboratorios</option>
+                    {% for lab in laboratorios %}
+                    <option value="{{ lab.id }}" {% if request.GET.laboratorio == lab.id|stringformat:"i" %}selected{% endif %}>
+                        {{ lab.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="tipo_control_filter" class="form-label">Filtrar por Tipo</label>
+                <select class="form-select" id="tipo_control_filter" onchange="filtrarControles()">
+                    <option value="">Todos los tipos</option>
+                    <option value="peec" {% if request.GET.tipo_control == 'peec' %}selected{% endif %}>PEEC</option>
+                    <option value="interno" {% if request.GET.tipo_control == 'interno' %}selected{% endif %}>Control Interno</option>
+                    <option value="interlaboratorio" {% if request.GET.tipo_control == 'interlaboratorio' %}selected{% endif %}>Interlaboratorio</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <a href="{% url 'laboratorio:control_calidad_lista' %}" class="btn btn-outline-secondary d-block">Limpiar Filtros</a>
+            </div>
+        </div>
+
+        <!-- Tabla de controles -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Laboratorio</th>
+                        <th>Fecha Control</th>
+                        <th>Tipo Control</th>
+                        <th>Resultado</th>
+                        <th>Responsable</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for control in controles %}
+                    <tr>
+                        <td>{{ control.laboratorio.nombre }}</td>
+                        <td>{{ control.fecha_control|date:"d/m/Y" }}</td>
+                        <td>{{ control.get_tipo_control_display }}</td>
+                        <td>
+                            <span class="badge {% if control.resultado == 'satisfactorio' %}bg-success{% elif control.resultado == 'insatisfactorio' %}bg-danger{% else %}bg-warning{% endif %}">
+                                {{ control.get_resultado_display }}
+                            </span>
+                        </td>
+                        <td>{{ control.usuario_responsable.get_full_name }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'laboratorio:control_calidad_detalle' control.pk %}" class="btn btn-info" title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'laboratorio:control_calidad_editar' control.pk %}" class="btn btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                <a href="{% url 'laboratorio:control_calidad_eliminar' control.pk %}" class="btn btn-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle"></i> No hay controles de calidad registrados.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Paginación">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.laboratorio %}&laboratorio={{ request.GET.laboratorio }}{% endif %}{% if request.GET.tipo_control %}&tipo_control={{ request.GET.tipo_control }}{% endif %}">Primera</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.laboratorio %}&laboratorio={{ request.GET.laboratorio }}{% endif %}{% if request.GET.tipo_control %}&tipo_control={{ request.GET.tipo_control }}{% endif %}">Anterior</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.laboratorio %}&laboratorio={{ request.GET.laboratorio }}{% endif %}{% if request.GET.tipo_control %}&tipo_control={{ request.GET.tipo_control }}{% endif %}">Siguiente</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.laboratorio %}&laboratorio={{ request.GET.laboratorio }}{% endif %}{% if request.GET.tipo_control %}&tipo_control={{ request.GET.tipo_control }}{% endif %}">Última</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filtrarControles() {
+    const laboratorio = document.getElementById('laboratorio_filter').value;
+    const tipoControl = document.getElementById('tipo_control_filter').value;
+    
+    let url = '{% url "laboratorio:control_calidad_lista" %}?';
+    const params = [];
+    
+    if (laboratorio) params.push(`laboratorio=${laboratorio}`);
+    if (tipoControl) params.push(`tipo_control=${tipoControl}`);
+    
+    window.location.href = url + params.join('&');
+}
+</script>
+{% endblock %}

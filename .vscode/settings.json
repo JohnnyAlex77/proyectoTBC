@@ -7,5 +7,16 @@
   ],
   "python.defaultInterpreterPath": "venv/Scripts/python.exe",
   "python.terminal.activateEnvironment": true,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": false,
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "files.associations": {
+    "**/templates/**/*.html": "django-html",
+    "**/templates/**/*": "django-txt",
+    "**/requirements{/**,*}.{txt,in}": "pip-requirements"
+  },
+  "emmet.includeLanguages": {
+    "django-html": "html"
+  }
 }

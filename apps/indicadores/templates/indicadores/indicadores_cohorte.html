@@ -1,0 +1,102 @@
+<!-- templates/indicadores/indicadores_cohorte.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Indicadores de Cohorte PROCET</h1>
+        <div>
+            <select class="form-control d-inline-block w-auto" id="selectAnio">
+                <option>2024</option>
+                <option>2023</option>
+                <option>2022</option>
+            </select>
+            <button class="btn btn-primary ml-2">
+                <i class="fas fa-download fa-sm"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="form-inline">
+                <div class="form-group mr-3">
+                    <label class="mr-2">Año:</label>
+                    <select class="form-control" name="anio">
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="form-group mr-3">
+                    <label class="mr-2">Trimestre:</label>
+                    <select class="form-control" name="trimestre">
+                        <option value="all">Todos</option>
+                        <option value="Q1">Q1</option>
+                        <option value="Q2">Q2</option>
+                        <option value="Q3">Q3</option>
+                        <option value="Q4">Q4</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Indicadores -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Indicadores por Trimestre</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Período</th>
+                            <th colspan="2" class="text-center">Casos</th>
+                            <th colspan="5" class="text-center">Resultados de Tratamiento</th>
+                            <th rowspan="2">Éxito</th>
+                            <th rowspan="2">Abandono</th>
+                        </tr>
+                        <tr>
+                            <th>Nuevos</th>
+                            <th>Retratamiento</th>
+                            <th>Curados</th>
+                            <th>Abandonos</th>
+                            <th>Fallecidos</th>
+                            <th>Fracasos</th>
+                            <th>Trasladados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for indicador in indicadores %}
+                        <tr>
+                            <td>{{ indicador.año }} - {{ indicador.get_trimestre_display }}</td>
+                            <td>{{ indicador.casos_nuevos }}</td>
+                            <td>{{ indicador.casos_retratamiento }}</td>
+                            <td>{{ indicador.curados }}</td>
+                            <td>{{ indicador.abandonos }}</td>
+                            <td>{{ indicador.fallecidos }}</td>
+                            <td>{{ indicador.fracasos }}</td>
+                            <td>{{ indicador.trasladados }}</td>
+                            <td>
+                                <span class="badge {% if indicador.éxito_tratamiento_porcentaje >= 85 %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ indicador.éxito_tratamiento_porcentaje }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if indicador.tasa_abandono <= 5 %}badge-success{% else %}badge-danger{% endif %}">
+                                    {{ indicador.tasa_abandono }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

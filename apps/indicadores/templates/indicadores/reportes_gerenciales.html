@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Reportes Gerenciales</h1>
+        <div>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#nuevoReporteModal">
+                <i class="fas fa-plus fa-sm"></i> Nuevo Reporte
+            </button>
+        </div>
+    </div>
+
+    <!-- Reportes Predefinidos -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-left-primary shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Reporte de Cohorte
+                            </div>
+                            <div class="h6 mb-0 text-gray-800">
+                                Indicadores trimestrales de tratamiento
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'indicadores:descargar_reporte_cohorte' %}?año=2024&trimestre=all" 
+                           class="btn btn-sm btn-primary">
+                            <i class="fas fa-download fa-sm"></i> Descargar CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card border-left-success shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Reporte Operacional
+                            </div>
+                            <div class="h6 mb-0 text-gray-800">
+                                Indicadores mensuales operacionales
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-cogs fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-success">
+                            <i class="fas fa-download fa-sm"></i> Descargar CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card border-left-info shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Reporte de Prevención
+                            </div>
+                            <div class="h6 mb-0 text-gray-800">
+                                Actividades preventivas y BCG
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-info">
+                            <i class="fas fa-download fa-sm"></i> Descargar CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reportes Personalizados -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Reportes Personalizados</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Creado por</th>
+                            <th>Fecha Creación</th>
+                            <th>Compartido</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reporte in reportes_personalizados %}
+                        <tr>
+                            <td>{{ reporte.nombre }}</td>
+                            <td>{{ reporte.descripcion }}</td>
+                            <td>{{ reporte.usuario_creador.get_full_name }}</td>
+                            <td>{{ reporte.fecha_creacion|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if reporte.compartido %}
+                                <span class="badge badge-success">Sí</span>
+                                {% else %}
+                                <span class="badge badge-secondary">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" title="Ejecutar">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                                    <button class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No hay reportes personalizados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Reporte -->
+<div class="modal fade" id="nuevoReporteModal" tabindex="-1" role="dialog" aria-labelledby="nuevoReporteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nuevoReporteModalLabel">Crear Nuevo Reporte</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nombreReporte">Nombre del Reporte *</label>
+                        <input type="text" class="form-control" id="nombreReporte" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcionReporte">Descripción</label>
+                        <textarea class="form-control" id="descripcionReporte" name="descripcion" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoReporte">Tipo de Reporte</label>
+                        <select class="form-control" id="tipoReporte" name="tipo">
+                            <option value="cohorte">Indicadores de Cohorte</option>
+                            <option value="operacional">Indicadores Operacionales</option>
+                            <option value="prevencion">Indicadores de Prevención</option>
+                            <option value="alertas">Sistema de Alertas</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="compartirReporte" name="compartido">
+                        <label class="form-check-label" for="compartirReporte">Compartir este reporte con otros usuarios</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

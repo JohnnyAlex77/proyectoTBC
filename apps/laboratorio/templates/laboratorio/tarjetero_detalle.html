@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Detalle Tarjetero - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Tarjetero - {{ object.paciente.nombre }}</h4>
+        <div>
+            <a href="{% url 'laboratorio:tarjetero_editar' object.pk %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+            <a href="{% url 'laboratorio:tarjetero_eliminar' object.pk %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash"></i> Eliminar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Información del Paciente</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Paciente:</th>
+                        <td>{{ object.paciente.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Identificación:</th>
+                        <td>{{ object.paciente.identificacion }}</td>
+                    </tr>
+                    <tr>
+                        <th>Examen:</th>
+                        <td>{{ object.examen.tipo_examen }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5>Información de la Muestra</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Fecha Detección:</th>
+                        <td>{{ object.fecha_deteccion|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tipo Muestra:</th>
+                        <td>{{ object.get_tipo_muestra_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Resultado:</th>
+                        <td>
+                            <span class="badge {% if 'positivo' in object.resultado.lower %}bg-danger{% else %}bg-warning{% endif %}">
+                                {{ object.resultado }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>Información del Laboratorio</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Laboratorio:</th>
+                        <td>{{ object.laboratorio_referencia.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fecha Notificación:</th>
+                        <td>{{ object.fecha_notificacion|date:"d/m/Y" }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5>Información Adicional</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Usuario Notificador:</th>
+                        <td>{{ object.usuario_notificador.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fecha Registro:</th>
+                        <td>{{ object.fecha_registro|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{% url 'laboratorio:tarjetero_lista' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

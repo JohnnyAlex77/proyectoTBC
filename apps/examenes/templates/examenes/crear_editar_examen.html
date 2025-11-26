@@ -1,0 +1,600 @@
+<!-- apps/examenes/templates/examenes/crear_editar_examen.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}{{ titulo }} - Sistema TBC{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
+
+<div class="card shadow">
+
+<div class="card-header bg-primary text-white">
+
+<h4 class="card-title mb-0">
+
+<i class="fas fa-microscope me-2"></i>{{ titulo }}</h4>
+
+</div>
+
+<div class="card-body">
+
+<!-- CORRECCIÓN: Cambiar novalidate por method="post" y corregir csrf_token -->
+<form method="post" id="examenForm">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+        {{ error }}<br>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+<div class="row">
+
+<!-- Paciente -->
+<div class="col-md-12 mb-3">
+
+<label for="{{ form.paciente.id_for_label }}" class="form-label">
+
+    <strong>{{ form.paciente.label }}</strong>
+
+</label>
+
+{{ form.paciente }} 
+
+{% if form.paciente.errors %}
+
+<div class="text-danger small">
+
+    {% for error in form.paciente.errors %}
+
+    {{ error }}<br>
+
+    {% endfor %}
+
+</div>
+
+    {% endif %}
+
+</div>
+
+<!-- Tipo de Examen y Muestra -->
+
+<div class="col-md-6 mb-3">
+
+    <label for="{{ form.tipo_examen.id_for_label }}" class="form-label">
+
+    <strong>{{ form.tipo_examen.label }}</strong>
+
+</label>
+
+{{ form.tipo_examen }} 
+
+{% if form.tipo_examen.errors %}
+
+<div class="text-danger small">
+
+    {% for error in form.tipo_examen.errors %}
+
+    {{ error }}<br>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.tipo_muestra.id_for_label }}" class="form-label">
+
+<strong>{{ form.tipo_muestra.label }}</strong>
+
+</label>
+
+{{ form.tipo_muestra }} 
+
+{% if form.tipo_muestra.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.tipo_muestra.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- Campo otro_tipo_muestra (se muestra/oculta dinámicamente) -->
+<div class="col-md-12 mb-3" id="otro_tipo_muestra_container" 
+     style="display: {% if form.instance.tipo_muestra == 'OTRO' or form.tipo_muestra.value == 'OTRO' %}block{% else %}none{% endif %};">
+
+    <label for="{{ form.otro_tipo_muestra.id_for_label }}" class="form-label">
+
+    <strong>{{ form.otro_tipo_muestra.label }}</strong>
+
+    </label>
+
+    {{ form.otro_tipo_muestra }} 
+
+    {% if form.otro_tipo_muestra.errors %}
+
+    <div class="text-danger small">
+
+    {% for error in form.otro_tipo_muestra.errors %}
+
+    {{ error }}<br>
+
+    {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Fechas -->
+<div class="col-md-4 mb-3">
+
+<label for="{{ form.fecha_solicitud.id_for_label }}" class="form-label">
+
+<strong>{{ form.fecha_solicitud.label }}</strong>
+
+</label>
+
+{{ form.fecha_solicitud }} 
+
+{% if form.fecha_solicitud.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.fecha_solicitud.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label for="{{ form.fecha_toma_muestra.id_for_label }}" class="form-label">
+
+<strong>{{ form.fecha_toma_muestra.label }}</strong>
+
+</label>
+
+{{ form.fecha_toma_muestra }} 
+
+{% if form.fecha_toma_muestra.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.fecha_toma_muestra.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label for="{{ form.fecha_ingreso_laboratorio.id_for_label }}" class="form-label">
+
+<strong>{{ form.fecha_ingreso_laboratorio.label }}</strong>
+
+</label>
+
+{{ form.fecha_ingreso_laboratorio }} 
+
+{% if form.fecha_ingreso_laboratorio.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.fecha_ingreso_laboratorio.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label for="{{ form.fecha_resultado.id_for_label }}" class="form-label">
+
+<strong>{{ form.fecha_resultado.label }}</strong>
+
+</label>
+
+{{ form.fecha_resultado }} 
+
+{% if form.fecha_resultado.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.fecha_resultado.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- Resultados -->  
+
+<div class="col-md-4 mb-3">  
+
+<label for="{{ form.resultado.id_for_label }}" class="form-label">
+
+    <strong>{{ form.resultado.label }}</strong>  
+
+</label>  
+
+{{ form.resultado }}  
+
+{% if form.resultado.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.resultado.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-4 mb-3">  
+
+<label for="{{ form.resultado_cuantitativo.id_for_label }}" class="form-label">
+
+<strong>{{ form.resultado_cuantitativo.label }}</strong>
+
+</label>
+
+{{ form.resultado_cuantitativo }} 
+
+{% if form.resultado_cuantitativo.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.resultado_cuantitativo.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+<div class="form-text">Ej: 1+, 2+, 3+, escaso, moderado, abundante</div>
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label for="{{ form.sensibilidad.id_for_label }}" class="form-label">
+
+<strong>{{ form.sensibilidad.label }}</strong>
+
+</label>
+
+{{ form.sensibilidad }} 
+
+{% if form.sensibilidad.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.sensibilidad.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- Resultado Cualitativo -->
+<div class="col-md-12 mb-3">
+
+<label for="{{ form.resultado_cualitativo.id_for_label }}" class="form-label">
+
+<strong>{{ form.resultado_cualitativo.label }}</strong>
+
+</label>
+
+{{ form.resultado_cualitativo }} 
+
+{% if form.resultado_cualitativo.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.resultado_cualitativo.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- Observaciones -->
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.observaciones_muestra.id_for_label }}" class="form-label">
+
+<strong>{{ form.observaciones_muestra.label }}</strong>
+
+</label>
+
+{{ form.observaciones_muestra }}
+
+{% if form.observaciones_muestra.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.observaciones_muestra.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.observaciones_resultado.id_for_label }}" class="form-label">
+
+<strong>{{ form.observaciones_resultado.label }}</strong>
+
+</label>
+
+{{ form.observaciones_resultado }}
+
+{% if form.observaciones_resultado.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.observaciones_resultado.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- Campos adicionales -->
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.prioridad.id_for_label }}" class="form-label">
+
+<strong>{{ form.prioridad.label }}</strong>
+
+</label>
+
+{{ form.prioridad }} 
+
+{% if form.prioridad.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.prioridad.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.laboratorio.id_for_label }}" class="form-label">
+
+<strong>{{ form.laboratorio.label }}</strong>
+
+</label>
+
+{{ form.laboratorio }} 
+
+{% if form.laboratorio.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.laboratorio.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.numero_muestra_lab.id_for_label }}" class="form-label">
+
+<strong>{{ form.numero_muestra_lab.label }}</strong>
+
+</label>
+
+{{ form.numero_muestra_lab }} 
+
+{% if form.numero_muestra_lab.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.numero_muestra_lab.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label for="{{ form.usuario_toma_muestra.id_for_label }}" class="form-label">
+
+<strong>{{ form.usuario_toma_muestra.label }}</strong>
+
+</label>
+
+{{ form.usuario_toma_muestra }} 
+
+{% if form.usuario_toma_muestra.errors %}
+
+<div class="text-danger small">
+
+{% for error in form.usuario_toma_muestra.errors %}
+
+{{ error }}<br>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+<!-- Botones -->
+<div class="d-flex justify-content-between mt-4">
+    <a href="{% if examen %}{% url 'examenes:detalle_examen' examen.id %}{% else %}{% url 'examenes:lista_examenes' %}{% endif %}" 
+       class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Cancelar
+    </a>
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i class="fas fa-save me-2"></i>Guardar Examen
+    </button>
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('examenForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const tipoMuestraSelect = document.getElementById('id_tipo_muestra');
+    const otroTipoMuestraContainer = document.getElementById('otro_tipo_muestra_container');
+    
+    // Función para mostrar/ocultar el campo "otro_tipo_muestra"
+    function toggleOtroTipoMuestra() {
+        if (tipoMuestraSelect.value === 'OTRO') {
+            otroTipoMuestraContainer.style.display = 'block';
+        } else {
+            otroTipoMuestraContainer.style.display = 'none';
+        }
+    }
+    
+    // Event listener para cambios en el tipo de muestra
+    tipoMuestraSelect.addEventListener('change', toggleOtroTipoMuestra);
+    
+    // Ejecutar al cargar la página
+    toggleOtroTipoMuestra();
+    
+    // Actualizar placeholder del resultado cuantitativo según el tipo de examen
+    const tipoExamenSelect = document.getElementById('id_tipo_examen');
+    const resultadoCuantitativoInput = document.getElementById('id_resultado_cuantitativo');
+    
+    function updatePlaceholder() {
+        const tipoExamen = tipoExamenSelect.value;
+        if (tipoExamen === 'BACILOSCOPIA') {
+            resultadoCuantitativoInput.placeholder = 'Ej: 1+, 2+, 3+, escaso, moderado, abundante';
+        } else if (tipoExamen === 'CULTIVO') {
+            resultadoCuantitativoInput.placeholder = 'Ej: 10-100 UFC, >100 UFC';
+        } else {
+            resultadoCuantitativoInput.placeholder = 'Ingrese resultado cuantitativo';
+        }
+    }
+    
+    tipoExamenSelect.addEventListener('change', updatePlaceholder);
+    updatePlaceholder(); // Ejecutar al cargar la página
+    
+    // Prevenir envío múltiple del formulario
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+    });
+});
+</script>
+
+{% endblock %}

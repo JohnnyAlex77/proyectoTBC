@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Indicadores de Prevención</h1>
+        <div>
+            <button class="btn btn-success">
+                <i class="fas fa-download fa-sm"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Cobertura Quimioprofilaxis
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ indicadores.0.cobertura_quimioprofilaxis|default:0 }}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Adherencia Quimioprofilaxis
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ indicadores.0.adherencia_quimioprofilaxis|default:0 }}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Cobertura BCG
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ indicadores.0.cobertura_vacunacion_bcg|default:0 }}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-syringe fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Indicadores -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Indicadores de Actividades Preventivas</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Establecimiento</th>
+                            <th>Periodo</th>
+                            <th>Cobertura QP</th>
+                            <th>Adherencia QP</th>
+                            <th>Cobertura BCG</th>
+                            <th>Contactos Elegibles</th>
+                            <th>Contactos Iniciados</th>
+                            <th>Contactos Completados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for indicador in indicadores %}
+                        <tr>
+                            <td>{{ indicador.establecimiento.nombre }}</td>
+                            <td>{{ indicador.periodo|date:"M Y" }}</td>
+                            <td>
+                                <span class="badge {% if indicador.cobertura_quimioprofilaxis >= 90 %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ indicador.cobertura_quimioprofilaxis }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if indicador.adherencia_quimioprofilaxis >= 85 %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ indicador.adherencia_quimioprofilaxis }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if indicador.cobertura_vacunacion_bcg >= 95 %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ indicador.cobertura_vacunacion_bcg }}%
+                                </span>
+                            </td>
+                            <td>{{ indicador.contactos_elegibles_qp }}</td>
+                            <td>{{ indicador.contactos_iniciados_qp }}</td>
+                            <td>{{ indicador.contactos_completados_qp }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No hay indicadores de prevención disponibles</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

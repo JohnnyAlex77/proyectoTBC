@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Nueva Vacunación BCG - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Nueva Vacunación BCG</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Información del Paciente</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.paciente.id_for_label }}" class="form-label">Paciente *</label>
+                                {% render_field form.paciente class="form-select" %}
+                                {% for error in form.paciente.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.fecha_vacunacion.id_for_label }}" class="form-label">Fecha Vacunación *</label>
+                                {% render_field form.fecha_vacunacion class="form-control" type="date" %}
+                                {% for error in form.fecha_vacunacion.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Detalles de la Vacunación</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.lote.id_for_label }}" class="form-label">Lote *</label>
+                                {% render_field form.lote class="form-control" %}
+                                {% for error in form.lote.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.establecimiento.id_for_label }}" class="form-label">Establecimiento *</label>
+                                {% render_field form.establecimiento class="form-control" %}
+                                {% for error in form.establecimiento.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.reaccion.id_for_label }}" class="form-label">Reacción</label>
+                                {% render_field form.reaccion class="form-select" %}
+                                {% for error in form.reaccion.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Observaciones</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.observaciones_reaccion.id_for_label }}" class="form-label">Observaciones de Reacción</label>
+                                {% render_field form.observaciones_reaccion class="form-control" rows="3" placeholder="Describa cualquier reacción presentada..." %}
+                                {% for error in form.observaciones_reaccion.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'prevencion:vacunacion_lista' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Crear Vacunación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

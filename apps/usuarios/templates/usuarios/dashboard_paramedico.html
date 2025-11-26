@@ -1,0 +1,200 @@
+{% extends 'usuarios/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-ambulance me-2 text-secondary"></i>
+        Dashboard - Técnico Paramédico
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="#" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-syringe me-1"></i>Administrar Dosis
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-home me-1"></i>Visitas Programadas
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas para Paramédico -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ pacientes_asignados|default:"18" }}</h4>
+                        <p class="card-text">Pacientes Asignados</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-injured fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ dosis_hoy|default:"22" }}</h4>
+                        <p class="card-text">Dosis para Hoy</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ visitas_hoy|default:"6" }}</h4>
+                        <p class="card-text">Visitas Programadas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-home fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ seguimientos|default:"4" }}</h4>
+                        <p class="card-text">Seguimientos Pendientes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>Acciones de Terreno
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-secondary text-start">
+                        <i class="fas fa-syringe me-2"></i>Administrar Tratamiento DOT
+                    </a>
+                    <a href="#" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-home me-2"></i>Visita Domiciliaria
+                    </a>
+                    <a href="#" class="btn btn-outline-success text-start">
+                        <i class="fas fa-notes-medical me-2"></i>Registro de Adherencia
+                    </a>
+                    <a href="#" class="btn btn-outline-info text-start">
+                        <i class="fas fa-user-plus me-2"></i>Estudio de Contactos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-route me-2"></i>Ruta de Hoy
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                        <strong>Sector Norte</strong> - 3 pacientes
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <strong>Sector Centro</strong> - 2 pacientes
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                        <strong>Sector Sur</strong> - 1 paciente (prioritario)
+                    </div>
+                    <div class="list-group-item">
+                        <i class="fas fa-clock text-info me-2"></i>
+                        <strong>Total estimado:</strong> 4-5 horas
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Actividad Reciente
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-syringe text-success me-2"></i>
+                            DOT administrado a Carlos Rojas
+                        </div>
+                        <small class="text-muted">Hace 3 horas</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-home text-primary me-2"></i>
+                            Visita domiciliaria completada
+                        </div>
+                        <small class="text-muted">Ayer</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            Paciente no encontrado - reprogramar
+                        </div>
+                        <small class="text-muted">Hace 2 días</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-thumbs-up text-info me-2"></i>
+                            Buena adherencia reportada
+                        </div>
+                        <small class="text-muted">Hace 3 días</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>Información del TENS
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Rol:</strong> <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span></p>
+                <p><strong>Establecimiento:</strong> {{ usuario.establecimiento }}</p>
+                <p><strong>Función:</strong> Tratamiento Directamente Observado (DOT)</p>
+                <p><strong>Contacto:</strong> {{ usuario.telefono|default:"No registrado" }}</p>
+                <p><strong>Zona de trabajo:</strong> Atención en terreno</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

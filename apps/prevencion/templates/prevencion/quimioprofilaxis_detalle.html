@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Quimioprofilaxis - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Detalle de Quimioprofilaxis</h4>
+                <div class="btn-group">
+                    <a href="{% url 'prevencion:quimioprofilaxis_editar' object.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="{% url 'prevencion:quimioprofilaxis_lista' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Información del Paciente/Contacto</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Tipo:</th>
+                                <td>
+                                    {% if object.paciente %}
+                                    <span class="badge bg-primary">Paciente</span>
+                                    {% else %}
+                                    <span class="badge bg-info">Contacto</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Nombre:</th>
+                                <td>
+                                    {% if object.paciente %}
+                                    {{ object.paciente.nombre }}
+                                    {% else %}
+                                    {{ object.contacto.nombre }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Estado del Tratamiento</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Estado:</th>
+                                <td>
+                                    <span class="badge
+                                        {% if object.estado == 'completado' %}bg-success
+                                        {% elif object.estado == 'en_curso' %}bg-primary
+                                        {% elif object.estado == 'pendiente' %}bg-secondary
+                                        {% elif object.estado == 'suspendido' %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ object.get_estado_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Adherencia:</th>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                                            {% with width=object.adherencia_porcentaje %}
+                                            <div class="progress-bar
+                                                {% if object.adherencia_porcentaje >= 90 %}bg-success
+                                                {% elif object.adherencia_porcentaje >= 70 %}bg-warning
+                                                {% else %}bg-danger{% endif %}"
+                                                style="width: {{ width }}%">
+                                            </div>
+                                            {% endwith %}
+                                        </div>
+                                        <strong>{{ object.adherencia_porcentaje }}%</strong>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Esquema de Tratamiento</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Medicamento:</th>
+                                <td>{{ object.get_medicamento_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Esquema:</th>
+                                <td>{{ object.esquema }}</td>
+                            </tr>
+                            <tr>
+                                <th>Dosis:</th>
+                                <td>{{ object.dosis }}</td>
+                            </tr>
+                            <tr>
+                                <th>Fecha Inicio:</th>
+                                <td>{{ object.fecha_inicio|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Fecha Término Prevista:</th>
+                                <td>{{ object.fecha_termino_prevista|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% if object.fecha_termino_real %}
+                            <tr>
+                                <th>Fecha Término Real:</th>
+                                <td>{{ object.fecha_termino_real|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5>Información Adicional</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Efectos Adversos:</th>
+                                <td>
+                                    {% if object.efectos_adversos %}
+                                    <span class="text-danger">{{ object.efectos_adversos }}</span>
+                                    {% else %}
+                                    <span class="text-muted">No registrados</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Observaciones:</th>
+                                <td>
+                                    {% if object.observaciones %}
+                                    {{ object.observaciones }}
+                                    {% else %}
+                                    <span class="text-muted">Sin observaciones</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Registrado por:</th>
+                                <td>{{ object.usuario_registro.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Fecha registro:</th>
+                                <td>{{ object.fecha_registro|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Tarjeta de acciones rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if object.estado == 'en_curso' %}
+                    <a href="{% url 'prevencion:seguimiento_crear' %}?quimioprofilaxis={{ object.pk }}" class="btn btn-success">
+                        <i class="fas fa-clipboard-check"></i> Registrar Seguimiento
+                    </a>
+                    <a href="{% url 'prevencion:quimioprofilaxis_editar' object.pk %}" class="btn btn-info">
+                        <i class="fas fa-syringe"></i> Actualizar Adherencia
+                    </a>
+                    {% endif %}
+                    
+                    {% if object.estado == 'pendiente' %}
+                    <a href="{% url 'prevencion:quimioprofilaxis_editar' object.pk %}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Iniciar Tratamiento
+                    </a>
+                    {% endif %}
+                    
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="fas fa-print"></i> Imprimir Reporte
+                    </a>
+
+                    {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
+                    <form method="post" action="{% url 'prevencion:quimioprofilaxis_eliminar' object.pk %}" 
+                          onsubmit="return confirm('¿Está seguro de que desea eliminar esta quimioprofilaxis?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-trash"></i> Eliminar Quimioprofilaxis
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Indicadores</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <h6>Días de Tratamiento</h6>
+                        <h3 class="text-primary">
+                            {% now "Y-m-d" as today %}
+                            {{ object.dias_tratamiento }}
+                        </h3>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Progreso</h6>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: 60%">
+                                60%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

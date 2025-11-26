@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Control de Calidad - Sistema TBC{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">{% if object %}Editar{% else %}Crear{% endif %} Control de Calidad</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.laboratorio.id_for_label }}" class="form-label">Laboratorio</label>
+                        {{ form.laboratorio }}
+                        {% if form.laboratorio.errors %}
+                        <div class="text-danger">{{ form.laboratorio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.fecha_control.id_for_label }}" class="form-label">Fecha Control</label>
+                        {{ form.fecha_control }}
+                        {% if form.fecha_control.errors %}
+                        <div class="text-danger">{{ form.fecha_control.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.tipo_control.id_for_label }}" class="form-label">Tipo de Control</label>
+                        {{ form.tipo_control }}
+                        {% if form.tipo_control.errors %}
+                        <div class="text-danger">{{ form.tipo_control.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.resultado.id_for_label }}" class="form-label">Resultado</label>
+                        {{ form.resultado }}
+                        {% if form.resultado.errors %}
+                        <div class="text-danger">{{ form.resultado.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.observaciones.id_for_label }}" class="form-label">Observaciones</label>
+                {{ form.observaciones }}
+                {% if form.observaciones.errors %}
+                <div class="text-danger">{{ form.observaciones.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'laboratorio:control_calidad_lista' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Actualizar{% else %}Crear{% endif %} Control
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Asegurar que los campos de fecha muestren el valor actual al editar
+    const fechaControl = document.getElementById('{{ form.fecha_control.id_for_label }}');
+    {% if object %}
+        if (fechaControl && '{{ object.fecha_control|date:"Y-m-d" }}') {
+            fechaControl.value = '{{ object.fecha_control|date:"Y-m-d" }}';
+        }
+    {% endif %}
+});
+</script>
+{% endblock %}

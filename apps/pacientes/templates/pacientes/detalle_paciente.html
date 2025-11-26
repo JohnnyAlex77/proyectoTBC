@@ -16,6 +16,8 @@
   <tr><th>Estado</th><td>{{ paciente.estado }}</td></tr>
 </table>
 <a href="{% url 'pacientes:editar' paciente.pk %}" class="btn btn-warning">Editar</a>
+{% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
 <a href="{% url 'pacientes:eliminar' paciente.pk %}" class="btn btn-danger">Eliminar</a>
+{% endif %}
 <a href="{% url 'pacientes:lista' %}" class="btn btn-secondary">Volver</a>
 {% endblock %}

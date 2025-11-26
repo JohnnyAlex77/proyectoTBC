@@ -1,0 +1,193 @@
+{% extends 'usuarios/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-user-md me-2 text-success"></i>
+        Dashboard - Médico
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'pacientes:lista' %}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-user-injured me-1"></i>Mis Pacientes
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-file-medical me-1"></i>Nuevo Diagnóstico
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas para Médico -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ pacientes_asignados|default:"0" }}</h4>
+                        <p class="card-text">Pacientes Asignados</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-injured fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ tratamientos_activos|default:"0" }}</h4>
+                        <p class="card-text">Tratamientos Activos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ controles_pendientes|default:"0" }}</h4>
+                        <p class="card-text">Controles Pendientes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ examenes_pendientes|default:"0" }}</h4>
+                        <p class="card-text">Exámenes por Revisar</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-microscope fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>Acciones Médicas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'pacientes:lista' %}" class="btn btn-outline-success text-start">
+                        <i class="fas fa-list me-2"></i>Lista de Pacientes
+                    </a>
+                    <a href="#" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-stethoscope me-2"></i>Nueva Evaluación
+                    </a>
+                    <a href="#" class="btn btn-outline-info text-start">
+                        <i class="fas fa-prescription me-2"></i>Prescribir Tratamiento
+                    </a>
+                    <a href="#" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-file-medical-alt me-2"></i>Generar Informes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Alertas y Recordatorios
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>2 pacientes</strong> requieren control esta semana
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>1 tratamiento</strong> está próximo a vencer
+                </div>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>5 pacientes</strong> con evolución favorable
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Actividad Reciente
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-user-check text-success me-2"></i>
+                            Control realizado a Juan Pérez
+                        </div>
+                        <small class="text-muted">Hace 2 horas</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-pills text-primary me-2"></i>
+                            Tratamiento ajustado a María González
+                        </div>
+                        <small class="text-muted">Ayer</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-medical text-info me-2"></i>
+                            Nuevo diagnóstico registrado
+                        </div>
+                        <small class="text-muted">Hace 2 días</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-microscope text-warning me-2"></i>
+                            Resultado de examen revisado
+                        </div>
+                        <small class="text-muted">Hace 3 días</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>Información Profesional
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Rol:</strong> <span class="badge bg-success">{{ usuario.get_rol_display }}</span></p>
+                <p><strong>Establecimiento:</strong> {{ usuario.establecimiento }}</p>
+                <p><strong>Especialidad:</strong> Medicina General / Neumología</p>
+                <p><strong>Contacto:</strong> {{ usuario.telefono|default:"No registrado" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
