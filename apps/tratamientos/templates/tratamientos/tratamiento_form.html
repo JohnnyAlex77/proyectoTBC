@@ -7,9 +7,7 @@
         <div class="col-lg-8">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-pills me-2"></i>{{ titulo }}
-                    </h4>
+                    <h4 class="card-title mb-0">{{ titulo }}</h4>
                 </div>
                 <div class="card-body">
                     <form method="post" id="tratamientoForm">
@@ -24,10 +22,46 @@
                         {% endif %}
 
                         <div class="row">
-                            <!-- Paciente - ESTILO SIMILAR A EXAMENES -->
+                            <!-- Búsqueda por RUT -->
                             <div class="col-md-12 mb-3">
+                                <label for="rut_busqueda" class="form-label">
+                                    <strong>Buscar paciente por RUT</strong>
+                                </label>
+                                <div class="input-group">
+                                    {{ form.rut_busqueda }}
+                                    <button type="button" class="btn btn-primary" id="btnBuscarPaciente">
+                                        Buscar
+                                    </button>
+                                </div>
+                                {% if form.rut_busqueda.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.rut_busqueda.errors %}
+                                    {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Ingrese el RUT del paciente (ej: 12345678-9) y haga clic en Buscar
+                                </div>
+                            </div>
+
+                            <!-- Resultado de la búsqueda -->
+                            <div class="col-md-12 mb-3" id="resultadoBusqueda" style="display: none;">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Resultado de la búsqueda:</h6>
+                                        <div id="infoPaciente"></div>
+                                        <div id="alertaTratamiento" class="alert alert-warning mt-2" style="display: none;">
+                                            <strong>Advertencia:</strong> Este paciente ya tiene un tratamiento activo.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campo paciente (oculto inicialmente) -->
+                            <div class="col-md-12 mb-3" id="campoPaciente" style="display: none;">
                                 <label for="{{ form.paciente.id_for_label }}" class="form-label">
-                                    <strong>{{ form.paciente.label }}</strong>
+                                    <strong>Paciente seleccionado</strong>
                                 </label>
                                 {{ form.paciente }}
                                 {% if form.paciente.errors %}
@@ -37,10 +71,6 @@
                                     {% endfor %}
                                 </div>
                                 {% endif %}
-                                <div class="form-text text-info">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    {{ form.paciente.field.queryset.count }} pacientes activos disponibles
-                                </div>
                             </div>
 
                             <!-- Esquema y Peso -->
@@ -156,10 +186,9 @@
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% if tratamiento %}{% url 'tratamientos:detalle' tratamiento.pk %}{% else %}{% url 'tratamientos:lista' %}{% endif %}" 
                                class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-save me-2"></i>
                                 {% if tratamiento %}Actualizar{% else %}Crear{% endif %} Tratamiento
                             </button>
                         </div>
@@ -174,6 +203,76 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('tratamientoForm');
     const submitBtn = document.getElementById('submitBtn');
+    const btnBuscarPaciente = document.getElementById('btnBuscarPaciente');
+    const rutBusqueda = document.getElementById('rut_busqueda');
+    const resultadoBusqueda = document.getElementById('resultadoBusqueda');
+    const infoPaciente = document.getElementById('infoPaciente');
+    const alertaTratamiento = document.getElementById('alertaTratamiento');
+    const campoPaciente = document.getElementById('campoPaciente');
+    const selectPaciente = document.getElementById('id_paciente');
+    
+    // Función para buscar paciente por RUT
+    btnBuscarPaciente.addEventListener('click', function() {
+        const rut = rutBusqueda.value.trim();
+        
+        if (!rut) {
+            alert('Por favor ingrese un RUT para buscar');
+            return;
+        }
+        
+        // Mostrar loading
+        btnBuscarPaciente.disabled = true;
+        btnBuscarPaciente.textContent = 'Buscando...';
+        
+        // Realizar petición AJAX
+        fetch(`{% url 'tratamientos:buscar_paciente' %}?rut=${encodeURIComponent(rut)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.encontrado) {
+                // Mostrar información del paciente
+                infoPaciente.innerHTML = `
+                    <p><strong>Nombre:</strong> ${data.paciente.nombre}</p>
+                    <p><strong>RUT:</strong> ${data.paciente.rut}</p>
+                    <p><strong>Establecimiento:</strong> ${data.paciente.establecimiento_salud}</p>
+                    <p><strong>Fecha Nacimiento:</strong> ${data.paciente.fecha_nacimiento}</p>
+                    <p><strong>Edad:</strong> ${data.paciente.edad}</p>
+                `;
+                
+                // Configurar el campo paciente oculto
+                selectPaciente.innerHTML = `<option value="${data.paciente.id}" selected>${data.paciente.nombre} - ${data.paciente.rut}</option>`;
+                campoPaciente.style.display = 'block';
+                
+                // Mostrar alerta si tiene tratamiento activo
+                if (data.tratamiento_activo) {
+                    alertaTratamiento.style.display = 'block';
+                } else {
+                    alertaTratamiento.style.display = 'none';
+                }
+                
+                resultadoBusqueda.style.display = 'block';
+                
+            } else {
+                infoPaciente.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                campoPaciente.style.display = 'none';
+                resultadoBusqueda.style.display = 'block';
+                alertaTratamiento.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            infoPaciente.innerHTML = '<div class="alert alert-danger">Error en la búsqueda. Intente nuevamente.</div>';
+            resultadoBusqueda.style.display = 'block';
+        })
+        .finally(() => {
+            btnBuscarPaciente.disabled = false;
+            btnBuscarPaciente.textContent = 'Buscar';
+        });
+    });
     
     // Validación de fechas
     const fechaInicio = document.getElementById('{{ form.fecha_inicio.id_for_label }}');
@@ -208,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Prevenir envío múltiple del formulario
     form.addEventListener('submit', function() {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        submitBtn.innerHTML = 'Guardando...';
     });
 });
 </script>

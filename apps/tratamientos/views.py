@@ -3,18 +3,23 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from datetime import date, timedelta
 from .models import Tratamiento, EsquemaMedicamento, DosisAdministrada
 from .forms import TratamientoForm, EsquemaMedicamentoForm, DosisAdministradaForm, TratamientoUpdateForm
 from apps.pacientes.models import PacientesPaciente as Paciente
 
 # VISTAS DE TRATAMIENTOS
+
 @login_required
 def lista_tratamientos(request):
-    """Lista todos los tratamientos con filtros"""
+    """
+    Vista para listar todos los tratamientos con filtros
+    """
+    # Obtener todos los tratamientos con relaciones optimizadas
     tratamientos = Tratamiento.objects.all().select_related('paciente', 'usuario_registro')
 
-    # Filtros
+    # Aplicar filtros si existen
     estado = request.GET.get('estado')
     paciente_id = request.GET.get('paciente')
     esquema = request.GET.get('esquema')
@@ -31,12 +36,12 @@ def lista_tratamientos(request):
     if esquema:
         tratamientos = tratamientos.filter(esquema=esquema)
 
-    # Obtener TODOS los pacientes activos para el filtro - USANDO LOS ESTADOS CORRECTOS
+    # Obtener pacientes activos para el filtro
     pacientes_activos = Paciente.objects.filter(
         estado__in=['activo', 'Activo', 'Activo en tratamiento']
     ).order_by('nombre')
 
-    # Estadísticas REALES
+    # Calcular estadísticas reales
     total_tratamientos = Tratamiento.objects.count()
     tratamientos_activos = Tratamiento.objects.filter(
         Q(resultado_final__isnull=True) | Q(resultado_final='En Tratamiento')
@@ -53,6 +58,7 @@ def lista_tratamientos(request):
         fecha_dosis__range=[fecha_hoy, fecha_limite]
     ).count()
 
+    # Contexto para la plantilla
     context = {
         'tratamientos': tratamientos,
         'total_tratamientos': total_tratamientos,
@@ -65,11 +71,16 @@ def lista_tratamientos(request):
 
 @login_required
 def detalle_tratamiento(request, pk):
-    """Vista detallada de un tratamiento"""
+    """
+    Vista detallada de un tratamiento específico
+    """
+    # Obtener el tratamiento con relaciones optimizadas
     tratamiento = get_object_or_404(
         Tratamiento.objects.select_related('paciente', 'usuario_registro'),
         pk=pk
     )
+    
+    # Obtener los esquemas de medicamento relacionados
     esquemas_medicamento = tratamiento.esquemas_medicamento.all()
 
     context = {
@@ -80,12 +91,15 @@ def detalle_tratamiento(request, pk):
 
 @login_required
 def crear_tratamiento(request):
-    """Crear un nuevo tratamiento"""
+    """
+    Vista para crear un nuevo tratamiento
+    """
     if request.method == 'POST':
         form = TratamientoForm(request.POST)
         if form.is_valid():
             try:
                 with transaction.atomic():
+                    # Guardar el tratamiento con el usuario actual
                     tratamiento = form.save(commit=False)
                     tratamiento.usuario_registro = request.user
                     tratamiento.save()
@@ -106,7 +120,9 @@ def crear_tratamiento(request):
 
 @login_required
 def editar_tratamiento(request, pk):
-    """Editar un tratamiento existente"""
+    """
+    Vista para editar un tratamiento existente
+    """
     tratamiento = get_object_or_404(Tratamiento, pk=pk)
 
     if request.method == 'POST':
@@ -132,7 +148,9 @@ def editar_tratamiento(request, pk):
 
 @login_required
 def eliminar_tratamiento(request, pk):
-    """Eliminar un tratamiento"""
+    """
+    Vista para eliminar un tratamiento
+    """
     tratamiento = get_object_or_404(Tratamiento, pk=pk)
 
     if request.method == 'POST':
@@ -147,9 +165,12 @@ def eliminar_tratamiento(request, pk):
     return render(request, 'tratamientos/confirmar_eliminar.html', context)
 
 # VISTAS DE ESQUEMAS DE MEDICAMENTOS
+
 @login_required
 def crear_esquema_medicamento(request, tratamiento_pk):
-    """Crear esquema de medicamento para un tratamiento"""
+    """
+    Vista para crear un esquema de medicamento para un tratamiento
+    """
     tratamiento = get_object_or_404(Tratamiento, pk=tratamiento_pk)
 
     if request.method == 'POST':
@@ -177,7 +198,9 @@ def crear_esquema_medicamento(request, tratamiento_pk):
 
 @login_required
 def eliminar_esquema_medicamento(request, pk):
-    """Eliminar un esquema de medicamento"""
+    """
+    Vista para eliminar un esquema de medicamento
+    """
     esquema = get_object_or_404(EsquemaMedicamento, pk=pk)
     tratamiento_pk = esquema.tratamiento.pk
 
@@ -192,9 +215,12 @@ def eliminar_esquema_medicamento(request, pk):
     return render(request, 'tratamientos/confirmar_eliminar_medicamento.html', context)
 
 # VISTAS DE DOSIS ADMINISTRADAS
+
 @login_required
 def registrar_dosis(request, esquema_pk):
-    """Registrar administración de dosis"""
+    """
+    Vista para registrar la administración de una dosis
+    """
     esquema = get_object_or_404(EsquemaMedicamento, pk=esquema_pk)
 
     if request.method == 'POST':
@@ -223,10 +249,13 @@ def registrar_dosis(request, esquema_pk):
 
 @login_required
 def lista_dosis_pendientes(request):
-    """Lista de dosis pendientes de administración"""
+    """
+    Vista para listar dosis pendientes de administración
+    """
     fecha_hoy = date.today()
     fecha_limite = fecha_hoy + timedelta(days=7)
 
+    # Obtener dosis pendientes con relaciones optimizadas
     dosis_pendientes = DosisAdministrada.objects.filter(
         administrada=False,
         fecha_dosis__range=[fecha_hoy, fecha_limite]
@@ -244,12 +273,78 @@ def lista_dosis_pendientes(request):
 
 @login_required
 def control_dosis(request):
-    """Control general de dosis"""
+    """
+    Vista para el control general de dosis
+    """
     context = {}
     return render(request, 'tratamientos/control_dosis.html', context)
 
 @login_required
 def calendario_dosis(request):
-    """Calendario de administración de dosis"""
+    """
+    Vista para el calendario de administración de dosis
+    """
     context = {}
     return render(request, 'tratamientos/calendario_dosis.html', context)
+
+# VISTA AJAX PARA BÚSQUEDA DE PACIENTES POR RUT
+
+@login_required
+def buscar_paciente_por_rut(request):
+    """
+    Vista AJAX para buscar pacientes por RUT
+    """
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        rut = request.GET.get('rut', '').strip()
+        
+        if not rut:
+            return JsonResponse({'error': 'Debe ingresar un RUT'}, status=400)
+        
+        try:
+            # Limpiar el RUT (eliminar puntos y guión)
+            rut_limpio = rut.replace('.', '').replace('-', '').upper()
+            
+            # Buscar paciente por RUT (búsqueda parcial)
+            paciente = Paciente.objects.get(rut__icontains=rut_limpio)
+            
+            # Verificar si el paciente ya tiene tratamiento activo
+            tratamiento_activo = Tratamiento.objects.filter(
+                paciente=paciente,
+                resultado_final__in=[None, 'En Tratamiento']
+            ).exists()
+            
+            # Preparar respuesta
+            respuesta = {
+                'encontrado': True,
+                'paciente': {
+                    'id': paciente.id,
+                    'nombre': paciente.nombre,
+                    'rut': paciente.rut,
+                    'establecimiento_salud': paciente.establecimiento_salud,
+                    'fecha_nacimiento': paciente.fecha_nacimiento.strftime('%d/%m/%Y') if paciente.fecha_nacimiento else 'No registrada',
+                    'edad': paciente.get_edad() if hasattr(paciente, 'get_edad') else 'N/A',
+                },
+                'tratamiento_activo': tratamiento_activo
+            }
+            
+            return JsonResponse(respuesta)
+            
+        except Paciente.DoesNotExist:
+            return JsonResponse({
+                'encontrado': False,
+                'error': 'No se encontró ningún paciente con el RUT ingresado'
+            }, status=404)
+            
+        except Paciente.MultipleObjectsReturned:
+            return JsonResponse({
+                'encontrado': False,
+                'error': 'Se encontraron múltiples pacientes con el RUT ingresado. Contacte al administrador.'
+            }, status=400)
+            
+        except Exception as e:
+            return JsonResponse({
+                'encontrado': False,
+                'error': f'Error en la búsqueda: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

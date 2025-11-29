@@ -20,4 +20,7 @@ urlpatterns = [
     path('dosis/pendientes/', views.lista_dosis_pendientes, name='dosis_pendientes'),
     path('control-dosis/', views.control_dosis, name='control_dosis'),
     path('calendario/', views.calendario_dosis, name='calendario_dosis'),
+    
+    # Búsqueda AJAX de pacientes por RUT
+    path('buscar-paciente/', views.buscar_paciente_por_rut, name='buscar_paciente'),
 ]
