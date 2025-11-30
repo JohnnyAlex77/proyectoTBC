@@ -2,13 +2,36 @@ from django import forms
 from .models import PacientesPaciente
 
 class PacienteForm(forms.ModelForm):
+    # Campos adicionales para el formulario (no se guardan en el modelo directamente)
+    nueva_enfermedad = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingrese una enfermedad preexistente',
+            'id': 'nueva-enfermedad'
+        }),
+        label="Agregar enfermedad"
+    )
+    
+    nueva_alergia = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingrese una alergia',
+            'id': 'nueva-alergia'
+        }),
+        label="Agregar alergia"
+    )
+
     class Meta:
         model = PacientesPaciente
         fields = [
             'rut', 'nombre', 'fecha_nacimiento', 'sexo', 'domicilio',
             'comuna', 'telefono', 'establecimiento_salud', 'fecha_diagnostico',
             'tipo_tbc', 'baciloscopia_inicial', 'cultivo_inicial',
-            'poblacion_prioritaria', 'estado'
+            'poblacion_prioritaria', 'estado', 'enfermedades_preexistentes', 'alergias'
         ]
         widgets = {
             'rut': forms.TextInput(attrs={
@@ -59,7 +82,9 @@ class PacienteForm(forms.ModelForm):
                 'placeholder': 'Ej: Mycobacterium tuberculosis'
             }),
             'poblacion_prioritaria': forms.Select(attrs={'class': 'form-control'}),
-            'estado': forms.Select(attrs={'class': 'form-control'})
+            'estado': forms.Select(attrs={'class': 'form-control'}),
+            'enfermedades_preexistentes': forms.HiddenInput(attrs={'id': 'enfermedades-input'}),
+            'alergias': forms.HiddenInput(attrs={'id': 'alergias-input'}),
         }
         labels = {
             'rut': 'RUT',
@@ -76,6 +101,8 @@ class PacienteForm(forms.ModelForm):
             'cultivo_inicial': 'Cultivo Inicial',
             'poblacion_prioritaria': 'Población Prioritaria',
             'estado': 'Estado del Paciente',
+            'enfermedades_preexistentes': 'Enfermedades Preexistentes',
+            'alergias': 'Alergias',
         }
 
     def __init__(self, *args, **kwargs):
@@ -85,6 +112,8 @@ class PacienteForm(forms.ModelForm):
         self.fields['baciloscopia_inicial'].required = False
         self.fields['cultivo_inicial'].required = False
         self.fields['fecha_diagnostico'].required = False
+        self.fields['enfermedades_preexistentes'].required = False
+        self.fields['alergias'].required = False
 
         # Agregar opciones para población prioritaria
         self.fields['poblacion_prioritaria'].choices = [
@@ -103,7 +132,6 @@ class PacienteForm(forms.ModelForm):
 
         # Configurar el formato de fecha para los campos de fecha
         if self.instance and self.instance.pk:
-            # Si estamos editando un paciente existente
             if self.instance.fecha_nacimiento:
                 self.fields['fecha_nacimiento'].widget.attrs['value'] = self.instance.fecha_nacimiento.strftime('%Y-%m-%d')
             if self.instance.fecha_diagnostico:

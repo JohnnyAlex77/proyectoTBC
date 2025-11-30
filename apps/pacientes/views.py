@@ -32,14 +32,22 @@ def lista_pacientes(request):
 def crear_paciente(request):
     """
     Crear nuevo paciente con control de permisos
-    Valida formulario y asigna usuario registrador
+    Incluye manejo de enfermedades y alergias preexistentes
     """
     if request.method == 'POST':
         form = PacienteForm(request.POST)
         if form.is_valid():
             paciente = form.save(commit=False)
             paciente.usuario_registro = request.user
+            
+            # Procesar enfermedades y alergias desde los campos hidden
+            enfermedades = request.POST.get('enfermedades_preexistentes', '')
+            alergias = request.POST.get('alergias', '')
+            
+            paciente.enfermedades_preexistentes = enfermedades
+            paciente.alergias = alergias
             paciente.save()
+            
             messages.success(request, 'Paciente registrado correctamente.')
             return redirect('pacientes:lista')
         else:
@@ -57,7 +65,7 @@ def crear_paciente(request):
 def editar_paciente(request, pk):
     """
     Editar paciente existente con control de permisos
-    Valida que el usuario tenga permisos de edición
+    Incluye manejo de enfermedades y alergias preexistentes
     """
     paciente = get_object_or_404(PacientesPaciente, pk=pk)
     
@@ -68,12 +76,22 @@ def editar_paciente(request, pk):
     if request.method == 'POST':
         form = PacienteForm(request.POST, instance=paciente)
         if form.is_valid():
-            form.save()
+            paciente_actualizado = form.save(commit=False)
+            
+            # Procesar enfermedades y alergias desde los campos hidden
+            enfermedades = request.POST.get('enfermedades_preexistentes', '')
+            alergias = request.POST.get('alergias', '')
+            
+            paciente_actualizado.enfermedades_preexistentes = enfermedades
+            paciente_actualizado.alergias = alergias
+            paciente_actualizado.save()
+            
             messages.success(request, 'Paciente actualizado correctamente.')
             return redirect('pacientes:lista')
         else:
             messages.error(request, 'Por favor corrige los errores del formulario.')
     else:
+        # Inicializar el formulario con datos existentes
         form = PacienteForm(instance=paciente)
     
     return render(request, 'pacientes/editar_paciente.html', {

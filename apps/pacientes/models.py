@@ -56,6 +56,8 @@ class PacientesPaciente(models.Model):
         null=True,
         default=''
     )
+    enfermedades_preexistentes = models.TextField(blank=True, null=True, help_text="Enfermedades preexistentes del paciente")
+    alergias = models.TextField(blank=True, null=True, help_text="Alergias conocidas del paciente")
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
     usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -66,7 +68,7 @@ class PacientesPaciente(models.Model):
         verbose_name_plural = 'Pacientes'
 
     def __str__(self):
-        return f"{self.nombre} ({self.rut})"  # CORREGIDO: self.put -> self.rut
+        return f"{self.nombre} ({self.rut})"
 
     def get_edad(self):
         from datetime import date
@@ -74,3 +76,15 @@ class PacientesPaciente(models.Model):
         return today.year - self.fecha_nacimiento.year - (
             (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
         )
+
+    def get_enfermedades_list(self):
+        """Devuelve las enfermedades como lista"""
+        if self.enfermedades_preexistentes:
+            return [enfermedad.strip() for enfermedad in self.enfermedades_preexistentes.split(',') if enfermedad.strip()]
+        return []
+
+    def get_alergias_list(self):
+        """Devuelve las alergias como lista"""
+        if self.alergias:
+            return [alergia.strip() for alergia in self.alergias.split(',') if alergia.strip()]
+        return []

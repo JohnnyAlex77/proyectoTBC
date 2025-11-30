@@ -148,7 +148,44 @@
                     </div>
                 </div>
             </div>
+            <!-- Sección de Antecedentes Médicos -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3 text-primary">
+                        <i class="fas fa-heartbeat me-2"></i>Enfermedades Preexistentes
+                    </h5>
+                    
+                    {% if paciente.enfermedades_preexistentes %}
+                        <div class="list-group">
+                            {% for enfermedad in paciente.get_enfermedades_list %}
+                            <div class="list-group-item">
+                                {{ enfermedad }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No se han registrado enfermedades preexistentes</p>
+                    {% endif %}
+                </div>
 
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2 mb-3 text-primary">
+                        <i class="fas fa-allergies me-2"></i>Alergias
+                    </h5>
+                    
+                    {% if paciente.alergias %}
+                        <div class="list-group">
+                            {% for alergia in paciente.get_alergias_list %}
+                            <div class="list-group-item">
+                                {{ alergia }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No se han registrado alergias</p>
+                    {% endif %}
+                </div>
+            </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
                     <a href="{% url 'pacientes:lista' %}" class="btn btn-secondary">
