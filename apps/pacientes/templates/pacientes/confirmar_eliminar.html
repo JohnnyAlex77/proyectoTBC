@@ -1,11 +1,76 @@
 {% extends "base.html" %}
-{% block title %}Confirmar Eliminación{% endblock %}
+{% block title %}Confirmar Eliminacion - Sistema TBC{% endblock %}
+
 {% block content %}
-<h2>Eliminar Paciente</h2>
-<p>¿Estás seguro que deseas eliminar al paciente <strong>{{ paciente.nombre }}</strong> ({{ paciente.rut }})?</p>
-<form method="post">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
-  <a href="{% url 'pacientes:detalle' paciente.pk %}" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminacion
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-warning me-2"></i>Precaucion
+                    </h5>
+                    <p class="mb-0">Esta accion no se puede deshacer.</p>
+                </div>
+
+                <div class="patient-info bg-light p-3 rounded mb-4">
+                    <h5>Informacion del Paciente a Eliminar:</h5>
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th class="text-end">RUT:</th>
+                            <td class="fw-bold">{{ paciente.rut }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-end">Nombre:</th>
+                            <td>{{ paciente.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-end">Edad:</th>
+                            <td>{{ paciente.get_edad }} años</td>
+                        </tr>
+                        <tr>
+                            <th class="text-end">Estado:</th>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ paciente.get_estado_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-end">Registrado por:</th>
+                            <td>{{ paciente.usuario_registro.get_full_name }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'pacientes:detalle' paciente.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        
+                        {% if perms.pacientes.delete_pacientespaciente %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Si, Eliminar Paciente
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-danger" disabled>
+                            <i class="fas fa-ban me-2"></i>Sin Permisos para Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
