@@ -1,554 +1,467 @@
 <!-- apps/examenes/templates/examenes/crear_editar_examen.html -->
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}{{ titulo }} - Sistema TBC{% endblock %}
 
 {% block content %}
-
 <div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-microscope me-2"></i>{{ titulo }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="examenForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
 
-<div class="row justify-content-center">
+                        <!-- Búsqueda de Paciente -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>Selección de Paciente
+                                </h5>
+                                
+                                <!-- Buscador de RUT -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="rut_busqueda" class="form-label">
+                                            <strong>{{ form.rut_busqueda.label }}</strong>
+                                        </label>
+                                        <div class="input-group">
+                                            {{ form.rut_busqueda }}
+                                            <button type="button" class="btn btn-outline-primary" id="btn-buscar-paciente">
+                                                <i class="fas fa-search me-1"></i>Buscar
+                                            </button>
+                                        </div>
+                                        {% if form.rut_busqueda.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.rut_busqueda.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
 
-<div class="col-lg-8">
+                                <!-- Resultado de búsqueda -->
+                                <div class="row mb-3" id="resultado-paciente" style="display: none;">
+                                    <div class="col-12">
+                                        <div class="card border-success">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-success">
+                                                    <i class="fas fa-check-circle me-2"></i>Paciente Encontrado
+                                                </h6>
+                                                <div id="info-paciente"></div>
+                                                <button type="button" class="btn btn-success btn-sm mt-2" id="btn-seleccionar-paciente">
+                                                    <i class="fas fa-check me-1"></i>Seleccionar este paciente
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-<div class="card shadow">
+                                <!-- Paciente seleccionado -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="paciente_display" class="form-label">
+                                            <strong>{{ form.paciente_display.label }}</strong>
+                                        </label>
+                                        {{ form.paciente_display }}
+                                        {{ form.paciente_id }}
+                                        {{ form.paciente }}
+                                        {% if form.paciente_display.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.paciente_display.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-<div class="card-header bg-primary text-white">
+                        <!-- Búsqueda de Laboratorio -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-flask me-2"></i>Selección de Laboratorio
+                                </h5>
+                                
+                                <!-- Buscador de Laboratorio -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="laboratorio_busqueda" class="form-label">
+                                            <strong>{{ form.laboratorio_busqueda.label }}</strong>
+                                        </label>
+                                        <div class="input-group">
+                                            {{ form.laboratorio_busqueda }}
+                                            <button type="button" class="btn btn-outline-primary" id="btn-buscar-laboratorio">
+                                                <i class="fas fa-search me-1"></i>Buscar
+                                            </button>
+                                        </div>
+                                        {% if form.laboratorio_busqueda.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.laboratorio_busqueda.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
 
-<h4 class="card-title mb-0">
+                                <!-- Resultados de laboratorios -->
+                                <div class="row mb-3" id="resultados-laboratorios" style="display: none;">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="card-title mb-0">Laboratorios Encontrados</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="lista-laboratorios"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-<i class="fas fa-microscope me-2"></i>{{ titulo }}</h4>
+                                <!-- Laboratorio seleccionado -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="laboratorio_display" class="form-label">
+                                            <strong>{{ form.laboratorio_display.label }}</strong>
+                                        </label>
+                                        {{ form.laboratorio_display }}
+                                        {{ form.laboratorio }}
+                                        {% if form.laboratorio_display.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.laboratorio_display.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-</div>
+                        <!-- Información del Examen -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Información del Examen
+                                </h5>
+                                
+                                <div class="row">
+                                    <!-- Tipo de Examen y Muestra -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.tipo_examen.id_for_label }}" class="form-label">
+                                            <strong>{{ form.tipo_examen.label }}</strong>
+                                        </label>
+                                        {{ form.tipo_examen }}
+                                        {% if form.tipo_examen.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.tipo_examen.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
 
-<div class="card-body">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.tipo_muestra.id_for_label }}" class="form-label">
+                                            <strong>{{ form.tipo_muestra.label }}</strong>
+                                        </label>
+                                        {{ form.tipo_muestra }}
+                                        {% if form.tipo_muestra.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.tipo_muestra.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
 
-<!-- CORRECCIÓN: Cambiar novalidate por method="post" y corregir csrf_token -->
-<form method="post" id="examenForm">
-    {% csrf_token %}
-    
-    {% if form.non_field_errors %}
-    <div class="alert alert-danger">
-        {% for error in form.non_field_errors %}
-        {{ error }}<br>
-        {% endfor %}
+                                    <!-- Campo otro_tipo_muestra (dinámico) -->
+                                    <div class="col-12 mb-3" id="otro_tipo_muestra_container" style="display: none;">
+                                        <label for="{{ form.otro_tipo_muestra.id_for_label }}" class="form-label">
+                                            <strong>{{ form.otro_tipo_muestra.label }}</strong>
+                                        </label>
+                                        {{ form.otro_tipo_muestra }}
+                                        {% if form.otro_tipo_muestra.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.otro_tipo_muestra.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fechas -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-calendar me-2"></i>Fechas del Proceso
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label for="{{ form.fecha_solicitud.id_for_label }}" class="form-label">
+                                            <strong>{{ form.fecha_solicitud.label }}</strong>
+                                        </label>
+                                        {{ form.fecha_solicitud }}
+                                        {% if form.fecha_solicitud.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_solicitud.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="{{ form.fecha_toma_muestra.id_for_label }}" class="form-label">
+                                            <strong>{{ form.fecha_toma_muestra.label }}</strong>
+                                        </label>
+                                        {{ form.fecha_toma_muestra }}
+                                        {% if form.fecha_toma_muestra.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_toma_muestra.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="{{ form.fecha_ingreso_laboratorio.id_for_label }}" class="form-label">
+                                            <strong>{{ form.fecha_ingreso_laboratorio.label }}</strong>
+                                        </label>
+                                        {{ form.fecha_ingreso_laboratorio }}
+                                        {% if form.fecha_ingreso_laboratorio.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_ingreso_laboratorio.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="{{ form.fecha_resultado.id_for_label }}" class="form-label">
+                                            <strong>{{ form.fecha_resultado.label }}</strong>
+                                        </label>
+                                        {{ form.fecha_resultado }}
+                                        {% if form.fecha_resultado.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_resultado.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resultados -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-file-medical me-2"></i>Resultados
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.resultado.id_for_label }}" class="form-label">
+                                            <strong>{{ form.resultado.label }}</strong>
+                                        </label>
+                                        {{ form.resultado }}
+                                        {% if form.resultado.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.resultado.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.resultado_cuantitativo.id_for_label }}" class="form-label">
+                                            <strong>{{ form.resultado_cuantitativo.label }}</strong>
+                                        </label>
+                                        {{ form.resultado_cuantitativo }}
+                                        {% if form.resultado_cuantitativo.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.resultado_cuantitativo.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Ej: 1+, 2+, 3+, escaso, moderado, abundante</div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.sensibilidad.id_for_label }}" class="form-label">
+                                            <strong>{{ form.sensibilidad.label }}</strong>
+                                        </label>
+                                        {{ form.sensibilidad }}
+                                        {% if form.sensibilidad.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.sensibilidad.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Resultado Cualitativo -->
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label for="{{ form.resultado_cualitativo.id_for_label }}" class="form-label">
+                                            <strong>{{ form.resultado_cualitativo.label }}</strong>
+                                        </label>
+                                        {{ form.resultado_cualitativo }}
+                                        {% if form.resultado_cualitativo.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.resultado_cualitativo.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Usuario que tomó la muestra -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user-md me-2"></i>Información del Usuario
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.usuario_toma_muestra_input.id_for_label }}" class="form-label">
+                                            <strong>{{ form.usuario_toma_muestra_input.label }}</strong>
+                                        </label>
+                                        {{ form.usuario_toma_muestra_input }}
+                                        {{ form.usuario_toma_muestra }}
+                                        {% if form.usuario_toma_muestra_input.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.usuario_toma_muestra_input.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Ingrese el nombre del usuario que tomó la muestra</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones y campos adicionales -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-sticky-note me-2"></i>Información Adicional
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.observaciones_muestra.id_for_label }}" class="form-label">
+                                            <strong>{{ form.observaciones_muestra.label }}</strong>
+                                        </label>
+                                        {{ form.observaciones_muestra }}
+                                        {% if form.observaciones_muestra.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.observaciones_muestra.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.observaciones_resultado.id_for_label }}" class="form-label">
+                                            <strong>{{ form.observaciones_resultado.label }}</strong>
+                                        </label>
+                                        {{ form.observaciones_resultado }}
+                                        {% if form.observaciones_resultado.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.observaciones_resultado.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.prioridad.id_for_label }}" class="form-label">
+                                            <strong>{{ form.prioridad.label }}</strong>
+                                        </label>
+                                        {{ form.prioridad }}
+                                        {% if form.prioridad.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.prioridad.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="{{ form.numero_muestra_lab.id_for_label }}" class="form-label">
+                                            <strong>{{ form.numero_muestra_lab.label }}</strong>
+                                        </label>
+                                        {{ form.numero_muestra_lab }}
+                                        {% if form.numero_muestra_lab.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.numero_muestra_lab.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% if examen %}{% url 'examenes:detalle_examen' examen.id %}{% else %}{% url 'examenes:lista_examenes' %}{% endif %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save me-2"></i>Guardar Examen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
-
-<div class="row">
-
-<!-- Paciente -->
-<div class="col-md-12 mb-3">
-
-<label for="{{ form.paciente.id_for_label }}" class="form-label">
-
-    <strong>{{ form.paciente.label }}</strong>
-
-</label>
-
-{{ form.paciente }} 
-
-{% if form.paciente.errors %}
-
-<div class="text-danger small">
-
-    {% for error in form.paciente.errors %}
-
-    {{ error }}<br>
-
-    {% endfor %}
-
 </div>
-
-    {% endif %}
-
-</div>
-
-<!-- Tipo de Examen y Muestra -->
-
-<div class="col-md-6 mb-3">
-
-    <label for="{{ form.tipo_examen.id_for_label }}" class="form-label">
-
-    <strong>{{ form.tipo_examen.label }}</strong>
-
-</label>
-
-{{ form.tipo_examen }} 
-
-{% if form.tipo_examen.errors %}
-
-<div class="text-danger small">
-
-    {% for error in form.tipo_examen.errors %}
-
-    {{ error }}<br>
-
-    {% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.tipo_muestra.id_for_label }}" class="form-label">
-
-<strong>{{ form.tipo_muestra.label }}</strong>
-
-</label>
-
-{{ form.tipo_muestra }} 
-
-{% if form.tipo_muestra.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.tipo_muestra.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<!-- Campo otro_tipo_muestra (se muestra/oculta dinámicamente) -->
-<div class="col-md-12 mb-3" id="otro_tipo_muestra_container" 
-     style="display: {% if form.instance.tipo_muestra == 'OTRO' or form.tipo_muestra.value == 'OTRO' %}block{% else %}none{% endif %};">
-
-    <label for="{{ form.otro_tipo_muestra.id_for_label }}" class="form-label">
-
-    <strong>{{ form.otro_tipo_muestra.label }}</strong>
-
-    </label>
-
-    {{ form.otro_tipo_muestra }} 
-
-    {% if form.otro_tipo_muestra.errors %}
-
-    <div class="text-danger small">
-
-    {% for error in form.otro_tipo_muestra.errors %}
-
-    {{ error }}<br>
-
-    {% endfor %}
-
-    </div>
-
-    {% endif %}
-
-</div>
-
-<!-- Fechas -->
-<div class="col-md-4 mb-3">
-
-<label for="{{ form.fecha_solicitud.id_for_label }}" class="form-label">
-
-<strong>{{ form.fecha_solicitud.label }}</strong>
-
-</label>
-
-{{ form.fecha_solicitud }} 
-
-{% if form.fecha_solicitud.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.fecha_solicitud.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-4 mb-3">
-
-<label for="{{ form.fecha_toma_muestra.id_for_label }}" class="form-label">
-
-<strong>{{ form.fecha_toma_muestra.label }}</strong>
-
-</label>
-
-{{ form.fecha_toma_muestra }} 
-
-{% if form.fecha_toma_muestra.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.fecha_toma_muestra.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-4 mb-3">
-
-<label for="{{ form.fecha_ingreso_laboratorio.id_for_label }}" class="form-label">
-
-<strong>{{ form.fecha_ingreso_laboratorio.label }}</strong>
-
-</label>
-
-{{ form.fecha_ingreso_laboratorio }} 
-
-{% if form.fecha_ingreso_laboratorio.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.fecha_ingreso_laboratorio.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-4 mb-3">
-
-<label for="{{ form.fecha_resultado.id_for_label }}" class="form-label">
-
-<strong>{{ form.fecha_resultado.label }}</strong>
-
-</label>
-
-{{ form.fecha_resultado }} 
-
-{% if form.fecha_resultado.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.fecha_resultado.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<!-- Resultados -->  
-
-<div class="col-md-4 mb-3">  
-
-<label for="{{ form.resultado.id_for_label }}" class="form-label">
-
-    <strong>{{ form.resultado.label }}</strong>  
-
-</label>  
-
-{{ form.resultado }}  
-
-{% if form.resultado.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.resultado.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-4 mb-3">  
-
-<label for="{{ form.resultado_cuantitativo.id_for_label }}" class="form-label">
-
-<strong>{{ form.resultado_cuantitativo.label }}</strong>
-
-</label>
-
-{{ form.resultado_cuantitativo }} 
-
-{% if form.resultado_cuantitativo.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.resultado_cuantitativo.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-<div class="form-text">Ej: 1+, 2+, 3+, escaso, moderado, abundante</div>
-
-</div>
-
-<div class="col-md-4 mb-3">
-
-<label for="{{ form.sensibilidad.id_for_label }}" class="form-label">
-
-<strong>{{ form.sensibilidad.label }}</strong>
-
-</label>
-
-{{ form.sensibilidad }} 
-
-{% if form.sensibilidad.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.sensibilidad.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<!-- Resultado Cualitativo -->
-<div class="col-md-12 mb-3">
-
-<label for="{{ form.resultado_cualitativo.id_for_label }}" class="form-label">
-
-<strong>{{ form.resultado_cualitativo.label }}</strong>
-
-</label>
-
-{{ form.resultado_cualitativo }} 
-
-{% if form.resultado_cualitativo.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.resultado_cualitativo.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<!-- Observaciones -->
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.observaciones_muestra.id_for_label }}" class="form-label">
-
-<strong>{{ form.observaciones_muestra.label }}</strong>
-
-</label>
-
-{{ form.observaciones_muestra }}
-
-{% if form.observaciones_muestra.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.observaciones_muestra.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.observaciones_resultado.id_for_label }}" class="form-label">
-
-<strong>{{ form.observaciones_resultado.label }}</strong>
-
-</label>
-
-{{ form.observaciones_resultado }}
-
-{% if form.observaciones_resultado.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.observaciones_resultado.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<!-- Campos adicionales -->
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.prioridad.id_for_label }}" class="form-label">
-
-<strong>{{ form.prioridad.label }}</strong>
-
-</label>
-
-{{ form.prioridad }} 
-
-{% if form.prioridad.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.prioridad.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.laboratorio.id_for_label }}" class="form-label">
-
-<strong>{{ form.laboratorio.label }}</strong>
-
-</label>
-
-{{ form.laboratorio }} 
-
-{% if form.laboratorio.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.laboratorio.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.numero_muestra_lab.id_for_label }}" class="form-label">
-
-<strong>{{ form.numero_muestra_lab.label }}</strong>
-
-</label>
-
-{{ form.numero_muestra_lab }} 
-
-{% if form.numero_muestra_lab.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.numero_muestra_lab.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label for="{{ form.usuario_toma_muestra.id_for_label }}" class="form-label">
-
-<strong>{{ form.usuario_toma_muestra.label }}</strong>
-
-</label>
-
-{{ form.usuario_toma_muestra }} 
-
-{% if form.usuario_toma_muestra.errors %}
-
-<div class="text-danger small">
-
-{% for error in form.usuario_toma_muestra.errors %}
-
-{{ error }}<br>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
-
-</div>
-
-<!-- Botones -->
-<div class="d-flex justify-content-between mt-4">
-    <a href="{% if examen %}{% url 'examenes:detalle_examen' examen.id %}{% else %}{% url 'examenes:lista_examenes' %}{% endif %}" 
-       class="btn btn-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Cancelar
-    </a>
-    <button type="submit" class="btn btn-primary" id="submitBtn">
-        <i class="fas fa-save me-2"></i>Guardar Examen
-    </button>
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('examenForm');
@@ -556,6 +469,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const tipoMuestraSelect = document.getElementById('id_tipo_muestra');
     const otroTipoMuestraContainer = document.getElementById('otro_tipo_muestra_container');
     
+    // Elementos para búsqueda de pacientes
+    const btnBuscarPaciente = document.getElementById('btn-buscar-paciente');
+    const rutBusqueda = document.getElementById('rut_busqueda');
+    const resultadoPaciente = document.getElementById('resultado-paciente');
+    const infoPaciente = document.getElementById('info-paciente');
+    const btnSeleccionarPaciente = document.getElementById('btn-seleccionar-paciente');
+    const pacienteDisplay = document.getElementById('paciente_display');
+    const pacienteId = document.getElementById('paciente_id');
+    const pacienteHidden = document.getElementById('id_paciente');
+    
+    // Elementos para búsqueda de laboratorios
+    const btnBuscarLaboratorio = document.getElementById('btn-buscar-laboratorio');
+    const laboratorioBusqueda = document.getElementById('laboratorio_busqueda');
+    const resultadosLaboratorios = document.getElementById('resultados-laboratorios');
+    const listaLaboratorios = document.getElementById('lista-laboratorios');
+    const laboratorioDisplay = document.getElementById('laboratorio_display');
+    const laboratorioHidden = document.getElementById('id_laboratorio');
+
     // Función para mostrar/ocultar el campo "otro_tipo_muestra"
     function toggleOtroTipoMuestra() {
         if (tipoMuestraSelect.value === 'OTRO') {
@@ -570,25 +501,118 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Ejecutar al cargar la página
     toggleOtroTipoMuestra();
-    
-    // Actualizar placeholder del resultado cuantitativo según el tipo de examen
-    const tipoExamenSelect = document.getElementById('id_tipo_examen');
-    const resultadoCuantitativoInput = document.getElementById('id_resultado_cuantitativo');
-    
-    function updatePlaceholder() {
-        const tipoExamen = tipoExamenSelect.value;
-        if (tipoExamen === 'BACILOSCOPIA') {
-            resultadoCuantitativoInput.placeholder = 'Ej: 1+, 2+, 3+, escaso, moderado, abundante';
-        } else if (tipoExamen === 'CULTIVO') {
-            resultadoCuantitativoInput.placeholder = 'Ej: 10-100 UFC, >100 UFC';
-        } else {
-            resultadoCuantitativoInput.placeholder = 'Ingrese resultado cuantitativo';
+
+    // Búsqueda de pacientes
+    btnBuscarPaciente.addEventListener('click', function() {
+        const rut = rutBusqueda.value.trim();
+        
+        if (!rut) {
+            alert('Por favor ingrese un RUT para buscar.');
+            return;
         }
-    }
-    
-    tipoExamenSelect.addEventListener('change', updatePlaceholder);
-    updatePlaceholder(); // Ejecutar al cargar la página
-    
+
+        // Mostrar loading
+        btnBuscarPaciente.disabled = true;
+        btnBuscarPaciente.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Buscando...';
+
+        fetch(`{% url 'examenes:buscar_paciente_rut' %}?rut=${encodeURIComponent(rut)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            btnBuscarPaciente.disabled = false;
+            btnBuscarPaciente.innerHTML = '<i class="fas fa-search me-1"></i>Buscar';
+
+            if (data.encontrado) {
+                infoPaciente.innerHTML = `
+                    <p class="mb-1"><strong>Nombre:</strong> ${data.nombre}</p>
+                    <p class="mb-1"><strong>RUT:</strong> ${data.rut}</p>
+                    <p class="mb-1"><strong>Edad:</strong> ${data.edad} años</p>
+                    <p class="mb-0"><strong>Sexo:</strong> ${data.sexo}</p>
+                `;
+                resultadoPaciente.style.display = 'block';
+                
+                // Al seleccionar el paciente
+                btnSeleccionarPaciente.onclick = function() {
+                    pacienteDisplay.value = `${data.nombre} - ${data.rut}`;
+                    pacienteId.value = data.id;
+                    pacienteHidden.value = data.id;
+                    resultadoPaciente.style.display = 'none';
+                    rutBusqueda.value = '';
+                };
+            } else {
+                alert(data.error || 'Paciente no encontrado.');
+            }
+        })
+        .catch(error => {
+            btnBuscarPaciente.disabled = false;
+            btnBuscarPaciente.innerHTML = '<i class="fas fa-search me-1"></i>Buscar';
+            alert('Error en la búsqueda: ' + error);
+        });
+    });
+
+    // Búsqueda de laboratorios
+    btnBuscarLaboratorio.addEventListener('click', function() {
+        const nombre = laboratorioBusqueda.value.trim();
+        
+        if (!nombre) {
+            alert('Por favor ingrese un nombre para buscar laboratorios.');
+            return;
+        }
+
+        // Mostrar loading
+        btnBuscarLaboratorio.disabled = true;
+        btnBuscarLaboratorio.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Buscando...';
+
+        fetch(`{% url 'examenes:buscar_laboratorio' %}?nombre=${encodeURIComponent(nombre)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            btnBuscarLaboratorio.disabled = false;
+            btnBuscarLaboratorio.innerHTML = '<i class="fas fa-search me-1"></i>Buscar';
+
+            if (data.encontrados && data.resultados.length > 0) {
+                let html = '';
+                data.resultados.forEach(lab => {
+                    html += `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6 class="card-title">${lab.nombre}</h6>
+                                <p class="card-text mb-1"><small>Tipo: ${lab.tipo}</small></p>
+                                ${lab.direccion ? `<p class="card-text mb-2"><small>Dirección: ${lab.direccion}</small></p>` : ''}
+                                <button type="button" class="btn btn-primary btn-sm" onclick="seleccionarLaboratorio('${lab.nombre}')">
+                                    <i class="fas fa-check me-1"></i>Seleccionar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                listaLaboratorios.innerHTML = html;
+                resultadosLaboratorios.style.display = 'block';
+            } else {
+                alert(data.error || 'No se encontraron laboratorios.');
+            }
+        })
+        .catch(error => {
+            btnBuscarLaboratorio.disabled = false;
+            btnBuscarLaboratorio.innerHTML = '<i class="fas fa-search me-1"></i>Buscar';
+            alert('Error en la búsqueda: ' + error);
+        });
+    });
+
+    // Función para seleccionar laboratorio
+    window.seleccionarLaboratorio = function(nombre) {
+        laboratorioDisplay.value = nombre;
+        laboratorioHidden.value = nombre;
+        resultadosLaboratorios.style.display = 'none';
+        laboratorioBusqueda.value = '';
+    };
+
     // Prevenir envío múltiple del formulario
     form.addEventListener('submit', function() {
         submitBtn.disabled = true;
@@ -596,5 +620,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-
 {% endblock %}

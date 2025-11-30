@@ -39,20 +39,13 @@
         <div class="row">
             <div class="col-md-6">
                 <p><strong>Paciente:</strong><br>
-                <!-- CORRECCIÓN: Acceso correcto según el modelo -->
                 <span class="fw-bold fs-5">{{ examen.paciente.nombre }}</span>
                 <br>
-                <span class="text-muted">
-                    RUT: {{ examen.paciente.rut }}
-                </span>
+                <span class="text-muted">RUT: {{ examen.paciente.rut }}</span>
                 <br>
-                <span class="text-muted">
-                    Edad: {{ examen.paciente.get_edad }} años
-                </span>
+                <span class="text-muted">Edad: {{ examen.paciente.get_edad }} años</span>
                 <br>
-                <span class="text-muted">
-                    Sexo: {{ examen.paciente.get_sexo_display }}
-                </span>
+                <span class="text-muted">Sexo: {{ examen.paciente.get_sexo_display }}</span>
                 </p>
                 
                 <p><strong>Tipo de Examen:</strong><br>

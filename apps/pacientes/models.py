@@ -105,6 +105,10 @@ class PacientesPaciente(models.Model):
         return today.year - self.fecha_nacimiento.year - (
             (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
         )
+    
+    def get_sexo_display(self):
+        """Método manual para obtener el display del sexo"""
+        return dict(self.SEXO_CHOICES).get(self.sexo, self.sexo)
 
     def get_enfermedades_list(self):
         """
