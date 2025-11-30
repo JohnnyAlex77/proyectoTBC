@@ -1,11 +1,17 @@
+# apps/tratamientos/forms.py
 from django import forms
-from .models import Tratamiento, EsquemaMedicamento, DosisAdministrada
-from apps.pacientes.models import PacientesPaciente as Paciente
 from django.core.exceptions import ValidationError
 from datetime import date
+from .models import Tratamiento, EsquemaMedicamento, DosisAdministrada
+from apps.pacientes.models import PacientesPaciente as Paciente
 
 class TratamientoForm(forms.ModelForm):
-    # Campo adicional para búsqueda por RUT
+    """
+    Formulario para crear y editar tratamientos
+    Incluye búsqueda avanzada de pacientes por RUT y validación de tratamiento activo
+    """
+    
+    # Campo para búsqueda por RUT
     rut_busqueda = forms.CharField(
         max_length=15,
         required=False,
@@ -21,56 +27,46 @@ class TratamientoForm(forms.ModelForm):
         model = Tratamiento
         fields = ['paciente', 'esquema', 'fecha_inicio', 'fecha_termino_estimada', 'peso_kg', 'observaciones']
         widgets = {
-            'paciente': forms.Select(attrs={
-                'class': 'form-control',
-                'required': True,
-                'id': 'id_paciente'
-            }),
+            'paciente': forms.HiddenInput(attrs={'id': 'id_paciente'}),
             'esquema': forms.Select(attrs={
                 'class': 'form-control',
-                'required': True
+                'required': True,
+                'id': 'id_esquema'
             }),
             'fecha_inicio': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
-                'required': True
+                'required': True,
+                'id': 'id_fecha_inicio'
             }),
             'fecha_termino_estimada': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
-                'required': True
+                'required': True,
+                'id': 'id_fecha_termino_estimada'
             }),
             'peso_kg': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.1',
                 'min': '0',
-                'required': True
+                'required': True,
+                'id': 'id_peso_kg'
             }),
             'observaciones': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
-                'placeholder': 'Observaciones adicionales del tratamiento...'
+                'placeholder': 'Observaciones adicionales del tratamiento...',
+                'id': 'id_observaciones'
             }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Inicialmente no mostrar pacientes en el select, se cargarán vía búsqueda
-        self.fields['paciente'].queryset = Paciente.objects.none()
-        
-        # Mejorar etiquetas
-        self.fields['paciente'].label = "Paciente seleccionado"
-        self.fields['fecha_inicio'].label = "Fecha de Inicio del Tratamiento"
-        self.fields['fecha_termino_estimada'].label = "Fecha de Término Estimada"
-        
-        # Hacer el campo paciente no requerido inicialmente (se validará después)
+        # Hacer el campo paciente no requerido inicialmente
         self.fields['paciente'].required = False
+        self.fields['paciente'].label = ""
 
     def clean(self):
-        """
-        Validación personalizada del formulario
-        """
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_termino = cleaned_data.get('fecha_termino_estimada')
@@ -78,41 +74,93 @@ class TratamientoForm(forms.ModelForm):
         paciente = cleaned_data.get('paciente')
         rut_busqueda = cleaned_data.get('rut_busqueda')
 
-        # Validar que se haya seleccionado un paciente o se haya buscado por RUT
+        # Validar que se haya seleccionado un paciente
         if not paciente and not rut_busqueda:
             raise ValidationError({
-                'rut_busqueda': 'Debe buscar un paciente por RUT o seleccionar uno de la lista.'
+                'rut_busqueda': 'Debe buscar un paciente por RUT.'
             })
         
         # Si se ingresó un RUT, buscar el paciente
         if rut_busqueda and not paciente:
-            try:
-                # Limpiar el RUT (eliminar puntos y guión)
-                rut_limpio = rut_busqueda.replace('.', '').replace('-', '').upper()
-                paciente_encontrado = Paciente.objects.get(rut__icontains=rut_limpio)
+            paciente_encontrado = self._buscar_paciente_por_rut(rut_busqueda)
+            if paciente_encontrado:
                 cleaned_data['paciente'] = paciente_encontrado
-                
-                # Verificar si el paciente ya tiene un tratamiento activo
-                tratamiento_activo = Tratamiento.objects.filter(
-                    paciente=paciente_encontrado,
-                    resultado_final__in=[None, 'En Tratamiento']
-                ).exists()
-                
-                if tratamiento_activo:
-                    raise ValidationError({
-                        'rut_busqueda': f'El paciente {paciente_encontrado.nombre} ya tiene un tratamiento activo.'
-                    })
-                    
-            except Paciente.DoesNotExist:
+                # Validar que no tenga tratamiento activo (SOLO para creación)
+                if not self.instance.pk:  # Solo validar si es un nuevo tratamiento
+                    self._validar_tratamiento_activo(paciente_encontrado)
+            else:
                 raise ValidationError({
-                    'rut_busqueda': 'No se encontró ningún paciente con el RUT ingresado.'
-                })
-            except Paciente.MultipleObjectsReturned:
-                raise ValidationError({
-                    'rut_busqueda': 'Se encontraron múltiples pacientes con el RUT ingresado. Contacte al administrador.'
+                    'rut_busqueda': f'No se encontró ningún paciente con el RUT: {rut_busqueda}'
                 })
 
-        # Validar fechas
+        # Si el paciente ya está seleccionado (en edición), también verificar tratamiento activo
+        # PERO solo si estamos creando un nuevo tratamiento
+        elif paciente and not self.instance.pk:
+            self._validar_tratamiento_activo(paciente)
+
+        # Validaciones de fechas y peso
+        self._validar_fechas(fecha_inicio, fecha_termino)
+        self._validar_peso(peso_kg)
+            
+        return cleaned_data
+
+    def _buscar_paciente_por_rut(self, rut):
+        """Busca paciente por RUT de diferentes formas"""
+        rut_limpio = rut.replace('.', '').replace('-', '').upper()
+        
+        # Búsqueda exacta con formato original
+        paciente = Paciente.objects.filter(rut__iexact=rut).first()
+        if paciente:
+            return paciente
+            
+        # Búsqueda con RUT limpio
+        paciente = Paciente.objects.filter(rut__iexact=rut_limpio).first()
+        if paciente:
+            return paciente
+            
+        # Búsqueda manual comparando RUTs limpios
+        todos_pacientes = Paciente.objects.all()
+        for p in todos_pacientes:
+            rut_paciente_limpio = p.rut.replace('.', '').replace('-', '').upper()
+            if rut_limpio == rut_paciente_limpio:
+                return p
+                
+        # Búsqueda solo números
+        solo_numeros = ''.join(filter(str.isdigit, rut_limpio))
+        if solo_numeros:
+            for p in todos_pacientes:
+                rut_paciente_numeros = ''.join(filter(str.isdigit, p.rut))
+                if solo_numeros == rut_paciente_numeros:
+                    return p
+        return None
+
+    def _validar_tratamiento_activo(self, paciente):
+        """Valida que el paciente no tenga tratamiento activo"""
+        tratamiento_activo = Tratamiento.objects.filter(
+            paciente=paciente,
+            resultado_final__in=[None, 'En Tratamiento']
+        ).first()
+        
+        if tratamiento_activo:
+            # Usar el método get_esquema_display corregido
+            esquema_display = tratamiento_activo.get_esquema_display()
+            mensaje_error = f"""
+            El paciente {paciente.nombre} ya tiene un tratamiento activo.
+            
+            Tratamiento # {tratamiento_activo.id}
+            - Esquema: {esquema_display}
+            - Fecha inicio: {tratamiento_activo.fecha_inicio.strftime('%d/%m/%Y')}
+            - Estado: {tratamiento_activo.resultado_final or 'En Tratamiento'}
+            
+            No se puede crear un nuevo tratamiento hasta que el actual esté finalizado.
+            Los tratamientos deben finalizar con: Curación, Tratamiento Completo, Fallecimiento, etc.
+            """
+            raise ValidationError({
+                'rut_busqueda': mensaje_error
+            })
+
+    def _validar_fechas(self, fecha_inicio, fecha_termino):
+        """Valida las fechas del tratamiento"""
         if fecha_inicio and fecha_termino:
             if fecha_inicio > fecha_termino:
                 raise ValidationError({
@@ -122,14 +170,32 @@ class TratamientoForm(forms.ModelForm):
                 raise ValidationError({
                     'fecha_inicio': 'La fecha de inicio no puede ser futura.'
                 })
-        
-        # Validar peso
+
+    def _validar_peso(self, peso_kg):
+        """Valida el peso del paciente"""
         if peso_kg and peso_kg <= 0:
             raise ValidationError({
                 'peso_kg': 'El peso debe ser mayor a 0.'
             })
+
+    def save(self, commit=True):
+        """Guardar el tratamiento con validación adicional"""
+        # Validación final antes de guardar
+        paciente = self.cleaned_data.get('paciente')
+        
+        if paciente and not self.instance.pk:
+            # Verificar una última vez que no exista tratamiento activo
+            tratamiento_activo = Tratamiento.objects.filter(
+                paciente=paciente,
+                resultado_final__in=[None, 'En Tratamiento']
+            ).exists()
             
-        return cleaned_data
+            if tratamiento_activo:
+                raise ValidationError({
+                    'paciente': 'El paciente ya tiene un tratamiento activo. No se puede crear otro tratamiento.'
+                })
+        
+        return super().save(commit=commit)
 
 class EsquemaMedicamentoForm(forms.ModelForm):
     class Meta:
@@ -159,19 +225,6 @@ class EsquemaMedicamentoForm(forms.ModelForm):
             }),
         }
 
-    def clean(self):
-        """
-        Validación del esquema de medicamento
-        """
-        cleaned_data = super().clean()
-        fecha_inicio = cleaned_data.get('fecha_inicio')
-        fecha_termino = cleaned_data.get('fecha_termino')
-
-        if fecha_inicio and fecha_termino and fecha_inicio > fecha_termino:
-            raise ValidationError('La fecha de término no puede ser anterior a la fecha de inicio.')
-
-        return cleaned_data
-
 class DosisAdministradaForm(forms.ModelForm):
     class Meta:
         model = DosisAdministrada
@@ -193,9 +246,6 @@ class DosisAdministradaForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """
-        Inicializar el formulario con valores por defecto
-        """
         super().__init__(*args, **kwargs)
         self.fields['fecha_dosis'].initial = date.today()
 

@@ -1,19 +1,28 @@
+# apps/pacientes/models.py
 from django.db import models
 from django.contrib.auth.models import User
 
 class PacientesPaciente(models.Model):
+    """
+    Modelo principal para la gestión de pacientes con tuberculosis
+    Incluye campos para antecedentes médicos y datos demográficos
+    """
+    
+    # Opciones para sexo
     SEXO_CHOICES = [
         ('M', 'Masculino'),
         ('F', 'Femenino'),
         ('O', 'Otro'),
     ]
 
+    # Opciones para tipo de tuberculosis
     TIPO_TBC_CHOICES = [
         ('pulmonar', 'TBC Pulmonar'),
         ('extrapulmonar', 'TBC Extrapulmonar'),
         ('mixta', 'TBC Mixta'),
     ]
 
+    # Opciones para estado del paciente
     ESTADO_CHOICES = [
         ('activo', 'Activo en tratamiento'),
         ('suspendido', 'Tratamiento suspendido'),
@@ -22,6 +31,7 @@ class PacientesPaciente(models.Model):
         ('fallecido', 'Fallecido'),
     ]
 
+    # Opciones para población prioritaria
     POBLACION_PRIORITARIA_CHOICES = [
         ('', 'No aplica'),
         ('migrante', 'Población Migrante'),
@@ -36,8 +46,9 @@ class PacientesPaciente(models.Model):
         ('otra', 'Otra Población Prioritaria'),
     ]
 
+    # Campos principales del paciente
     id = models.BigAutoField(primary_key=True)
-    rut = models.CharField(unique=True, max_length=12) 
+    rut = models.CharField(unique=True, max_length=12)
     nombre = models.CharField(max_length=200)
     fecha_nacimiento = models.DateField()
     sexo = models.CharField(max_length=1, choices=SEXO_CHOICES)
@@ -56,8 +67,20 @@ class PacientesPaciente(models.Model):
         null=True,
         default=''
     )
-    enfermedades_preexistentes = models.TextField(blank=True, null=True, help_text="Enfermedades preexistentes del paciente")
-    alergias = models.TextField(blank=True, null=True, help_text="Alergias conocidas del paciente")
+    
+    # Antecedentes médicos
+    enfermedades_preexistentes = models.TextField(
+        blank=True, 
+        null=True, 
+        help_text="Enfermedades preexistentes del paciente"
+    )
+    alergias = models.TextField(
+        blank=True, 
+        null=True, 
+        help_text="Alergias conocidas del paciente"
+    )
+    
+    # Metadatos
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
     usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -66,11 +89,17 @@ class PacientesPaciente(models.Model):
         db_table = 'pacientes_paciente'
         verbose_name = 'Paciente'
         verbose_name_plural = 'Pacientes'
+        ordering = ['-fecha_registro']
 
     def __str__(self):
+        """Representación en string del paciente"""
         return f"{self.nombre} ({self.rut})"
 
     def get_edad(self):
+        """
+        Calcula la edad del paciente en años
+        Retorna: int - Edad del paciente
+        """
         from datetime import date
         today = date.today()
         return today.year - self.fecha_nacimiento.year - (
@@ -78,13 +107,30 @@ class PacientesPaciente(models.Model):
         )
 
     def get_enfermedades_list(self):
-        """Devuelve las enfermedades como lista"""
+        """
+        Convierte el texto de enfermedades en lista
+        Retorna: list - Lista de enfermedades preexistentes
+        """
         if self.enfermedades_preexistentes:
             return [enfermedad.strip() for enfermedad in self.enfermedades_preexistentes.split(',') if enfermedad.strip()]
         return []
 
     def get_alergias_list(self):
-        """Devuelve las alergias como lista"""
+        """
+        Convierte el texto de alergias en lista
+        Retorna: list - Lista de alergias conocidas
+        """
         if self.alergias:
             return [alergia.strip() for alergia in self.alergias.split(',') if alergia.strip()]
         return []
+
+    def tiene_tratamiento_activo(self):
+        """
+        Verifica si el paciente tiene un tratamiento activo
+        Retorna: bool - True si tiene tratamiento activo
+        """
+        from apps.tratamientos.models import Tratamiento
+        return Tratamiento.objects.filter(
+            paciente=self,
+            resultado_final__in=[None, 'En Tratamiento']
+        ).exists()

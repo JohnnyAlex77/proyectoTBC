@@ -1,3 +1,4 @@
+# apps/tratamientos/urls.py
 from django.urls import path
 from . import views
 
@@ -21,6 +22,10 @@ urlpatterns = [
     path('control-dosis/', views.control_dosis, name='control_dosis'),
     path('calendario/', views.calendario_dosis, name='calendario_dosis'),
     
-    # Búsqueda AJAX de pacientes por RUT
+    # Búsqueda AJAX
     path('buscar-paciente/', views.buscar_paciente_por_rut, name='buscar_paciente'),
+    path('verificar-tratamiento/<int:paciente_id>/', views.verificar_paciente_tratamiento_activo, name='verificar_tratamiento'),
+    
+    # Debug temporal
+    path('debug-pacientes/', views.debug_pacientes, name='debug_pacientes'),
 ]

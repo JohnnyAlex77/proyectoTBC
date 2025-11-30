@@ -1,3 +1,4 @@
+# apps/tratamientos/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from apps.pacientes.models import PacientesPaciente as Paciente
@@ -15,7 +16,19 @@ class Tratamiento(models.Model):
         ('Personalizado', 'Esquema Personalizado'),
     ]
 
-    # Relación con el paciente
+    # Opciones para resultados finales
+    RESULTADO_OPCIONES = [
+        ('Curación', 'Curación'),
+        ('Tratamiento Completo', 'Tratamiento Completo'),
+        ('Fallecimiento', 'Fallecimiento'),
+        ('Fracaso', 'Fracaso'),
+        ('Abandono', 'Abandono'),
+        ('Transferencia', 'Transferencia'),
+        ('En Tratamiento', 'En Tratamiento'),
+    ]
+
+    # Campos principales
+    id = models.BigAutoField(primary_key=True)
     paciente = models.ForeignKey(
         Paciente,
         on_delete=models.CASCADE,
@@ -23,7 +36,6 @@ class Tratamiento(models.Model):
         verbose_name='Paciente'
     )
     
-    # Esquema terapéutico
     esquema = models.CharField(
         max_length=50,
         choices=ESQUEMA_OPCIONES,
@@ -46,17 +58,6 @@ class Tratamiento(models.Model):
         verbose_name='Peso (kg)'
     )
 
-    # Opciones para resultados finales
-    RESULTADO_OPCIONES = [
-        ('Curación', 'Curación'),
-        ('Tratamiento Completo', 'Tratamiento Completo'),
-        ('Fallecimiento', 'Fallecimiento'),
-        ('Fracaso', 'Fracaso'),
-        ('Abandono', 'Abandono'),
-        ('Transferencia', 'Transferencia'),
-        ('En Tratamiento', 'En Tratamiento'),
-    ]
-    
     resultado_final = models.CharField(
         max_length=50,
         choices=RESULTADO_OPCIONES,
@@ -65,7 +66,6 @@ class Tratamiento(models.Model):
         verbose_name='Resultado Final'
     )
 
-    # Observaciones adicionales
     observaciones = models.TextField(
         blank=True,
         null=True,
@@ -82,26 +82,26 @@ class Tratamiento(models.Model):
     )
 
     class Meta:
-        """Configuración del modelo"""
         db_table = 'tratamientos_tratamiento'
         verbose_name = 'Tratamiento'
         verbose_name_plural = 'Tratamientos'
         ordering = ['-fecha_inicio']
 
     def __str__(self):
-        """Representación en string del tratamiento"""
         return f"Tratamiento {self.id} - {self.paciente.nombre} ({self.esquema})"
+
+    def get_esquema_display(self):
+        """Método para obtener el display del esquema - SOLUCIÓN AL ERROR"""
+        return dict(self.ESQUEMA_OPCIONES).get(self.esquema, self.esquema)
 
     @property
     def duracion_dias(self):
-        """Calcula la duración del tratamiento en días"""
         if self.fecha_termino_real:
             return (self.fecha_termino_real - self.fecha_inicio).days
         return (self.fecha_termino_estimada - self.fecha_inicio).days
 
     @property
     def esta_activo(self):
-        """Determina si el tratamiento está activo"""
         return self.resultado_final is None or self.resultado_final == 'En Tratamiento'
 
 class EsquemaMedicamento(models.Model):
@@ -155,13 +155,11 @@ class EsquemaMedicamento(models.Model):
     fecha_termino = models.DateField()
 
     class Meta:
-        """Configuración del modelo"""
         db_table = 'tratamientos_esquemamedicamento'
         verbose_name = 'Esquema de Medicamento'
         verbose_name_plural = 'Esquemas de Medicamento'
 
     def __str__(self):
-        """Representación en string del esquema de medicamento"""
         return f"{self.medicamento} - {self.dosis_mg}mg - {self.frecuencia}"
 
 class DosisAdministrada(models.Model):
@@ -196,13 +194,11 @@ class DosisAdministrada(models.Model):
     )
 
     class Meta:
-        """Configuración del modelo"""
         db_table = 'tratamientos_dosisadministrada'
         verbose_name = 'Dosis Administrada'
         verbose_name_plural = 'Dosis Administradas'
         unique_together = ['esquema_medicamento', 'fecha_dosis']
 
     def __str__(self):
-        """Representación en string de la dosis administrada"""
         estado = "✓" if self.administrada else "✗"
         return f"{estado} {self.fecha_dosis} {self.esquema_medicamento.medicamento}"

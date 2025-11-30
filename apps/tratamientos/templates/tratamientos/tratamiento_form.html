@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
                     <h4 class="card-title mb-0">{{ titulo }}</h4>
@@ -21,164 +21,160 @@
                         </div>
                         {% endif %}
 
-                        <div class="row">
-                            <!-- Búsqueda por RUT -->
-                            <div class="col-md-12 mb-3">
-                                <label for="rut_busqueda" class="form-label">
-                                    <strong>Buscar paciente por RUT</strong>
-                                </label>
-                                <div class="input-group">
-                                    {{ form.rut_busqueda }}
-                                    <button type="button" class="btn btn-primary" id="btnBuscarPaciente">
-                                        Buscar
-                                    </button>
+                        <!-- SECCIÓN 1: BÚSQUEDA DE PACIENTE -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5 class="border-bottom pb-2 mb-3">Búsqueda de Paciente</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="rut_busqueda" class="form-label">
+                                        <strong>Buscar paciente por RUT</strong>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               name="rut_busqueda" 
+                                               class="form-control" 
+                                               placeholder="Ingrese RUT del paciente (ej: 12345678-9)" 
+                                               id="rut_busqueda">
+                                        <button type="button" class="btn btn-primary" id="btnBuscarPaciente">
+                                            Buscar
+                                        </button>
+                                    </div>
+                                    {% if form.rut_busqueda.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.rut_busqueda.errors %}
+                                        {{ error }}<br>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="col-md-12 mb-3" id="alertaTratamiento" style="display: none;">
+                                    <!-- La alerta se mostrará aquí dinámicamente -->
+                                    </div>
+                                    <div class="form-text">
+                                    </div>
                                 </div>
-                                {% if form.rut_busqueda.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.rut_busqueda.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">
-                                    Ingrese el RUT del paciente (ej: 12345678-9) y haga clic en Buscar
-                                </div>
-                            </div>
 
-                            <!-- Resultado de la búsqueda -->
-                            <div class="col-md-12 mb-3" id="resultadoBusqueda" style="display: none;">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">Resultado de la búsqueda:</h6>
-                                        <div id="infoPaciente"></div>
-                                        <div id="alertaTratamiento" class="alert alert-warning mt-2" style="display: none;">
-                                            <strong>Advertencia:</strong> Este paciente ya tiene un tratamiento activo.
+                                <!-- Resultado de la búsqueda -->
+                                <div class="col-md-12 mb-3" id="resultadoBusqueda" style="display: none;">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Información del Paciente Encontrado</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="infoPaciente"></div>
+                                            <div id="alertaTratamiento" class="alert alert-warning mt-2" style="display: none;">
+                                                <strong>Advertencia:</strong> Este paciente ya tiene un tratamiento activo.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Campo paciente (oculto inicialmente) -->
-                            <div class="col-md-12 mb-3" id="campoPaciente" style="display: none;">
-                                <label for="{{ form.paciente.id_for_label }}" class="form-label">
-                                    <strong>Paciente seleccionado</strong>
-                                </label>
-                                {{ form.paciente }}
-                                {% if form.paciente.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.paciente.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
+                                <!-- Campo paciente oculto -->
+                                <div class="col-md-12 mb-3" id="campoPaciente" style="display: none;">
+                                    <label for="id_paciente" class="form-label">
+                                        <strong>Paciente seleccionado</strong>
+                                    </label>
+                                    <select name="paciente" class="form-control" id="id_paciente" required>
+                                        <!-- Se llenará dinámicamente via JavaScript -->
+                                    </select>
+                                    {% if form.paciente.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.paciente.errors %}
+                                        {{ error }}<br>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
                             </div>
+                        </div>
 
-                            <!-- Esquema y Peso -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.esquema.id_for_label }}" class="form-label">
-                                    <strong>Esquema de Tratamiento</strong>
-                                </label>
-                                {{ form.esquema }}
-                                {% if form.esquema.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.esquema.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
+                        <!-- SECCIÓN 2: INFORMACIÓN DEL TRATAMIENTO -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5 class="border-bottom pb-2 mb-3">Información del Tratamiento</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_esquema" class="form-label">
+                                            <strong>Esquema de Tratamiento</strong>
+                                        </label>
+                                        {{ form.esquema }}
+                                        {% if form.esquema.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.esquema.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_peso_kg" class="form-label">
+                                            <strong>Peso (kg)</strong>
+                                        </label>
+                                        <div class="input-group">
+                                            {{ form.peso_kg }}
+                                            <span class="input-group-text">kg</span>
+                                        </div>
+                                        {% if form.peso_kg.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.peso_kg.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_fecha_inicio" class="form-label">
+                                            <strong>Fecha de Inicio del Tratamiento</strong>
+                                        </label>
+                                        {{ form.fecha_inicio }}
+                                        {% if form.fecha_inicio.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_inicio.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_fecha_termino_estimada" class="form-label">
+                                            <strong>Fecha de Término Estimada</strong>
+                                        </label>
+                                        {{ form.fecha_termino_estimada }}
+                                        {% if form.fecha_termino_estimada.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.fecha_termino_estimada.errors %}
+                                            {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% endif %}
                             </div>
+                        </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.peso_kg.id_for_label }}" class="form-label">
-                                    <strong>Peso (kg)</strong>
-                                </label>
-                                <div class="input-group">
-                                    {{ form.peso_kg }}
-                                    <span class="input-group-text">kg</span>
+                        <!-- SECCIÓN 3: OBSERVACIONES -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5 class="border-bottom pb-2 mb-3">Observaciones</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="id_observaciones" class="form-label">
+                                        <strong>Observaciones</strong>
+                                    </label>
+                                    {{ form.observaciones }}
+                                    {% if form.observaciones.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.observaciones.errors %}
+                                        {{ error }}<br>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">Observaciones adicionales del tratamiento...</div>
                                 </div>
-                                {% if form.peso_kg.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.peso_kg.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Fechas -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">
-                                    <strong>{{ form.fecha_inicio.label }}</strong>
-                                </label>
-                                {{ form.fecha_inicio }}
-                                {% if form.fecha_inicio.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.fecha_inicio.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.fecha_termino_estimada.id_for_label }}" class="form-label">
-                                    <strong>{{ form.fecha_termino_estimada.label }}</strong>
-                                </label>
-                                {{ form.fecha_termino_estimada }}
-                                {% if form.fecha_termino_estimada.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.fecha_termino_estimada.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Campos adicionales para edición -->
-                            {% if tratamiento %}
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.fecha_termino_real.id_for_label }}" class="form-label">
-                                    <strong>Fecha de Término Real</strong>
-                                </label>
-                                {{ form.fecha_termino_real }}
-                                {% if form.fecha_termino_real.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.fecha_termino_real.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.resultado_final.id_for_label }}" class="form-label">
-                                    <strong>Resultado Final</strong>
-                                </label>
-                                {{ form.resultado_final }}
-                                {% if form.resultado_final.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.resultado_final.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-
-                            <!-- Observaciones -->
-                            <div class="col-md-12 mb-3">
-                                <label for="{{ form.observaciones.id_for_label }}" class="form-label">
-                                    <strong>Observaciones</strong>
-                                </label>
-                                {{ form.observaciones }}
-                                {% if form.observaciones.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.observaciones.errors %}
-                                    {{ error }}<br>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">Observaciones adicionales del tratamiento...</div>
                             </div>
                         </div>
 
@@ -200,7 +196,9 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initTratamientoForm() {
+    console.log('Inicializando formulario de tratamiento...');
+    
     const form = document.getElementById('tratamientoForm');
     const submitBtn = document.getElementById('submitBtn');
     const btnBuscarPaciente = document.getElementById('btnBuscarPaciente');
@@ -211,6 +209,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const campoPaciente = document.getElementById('campoPaciente');
     const selectPaciente = document.getElementById('id_paciente');
     
+    // Verificar que todos los elementos existan
+    if (!btnBuscarPaciente) {
+        console.error('No se encontró el botón btnBuscarPaciente');
+        return;
+    }
+
+    // Función para mostrar alerta de tratamiento activo
+    function mostrarAlertaTratamiento(tratamientoInfo) {
+        if (!alertaTratamiento) return;
+        
+        let mensaje = `
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ¡Paciente con Tratamiento Activo!
+                </h5>
+                <p class="mb-1"><strong>Paciente:</strong> ${tratamientoInfo.paciente_nombre}</p>
+                <p class="mb-1"><strong>Tratamiento #:</strong> ${tratamientoInfo.id}</p>
+                <p class="mb-1"><strong>Esquema:</strong> ${tratamientoInfo.esquema}</p>
+                <p class="mb-1"><strong>Fecha inicio:</strong> ${tratamientoInfo.fecha_inicio}</p>
+                <p class="mb-2"><strong>Días transcurridos:</strong> ${tratamientoInfo.dias_transcurridos} días</p>
+                <hr>
+                <p class="mb-0"><strong>No se puede crear un nuevo tratamiento hasta que el actual esté finalizado.</strong></p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        alertaTratamiento.innerHTML = mensaje;
+        alertaTratamiento.style.display = 'block';
+        
+        // Deshabilitar el botón de enviar
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('btn-secondary');
+            submitBtn.classList.remove('btn-primary');
+        }
+    }
+
+    // Función para ocultar alerta y habilitar formulario
+    function ocultarAlertaTratamiento() {
+        if (alertaTratamiento) {
+            alertaTratamiento.style.display = 'none';
+            alertaTratamiento.innerHTML = '';
+        }
+        
+        // Habilitar el botón de enviar
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-primary');
+        }
+    }
+
     // Función para buscar paciente por RUT
     btnBuscarPaciente.addEventListener('click', function() {
         const rut = rutBusqueda.value.trim();
@@ -222,51 +273,120 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Mostrar loading
         btnBuscarPaciente.disabled = true;
-        btnBuscarPaciente.textContent = 'Buscando...';
+        btnBuscarPaciente.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Buscando...';
+        
+        console.log('Buscando RUT:', rut);
+        
+        // Construir URL correctamente
+        const url = "{% url 'tratamientos:buscar_paciente' %}?rut=" + encodeURIComponent(rut);
+        console.log('URL de búsqueda:', url);
         
         // Realizar petición AJAX
-        fetch(`{% url 'tratamientos:buscar_paciente' %}?rut=${encodeURIComponent(rut)}`, {
+        fetch(url, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Respuesta HTTP:', response.status, response.statusText);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Datos recibidos:', data);
+            
             if (data.encontrado) {
-                // Mostrar información del paciente
+                // Mostrar información completa del paciente
+                let enfermedadesHTML = '<p class="text-muted">No registra enfermedades preexistentes</p>';
+                let alergiasHTML = '<p class="text-muted">No registra alergias</p>';
+                
+                if (data.paciente.tiene_enfermedades) {
+                    enfermedadesHTML = '<ul class="list-unstyled">';
+                    data.paciente.enfermedades_preexistentes.forEach(enfermedad => {
+                        enfermedadesHTML += `<li><i class="fas fa-arrow-right text-primary me-2"></i>${enfermedad}</li>`;
+                    });
+                    enfermedadesHTML += '</ul>';
+                }
+                
+                if (data.paciente.tiene_alergias) {
+                    alergiasHTML = '<ul class="list-unstyled">';
+                    data.paciente.alergias.forEach(alergia => {
+                        alergiasHTML += `<li><i class="fas fa-arrow-right text-warning me-2"></i>${alergia}</li>`;
+                    });
+                    alergiasHTML += '</ul>';
+                }
+                
                 infoPaciente.innerHTML = `
-                    <p><strong>Nombre:</strong> ${data.paciente.nombre}</p>
-                    <p><strong>RUT:</strong> ${data.paciente.rut}</p>
-                    <p><strong>Establecimiento:</strong> ${data.paciente.establecimiento_salud}</p>
-                    <p><strong>Fecha Nacimiento:</strong> ${data.paciente.fecha_nacimiento}</p>
-                    <p><strong>Edad:</strong> ${data.paciente.edad}</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-user me-2"></i>Nombre:</strong> ${data.paciente.nombre}</p>
+                            <p><strong><i class="fas fa-id-card me-2"></i>RUT:</strong> ${data.paciente.rut}</p>
+                            <p><strong><i class="fas fa-birthday-cake me-2"></i>Edad:</strong> ${data.paciente.edad} años</p>
+                            <p><strong><i class="fas fa-venus-mars me-2"></i>Sexo:</strong> ${data.paciente.sexo}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-hospital me-2"></i>Establecimiento:</strong> ${data.paciente.establecimiento_salud}</p>
+                            <p><strong><i class="fas fa-calendar me-2"></i>Fecha Nacimiento:</strong> ${data.paciente.fecha_nacimiento}</p>
+                            <p><strong><i class="fas fa-stethoscope me-2"></i>Tipo TBC:</strong> ${data.paciente.tipo_tbc}</p>
+                            <p><strong><i class="fas fa-info-circle me-2"></i>Estado:</strong> ${data.paciente.estado}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-heartbeat me-2 text-danger"></i>Enfermedades Preexistentes:</strong>
+                            ${enfermedadesHTML}
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-allergies me-2 text-warning"></i>Alergias:</strong>
+                            ${alergiasHTML}
+                        </div>
+                    </div>
                 `;
                 
-                // Configurar el campo paciente oculto
-                selectPaciente.innerHTML = `<option value="${data.paciente.id}" selected>${data.paciente.nombre} - ${data.paciente.rut}</option>`;
-                campoPaciente.style.display = 'block';
+                // Configurar el campo paciente dinámicamente
+                if (selectPaciente) {
+                    selectPaciente.innerHTML = `<option value="${data.paciente.id}" selected>${data.paciente.nombre} - ${data.paciente.rut}</option>`;
+                }
+                
+                if (campoPaciente) {
+                    campoPaciente.style.display = 'block';
+                }
                 
                 // Mostrar alerta si tiene tratamiento activo
-                if (data.tratamiento_activo) {
-                    alertaTratamiento.style.display = 'block';
+                if (data.tratamiento_activo && data.tratamiento_info) {
+                    const tratamientoInfo = {
+                        paciente_nombre: data.paciente.nombre,
+                        id: data.tratamiento_info.id,
+                        esquema: data.tratamiento_info.esquema,
+                        fecha_inicio: data.tratamiento_info.fecha_inicio,
+                        dias_transcurridos: data.tratamiento_info.dias_transcurridos
+                    };
+                    mostrarAlertaTratamiento(tratamientoInfo);
                 } else {
-                    alertaTratamiento.style.display = 'none';
+                    ocultarAlertaTratamiento();
                 }
                 
                 resultadoBusqueda.style.display = 'block';
                 
             } else {
-                infoPaciente.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-                campoPaciente.style.display = 'none';
+                let mensajeError = data.error || 'Error desconocido';
+                infoPaciente.innerHTML = `<div class="alert alert-danger">${mensajeError}</div>`;
+                
+                if (campoPaciente) {
+                    campoPaciente.style.display = 'none';
+                }
+                ocultarAlertaTratamiento();
                 resultadoBusqueda.style.display = 'block';
-                alertaTratamiento.style.display = 'none';
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            infoPaciente.innerHTML = '<div class="alert alert-danger">Error en la búsqueda. Intente nuevamente.</div>';
+            console.error('Error en fetch:', error);
+            infoPaciente.innerHTML = `<div class="alert alert-danger">Error de conexión: ${error.message}</div>`;
             resultadoBusqueda.style.display = 'block';
+            ocultarAlertaTratamiento();
         })
         .finally(() => {
             btnBuscarPaciente.disabled = false;
@@ -274,9 +394,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Limpiar alerta cuando se limpie el campo RUT
+    if (rutBusqueda) {
+        rutBusqueda.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                ocultarAlertaTratamiento();
+                if (resultadoBusqueda) {
+                    resultadoBusqueda.style.display = 'none';
+                }
+                if (campoPaciente) {
+                    campoPaciente.style.display = 'none';
+                }
+            }
+        });
+    }
+
     // Validación de fechas
-    const fechaInicio = document.getElementById('{{ form.fecha_inicio.id_for_label }}');
-    const fechaTermino = document.getElementById('{{ form.fecha_termino_estimada.id_for_label }}');
+    const fechaInicio = document.getElementById('id_fecha_inicio');
+    const fechaTermino = document.getElementById('id_fecha_termino_estimada');
 
     if (fechaInicio && fechaTermino) {
         fechaInicio.addEventListener('change', function() {
@@ -295,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Validación de peso
-    const pesoInput = document.getElementById('{{ form.peso_kg.id_for_label }}');
+    const pesoInput = document.getElementById('id_peso_kg');
     if (pesoInput) {
         pesoInput.addEventListener('input', function() {
             if (this.value < 0) {
@@ -305,10 +440,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Prevenir envío múltiple del formulario
-    form.addEventListener('submit', function() {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Guardando...';
-    });
-});
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        });
+    }
+    
+    console.log('Formulario de tratamiento inicializado correctamente');
+}
+
+// Inicializar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTratamientoForm);
+} else {
+    initTratamientoForm();
+}
 </script>
 {% endblock %}
