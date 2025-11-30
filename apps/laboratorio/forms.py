@@ -37,7 +37,7 @@ class IndicadoresForm(forms.ModelForm):
         model = LaboratorioIndicadores
         fields = ['laboratorio', 'periodo', 'muestras_recibidas', 'muestras_procesadas', 'positivos', 'contaminacion_porcentaje', 'tiempo_respuesta_promedio']
         widgets = {
-            'periodo': forms.TextInput(attrs={'placeholder': 'YYYY-MM', 'pattern': '\d{4}-\d{2}'}),
+            'periodo': forms.TextInput(attrs={'placeholder': 'YYYY-MM', 'pattern': '\\d{4}-\\d{2}'}),
             'contaminacion_porcentaje': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'max': '100'}),
             'tiempo_respuesta_promedio': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
         }

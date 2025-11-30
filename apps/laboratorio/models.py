@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from apps.pacientes.models import PacientesPaciente as Paciente
 from apps.examenes.models import ExamenesExamenbacteriologico as Examen
+from decimal import Decimal
 
 class LaboratorioRedLaboratorios(models.Model):
     TIPO_LABORATORIO_CHOICES = [
@@ -23,6 +24,10 @@ class LaboratorioRedLaboratorios(models.Model):
     class Meta:
         db_table = 'laboratorio_red_laboratorios'
         verbose_name_plural = 'Red de Laboratorios'
+
+    def get_tipo_display(self):
+        """Método manual para obtener el display del tipo de laboratorio"""
+        return dict(self.TIPO_LABORATORIO_CHOICES).get(self.tipo, self.tipo)
 
     def __str__(self):
         return f"{self.nombre} ({self.get_tipo_display()})"
@@ -52,8 +57,16 @@ class LaboratorioControlCalidad(models.Model):
         db_table = 'laboratorio_control_calidad'
         verbose_name_plural = 'Controles de Calidad'
 
+    def get_tipo_control_display(self):
+        """Método manual para obtener el display del tipo de control"""
+        return dict(self.TIPO_CONTROL_CHOICES).get(self.tipo_control, self.tipo_control)
+
+    def get_resultado_display(self):
+        """Método manual para obtener el display del resultado"""
+        return dict(self.RESULTADO_CHOICES).get(self.resultado, self.resultado)
+
     def __str__(self):
-        return f"Control {self.tipo_control} - {self.laboratorio.nombre}"
+        return f"Control {self.get_tipo_control_display()} - {self.laboratorio.nombre}"
 
 class LaboratorioTarjetero(models.Model):
     TIPO_MUESTRA_CHOICES = [
@@ -77,6 +90,10 @@ class LaboratorioTarjetero(models.Model):
         db_table = 'laboratorio_tarjetero'
         verbose_name_plural = 'Tarjetero de Positivos'
 
+    def get_tipo_muestra_display(self):
+        """Método manual para obtener el display del tipo de muestra"""
+        return dict(self.TIPO_MUESTRA_CHOICES).get(self.tipo_muestra, self.tipo_muestra)
+
     def __str__(self):
         return f"Tarjetero - {self.paciente.nombre} - {self.fecha_deteccion}"
 
@@ -86,8 +103,8 @@ class LaboratorioIndicadores(models.Model):
     muestras_recibidas = models.IntegerField(default=0)
     muestras_procesadas = models.IntegerField(default=0)
     positivos = models.IntegerField(default=0)
-    contaminacion_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    tiempo_respuesta_promedio = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    contaminacion_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    tiempo_respuesta_promedio = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
