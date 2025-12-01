@@ -1,10 +1,10 @@
+<!-- apps/contactos/templates/contactos/contacto_form.html -->
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{% if contacto %}Editar Contacto{% else %}Registrar Nuevo Contacto{% endif %} - Sistema TBC{% endblock %}
 
 {% block content %}
-
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-12 col-lg-10">
@@ -12,11 +12,11 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-user-plus me-2"></i>
-                        {% if contacto %}Editar Contacto{% else %}Registrar Nuevo Contacto{% endif %}
+                        {% if contacto %}Editar Contacto: {{ contacto.nombre_contacto }}{% else %}Registrar Nuevo Contacto{% endif %}
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" novalidate>
+                    <form method="post" novalidate id="contacto-form">
                         {% csrf_token %}
 
                         {% if form.non_field_errors %}
@@ -35,15 +35,7 @@
                                     <i class="fas fa-id-card me-2"></i>Datos del Contacto
                                 </h5>
                                 
-                                {% if contacto %}
-                                <!-- Mostrar RUT en modo lectura cuando se edita -->
-                                <div class="mb-3">
-                                    <label class="form-label">RUT:</label>
-                                    <input type="text" class="form-control bg-light" value="{{ contacto.rut_contacto }}" readonly>
-                                    <small class="form-text text-muted">El RUT no se puede modificar</small>
-                                </div>
-                                {% else %}
-                                <!-- Campo RUT normal para nuevo contacto -->
+                                <!-- Campo RUT -->
                                 <div class="mb-3">
                                     {{ form.rut_contacto.label_tag }}
                                     {{ form.rut_contacto }}
@@ -54,7 +46,6 @@
                                     <div class="text-danger small">{{ error }}</div>
                                     {% endfor %}
                                 </div>
-                                {% endif %}
 
                                 <div class="mb-3">
                                     {{ form.nombre_contacto.label_tag }}
@@ -87,9 +78,30 @@
                                     <i class="fas fa-users me-2"></i>Relación y Estudio
                                 </h5>
 
+                                <!-- Buscador de pacientes -->
+                                <div class="mb-3">
+                                    {{ form.paciente_busqueda.label_tag }}
+                                    {{ form.paciente_busqueda }}
+                                    <small class="form-text text-muted">
+                                        Escriba el nombre o RUT del paciente y seleccione de la lista
+                                    </small>
+                                    <div id="resultados-busqueda" class="mt-2" style="display: none;">
+                                        <div class="list-group" id="lista-pacientes"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Campo para paciente seleccionado -->
                                 <div class="mb-3">
                                     {{ form.paciente_indice.label_tag }}
                                     {{ form.paciente_indice }}
+                                    <div id="info-paciente" class="mt-2 p-2 bg-light rounded" 
+                                         style="{% if contacto and contacto.paciente_indice %}display: block;{% else %}display: none;{% endif %}">
+                                        <small class="text-muted" id="texto-paciente-seleccionado">
+                                            {% if contacto and contacto.paciente_indice %}
+                                                {{ contacto.paciente_indice.nombre }} - {{ contacto.paciente_indice.rut }} - {{ contacto.paciente_indice.establecimiento_salud }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
                                     {% for error in form.paciente_indice.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                     {% endfor %}
@@ -156,35 +168,92 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
-}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pacienteBusqueda = document.getElementById('paciente-busqueda');
+    const pacienteIndice = document.getElementById('paciente-indice');
+    const resultadosBusqueda = document.getElementById('resultados-busqueda');
+    const listaPacientes = document.getElementById('lista-pacientes');
+    const infoPaciente = document.getElementById('info-paciente');
+    const textoPacienteSeleccionado = document.getElementById('texto-paciente-seleccionado');
+    
+    let timeoutId;
 
-.card-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+    // Función para buscar pacientes
+    function buscarPacientes(query) {
+        if (query.length < 2) {
+            resultadosBusqueda.style.display = 'none';
+            return;
+        }
 
-.form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
+        fetch(`/contactos/buscar-pacientes-ajax/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                listaPacientes.innerHTML = '';
+                
+                if (data.results.length > 0) {
+                    data.results.forEach(paciente => {
+                        const item = document.createElement('button');
+                        item.type = 'button';
+                        item.className = 'list-group-item list-group-item-action';
+                        item.textContent = paciente.text;
+                        item.addEventListener('click', function() {
+                            seleccionarPaciente(paciente.id, paciente.text);
+                        });
+                        listaPacientes.appendChild(item);
+                    });
+                    resultadosBusqueda.style.display = 'block';
+                } else {
+                    resultadosBusqueda.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error en la búsqueda:', error);
+                resultadosBusqueda.style.display = 'none';
+            });
+    }
 
-.border-bottom {
-    border-color: #0d6efd !important;
-}
+    // Función para seleccionar paciente
+    function seleccionarPaciente(pacienteId, pacienteTexto) {
+        pacienteIndice.value = pacienteId;
+        pacienteBusqueda.value = pacienteTexto;
+        textoPacienteSeleccionado.textContent = pacienteTexto;
+        infoPaciente.style.display = 'block';
+        resultadosBusqueda.style.display = 'none';
+    }
 
-.alert-info {
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-    color: #0c5460;
-}
+    // Event listener para la búsqueda
+    pacienteBusqueda.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            buscarPacientes(this.value);
+        }, 300);
+    });
 
-.bg-light {
-    background-color: #f8f9fa !important;
-}
-</style>
+    // Ocultar resultados al hacer clic fuera
+    document.addEventListener('click', function(event) {
+        if (!pacienteBusqueda.contains(event.target) && !resultadosBusqueda.contains(event.target)) {
+            resultadosBusqueda.style.display = 'none';
+        }
+    });
 
+    // Si ya hay un paciente seleccionado (modo edición), configurar la interfaz
+    if (pacienteIndice.value) {
+        // El texto ya debería estar cargado desde el template
+        infoPaciente.style.display = 'block';
+    }
+
+    // Prevenir envío del formulario si no hay paciente seleccionado
+    document.getElementById('contacto-form').addEventListener('submit', function(event) {
+        if (!pacienteIndice.value) {
+            event.preventDefault();
+            alert('Debe seleccionar un paciente índice.');
+            pacienteBusqueda.focus();
+        }
+    });
+});
+</script>
 {% endblock %}
