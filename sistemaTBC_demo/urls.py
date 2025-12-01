@@ -26,6 +26,14 @@ urlpatterns = [
     
     # Redirección para usuarios autenticados
     path('inicio/', RedirectView.as_view(pattern_name='usuarios:dashboard'), name='inicio'),
+
+    # API REST
+    path('api/', include('api.urls')),
+    
+    # Documentación API
+    path('api-docs/', include('api.urls')),
+
+    
 ]
 
 if settings.DEBUG:

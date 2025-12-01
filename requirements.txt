@@ -1,61 +1,200 @@
-#requirements.txt
+# =================================================================
+# requirements.txt - DEPENDENCIAS COMPLETAS SISTEMA TBC
+# Incluye Django core, aplicaciones base, y APIs RESTful
+# Evaluación Sumativa 4 - Programación Back End
+# =================================================================
 
-asgiref==3.10.0
-attrs==25.4.0
-brotli==1.2.0
-certifi==2025.11.12
-cffi==2.0.0
-charset-normalizer==3.4.4
-colorama==0.4.6
-coverage==7.12.0
-crispy-bootstrap5==0.7
-cssselect2==0.8.0
+# =================================================================
+# 1. DJANGO CORE & ESSENTIALS
+# =================================================================
 Django==5.2.7
-django-crispy-forms==2.1
-django-test-plus==2.3.0
-django-weasyprint==2.4.0
+asgiref==3.10.0
+sqlparse==0.5.3
+tzdata==2025.2
+
+# =================================================================
+# 2. DATABASE (MySQL)
+# =================================================================
+mysqlclient==2.2.7
+PyMySQL==1.1.2
+
+# =================================================================
+# 3. API & REST FRAMEWORK (EVALUACIÓN SUMATIVA 4)
+# =================================================================
+# Django REST Framework (API principal - REQUERIDO)
+djangorestframework==3.14.0
+
+# CORS Headers (Cross-Origin Resource Sharing - REQUERIDO)
+django-cors-headers==4.3.1
+
+# API Documentation (Swagger/OpenAPI - REQUERIDO)
+drf-yasg==1.21.7
+
+# HTTP Requests para APIs externas (REQUERIDO)
+requests==2.31.0
+
+# Filtering para APIs (REQUERIDO)
+django-filter==23.5
+
+# Django Extensions para desarrollo (OPCIONAL RECOMENDADO)
+django-extensions==3.2.3
+
+# =================================================================
+# 4. SECURITY & AUTHENTICATION
+# =================================================================
+# Django Widget Tweaks (formularios)
 django-widget-tweaks==1.5.0
-et_xmlfile==2.0.0
+
+# Crispy Forms (formularios Bootstrap)
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+
+# Environment variables
+python-decouple==3.8
+
+# =================================================================
+# 5. FILE HANDLING & REPORTS
+# =================================================================
+# Excel handling
+openpyxl==3.1.5
+xlsxwriter==3.2.9
+
+# PDF generation
+django-weasyprint==2.4.0
+weasyprint==66.0
+reportlab==4.4.4
+pydyf==0.11.0
+
+# Image processing
+pillow==10.4.0
+
+# =================================================================
+# 6. DEPLOYMENT & PRODUCTION (Render/Cloudflare)
+# =================================================================
+# WSGI Server (REQUERIDO para deploy)
+gunicorn==21.2.0
+
+# Static files serving (REQUERIDO para deploy)
+whitenoise==6.6.0
+
+# Database URL parsing (RECOMENDADO para deploy)
+dj-database-url==2.1.0
+
+# =================================================================
+# 7. TESTING & DEVELOPMENT
+# =================================================================
+# Testing framework
+pytest==7.4.0
+pytest-django==4.5.2
+pytest-cov==4.1.0
+
+# Test utilities
+django-test-plus==2.3.0
 factory-boy==3.3.0
 Faker==19.6.2
-fonttools==4.61.0
-h11==0.16.0
-idna==3.11
-iniconfig==2.3.0
-mysqlclient==2.2.7
-openpyxl==3.1.5
-outcome==1.3.0.post0
-packaging==25.0
-pillow==10.4.0
-pluggy==1.6.0
-pycparser==2.23
-pydyf==0.11.0
-Pygments==2.19.2
-PyMySQL==1.1.2
-pyphen==0.17.2
-PySocks==1.7.1
-pytest==7.4.0
-pytest-cov==4.1.0
-pytest-django==4.5.2
+
+# Coverage
+coverage==7.12.0
+
+# Debug toolbar (solo desarrollo)
+django-debug-toolbar==4.2.0
+
+# =================================================================
+# 8. UTILITIES & DEPENDENCIES SECUNDARIAS
+# =================================================================
+# Date handling
 python-dateutil==2.9.0.post0
-python-decouple==3.8
-reportlab==4.4.4
-requirements.py==1.0.1
-selenium==4.38.0
-six==1.17.0
-sniffio==1.3.1
-sortedcontainers==2.4.0
-sqlparse==0.5.3
+
+# Color output
+colorama==0.4.6
+
+# URL handling
+urllib3==2.5.0
+idna==3.11
+charset-normalizer==3.4.4
+certifi==2025.11.12
+
+# Font tools
+fonttools==4.61.0
+
+# CSS parsing
 tinycss2==1.5.1
+cssselect2==0.8.0
+webencodings==0.5.1
+
+# XML handling
+et_xmlfile==2.0.0
+
+# Compression
+brotli==1.2.0
+zopfli==0.4.0
+
+# Hyphenation
+pyphen==0.17.2
+
+# HTML5 parsing
 tinyhtml5==2.0.0
+
+# Syntax highlighting
+Pygments==2.19.2
+
+# =================================================================
+# 9. NETWORK & WEB (para APIs externas)
+# =================================================================
+# WebSockets (dependencia de weasyprint)
+websocket-client==1.9.0
 trio==0.32.0
 trio-websocket==0.12.2
-typing_extensions==4.15.0
-tzdata==2025.2
-urllib3==2.5.0
-weasyprint==66.0
-webencodings==0.5.1
-websocket-client==1.9.0
 wsproto==1.3.2
-xlsxwriter==3.2.9
-zopfli==0.4.0
+h11==0.16.0
+outcome==1.3.0.post0
+sniffio==1.3.1
+
+# Selenium (testing)
+selenium==4.38.0
+
+# SOCKS proxy
+PySocks==1.7.1
+
+# =================================================================
+# 10. SYSTEM & LOW LEVEL
+# =================================================================
+# CFFI
+cffi==2.0.0
+pycparser==2.23
+
+# Packaging
+packaging==25.0
+
+# Configuration
+iniconfig==2.3.0
+pluggy==1.6.0
+
+# Data structures
+sortedcontainers==2.4.0
+attrs==25.4.0
+six==1.17.0
+
+# Type hints
+typing_extensions==4.15.0
+
+# =================================================================
+# 11. CUSTOM & LEGACY
+# =================================================================
+requirements.py==1.0.1
+
+# =================================================================
+# 12. DEPENDENCIAS OPCIONALES (comentadas)
+# =================================================================
+# Para autenticación JWT avanzada:
+# djangorestframework-simplejwt==5.3.0
+
+# Para rate limiting:
+# django-ratelimit==4.0.0
+
+# Para Content Security Policy:
+# django-csp==3.7
+
+# Para Redis cache (producción):
+# django-redis==5.4.0
+# redis==5.0.1
