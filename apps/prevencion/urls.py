@@ -17,4 +17,7 @@ urlpatterns = [
     
     # Seguimientos
     path('seguimiento/crear/', views.SeguimientoCreateView.as_view(), name='seguimiento_crear'),
+    
+    # AJAX endpoints
+    path('buscar-paciente-contacto/', views.buscar_paciente_contacto_ajax, name='buscar_paciente_contacto_ajax'),
 ]

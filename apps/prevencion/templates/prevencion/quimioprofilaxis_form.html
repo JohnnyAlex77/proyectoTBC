@@ -10,7 +10,7 @@
         <h4 class="mb-0">{% if object %}Editar{% else %}Nueva{% endif %} Quimioprofilaxis</h4>
     </div>
     <div class="card-body">
-        <form method="post" novalidate>
+        <form method="post" novalidate id="quimioprofilaxis-form">
             {% csrf_token %}
             
             {% if form.non_field_errors %}
@@ -25,7 +25,37 @@
                 <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="mb-0">Información del Paciente/Contacto</h5>
+                            <h5 class="mb-0">Búsqueda por RUT</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="{{ form.rut_busqueda.id_for_label }}" class="form-label">
+                                    <i class="fas fa-search me-2"></i>Buscar por RUT
+                                </label>
+                                <div class="input-group">
+                                    {% render_field form.rut_busqueda class="form-control" %}
+                                    <button type="button" class="btn btn-primary" id="btn-buscar-rut">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Ingrese el RUT del paciente o contacto para buscar automáticamente
+                                </small>
+                            </div>
+
+                            <!-- Resultados de búsqueda -->
+                            <div id="resultados-busqueda" class="mt-3" style="display: none;">
+                                <h6>Resultados de búsqueda:</h6>
+                                <div id="lista-resultados" class="list-group"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Selección Manual</h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
@@ -52,7 +82,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <!-- Resto del formulario (igual al original) -->
+            <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-header">
@@ -83,9 +116,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-header">
@@ -118,7 +149,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-header">
@@ -139,6 +172,16 @@
                                 <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Observaciones</h5>
+                        </div>
+                        <div class="card-body">
                             <div class="mb-3">
                                 <label for="{{ form.efectos_adversos.id_for_label }}" class="form-label">Efectos Adversos</label>
                                 {% render_field form.efectos_adversos class="form-control" rows="3" placeholder="Describa cualquier efecto adverso presentado..." %}
@@ -171,37 +214,167 @@
 </div>
 {% endblock %}
 
-{% block javascript %}
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tipoPacienteField = document.getElementById('{{ form.tipo_paciente.id_for_label }}');
+// Función para mostrar/ocultar campos según tipo de paciente
+function toggleTipoPaciente() {
+    const tipoPaciente = document.getElementById('id_tipo_paciente').value;
     const pacienteField = document.getElementById('paciente-field');
     const contactoField = document.getElementById('contacto-field');
-
-    function toggleFields() {
-        if (tipoPacienteField.value === 'paciente') {
-            pacienteField.style.display = 'block';
-            contactoField.style.display = 'none';
-            // Hacer requerido el campo paciente
-            document.getElementById('{{ form.paciente.id_for_label }}').required = true;
-            document.getElementById('{{ form.contacto.id_for_label }}').required = false;
-        } else if (tipoPacienteField.value === 'contacto') {
-            pacienteField.style.display = 'none';
-            contactoField.style.display = 'block';
-            // Hacer requerido el campo contacto
-            document.getElementById('{{ form.paciente.id_for_label }}').required = false;
-            document.getElementById('{{ form.contacto.id_for_label }}').required = true;
-        } else {
-            pacienteField.style.display = 'none';
-            contactoField.style.display = 'none';
-            // Ninguno requerido
-            document.getElementById('{{ form.paciente.id_for_label }}').required = false;
-            document.getElementById('{{ form.contacto.id_for_label }}').required = false;
-        }
+    
+    if (tipoPaciente === 'paciente') {
+        pacienteField.style.display = 'block';
+        contactoField.style.display = 'none';
+        document.getElementById('id_paciente').required = true;
+        document.getElementById('id_contacto').required = false;
+    } else if (tipoPaciente === 'contacto') {
+        pacienteField.style.display = 'none';
+        contactoField.style.display = 'block';
+        document.getElementById('id_paciente').required = false;
+        document.getElementById('id_contacto').required = true;
+    } else {
+        pacienteField.style.display = 'none';
+        contactoField.style.display = 'none';
+        document.getElementById('id_paciente').required = false;
+        document.getElementById('id_contacto').required = false;
     }
+}
 
-    tipoPacienteField.addEventListener('change', toggleFields);
-    toggleFields(); // Ejecutar al cargar la página
+// Búsqueda por RUT
+document.getElementById('btn-buscar-rut').addEventListener('click', function() {
+    const rut = document.getElementById('id_rut_busqueda').value.trim();
+    
+    if (!rut) {
+        alert('Por favor ingrese un RUT para buscar');
+        return;
+    }
+    
+    // Mostrar loading
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+    btn.disabled = true;
+    
+    // Realizar búsqueda AJAX
+    fetch(`{% url 'prevencion:buscar_paciente_contacto_ajax' %}?rut=${encodeURIComponent(rut)}`)
+        .then(response => response.json())
+        .then(data => {
+            mostrarResultadosBusqueda(data);
+        })
+        .catch(error => {
+            console.error('Error en búsqueda:', error);
+            alert('Error al realizar la búsqueda');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+});
+
+// Mostrar resultados de búsqueda
+function mostrarResultadosBusqueda(data) {
+    const resultadosDiv = document.getElementById('resultados-busqueda');
+    const listaResultados = document.getElementById('lista-resultados');
+    
+    listaResultados.innerHTML = '';
+    
+    if (data.pacientes.length === 0 && data.contactos.length === 0) {
+        listaResultados.innerHTML = `
+            <div class="list-group-item text-center text-muted">
+                <i class="fas fa-search me-2"></i>
+                No se encontraron resultados para el RUT ingresado
+            </div>
+        `;
+    } else {
+        // Mostrar pacientes
+        data.pacientes.forEach(paciente => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${paciente.nombre}</strong>
+                        <br>
+                        <small class="text-muted">RUT: ${paciente.rut} | Edad: ${paciente.edad} años</small>
+                        <br>
+                        <small class="text-muted">Establecimiento: ${paciente.establecimiento}</small>
+                    </div>
+                    <span class="badge bg-primary">Paciente</span>
+                </div>
+            `;
+            item.addEventListener('click', function() {
+                seleccionarPaciente(paciente);
+            });
+            listaResultados.appendChild(item);
+        });
+        
+        // Mostrar contactos
+        data.contactos.forEach(contacto => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${contacto.nombre}</strong>
+                        <br>
+                        <small class="text-muted">RUT: ${contacto.rut} | Parentesco: ${contacto.parentesco}</small>
+                        <br>
+                        <small class="text-muted">Paciente índice: ${contacto.paciente_indice}</small>
+                    </div>
+                    <span class="badge bg-info">Contacto</span>
+                </div>
+            `;
+            item.addEventListener('click', function() {
+                seleccionarContacto(contacto);
+            });
+            listaResultados.appendChild(item);
+        });
+    }
+    
+    resultadosDiv.style.display = 'block';
+}
+
+// Seleccionar paciente desde resultados
+function seleccionarPaciente(paciente) {
+    document.getElementById('id_tipo_paciente').value = 'paciente';
+    document.getElementById('id_paciente').value = paciente.id;
+    toggleTipoPaciente();
+    
+    // Limpiar búsqueda
+    document.getElementById('id_rut_busqueda').value = '';
+    document.getElementById('resultados-busqueda').style.display = 'none';
+    
+    // Mostrar mensaje de confirmación
+    alert(`Paciente "${paciente.nombre}" seleccionado correctamente`);
+}
+
+// Seleccionar contacto desde resultados
+function seleccionarContacto(contacto) {
+    document.getElementById('id_tipo_paciente').value = 'contacto';
+    document.getElementById('id_contacto').value = contacto.id;
+    toggleTipoPaciente();
+    
+    // Limpiar búsqueda
+    document.getElementById('id_rut_busqueda').value = '';
+    document.getElementById('resultados-busqueda').style.display = 'none';
+    
+    // Mostrar mensaje de confirmación
+    alert(`Contacto "${contacto.nombre}" seleccionado correctamente`);
+}
+
+// Inicializar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTipoPaciente();
+    
+    // Permitir búsqueda con Enter
+    document.getElementById('id_rut_busqueda').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btn-buscar-rut').click();
+        }
+    });
 });
 </script>
 {% endblock %}
