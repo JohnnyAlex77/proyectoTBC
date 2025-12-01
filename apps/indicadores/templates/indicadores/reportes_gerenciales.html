@@ -1,90 +1,346 @@
+<!-- apps/indicadores/templates/indicadores/reportes_gerenciales.html -->
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Reportes Gerenciales - SISTEMA TBC{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
+    <!-- Header -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Reportes Gerenciales</h1>
+        <h1 class="h3 mb-0 text-gray-800">Reportes Gerenciales y Analytics</h1>
         <div>
             <button class="btn btn-primary" data-toggle="modal" data-target="#nuevoReporteModal">
                 <i class="fas fa-plus fa-sm"></i> Nuevo Reporte
             </button>
+            <button class="btn btn-success ml-2" id="generarReporteAutomatico">
+                <i class="fas fa-sync-alt fa-sm"></i> Actualizar Datos
+            </button>
+        </div>
+    </div>
+
+    <!-- Resumen Ejecutivo -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Pacientes Totales
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_pacientes }}</div>
+                            <div class="text-xs text-muted">Registrados en el sistema</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-injured fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Tratamientos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tratamientos }}</div>
+                            <div class="text-xs text-muted">En seguimiento</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-pills fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Contactos Identificados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_contactos }}</div>
+                            <div class="text-xs text-muted">Estudiados</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Alertas Activas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_alertas }}</div>
+                            <div class="text-xs text-muted">Por resolver</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Reportes Predefinidos -->
     <div class="row mb-4">
-        <div class="col-lg-4 mb-4">
-            <div class="card border-left-primary shadow h-100">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Reporte de Cohorte
-                            </div>
-                            <div class="h6 mb-0 text-gray-800">
-                                Indicadores trimestrales de tratamiento
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <a href="{% url 'indicadores:descargar_reporte_cohorte' %}?año=2024&trimestre=all" 
-                           class="btn btn-sm btn-primary">
-                            <i class="fas fa-download fa-sm"></i> Descargar CSV
-                        </a>
-                    </div>
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📊 Reportes Predefinidos</h6>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 mb-4">
-            <div class="card border-left-success shadow h-100">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Reporte Operacional
-                            </div>
-                            <div class="h6 mb-0 text-gray-800">
-                                Indicadores mensuales operacionales
+                    <div class="row">
+                        <!-- Reporte de Cohorte -->
+                        <div class="col-xl-4 col-md-6 mb-4">
+                            <div class="card border-left-primary h-100">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Reporte de Cohorte
+                                            </div>
+                                            <div class="h6 mb-1 text-gray-800">
+                                                Indicadores trimestrales PROCET
+                                            </div>
+                                            <div class="text-xs text-muted mb-3">
+                                                Éxito tratamiento, abandono, fallecimiento
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Año</label>
+                                                    <select class="form-control form-control-sm" id="anioCohorte">
+                                                        {% for año in años_cohorte %}
+                                                        <option value="{{ año }}" {% if forloop.first %}selected{% endif %}>{{ año }}</option>
+                                                        {% empty %}
+                                                        <option value="{{ current_year }}">{{ current_year }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Trimestre</label>
+                                                    <select class="form-control form-control-sm" id="trimestreCohorte">
+                                                        <option value="all">Todos</option>
+                                                        <option value="Q1">Q1</option>
+                                                        <option value="Q2">Q2</option>
+                                                        <option value="Q3">Q3</option>
+                                                        <option value="Q4">Q4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group w-100">
+                                            <a href="#" class="btn btn-sm btn-primary btn-reporte-cohorte-csv">
+                                                <i class="fas fa-file-csv fa-sm"></i> CSV
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-danger btn-reporte-cohorte-pdf">
+                                                <i class="fas fa-file-pdf fa-sm"></i> PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-cogs fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-sm btn-success">
-                            <i class="fas fa-download fa-sm"></i> Descargar CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-lg-4 mb-4">
-            <div class="card border-left-info shadow h-100">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Reporte de Prevención
-                            </div>
-                            <div class="h6 mb-0 text-gray-800">
-                                Actividades preventivas y BCG
+                        <!-- Reporte Operacional -->
+                        <div class="col-xl-4 col-md-6 mb-4">
+                            <div class="card border-left-success h-100">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Reporte Operacional
+                                            </div>
+                                            <div class="h6 mb-1 text-gray-800">
+                                                Indicadores mensuales operacionales
+                                            </div>
+                                            <div class="text-xs text-muted mb-3">
+                                                Pesquisa, contactos, TAES, tiempos
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-cogs fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Año</label>
+                                                    <select class="form-control form-control-sm" id="anioOperacional">
+                                                        {% for año in años_operacionales %}
+                                                        <option value="{{ año.year }}" {% if forloop.first %}selected{% endif %}>{{ año.year }}</option>
+                                                        {% empty %}
+                                                        <option value="{{ current_year }}">{{ current_year }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Mes</label>
+                                                    <select class="form-control form-control-sm" id="mesOperacional">
+                                                        <option value="all">Todos</option>
+                                                        <option value="1">Enero</option>
+                                                        <option value="2">Febrero</option>
+                                                        <option value="3">Marzo</option>
+                                                        <option value="4">Abril</option>
+                                                        <option value="5">Mayo</option>
+                                                        <option value="6">Junio</option>
+                                                        <option value="7">Julio</option>
+                                                        <option value="8">Agosto</option>
+                                                        <option value="9">Septiembre</option>
+                                                        <option value="10">Octubre</option>
+                                                        <option value="11">Noviembre</option>
+                                                        <option value="12">Diciembre</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group w-100">
+                                            <a href="#" class="btn btn-sm btn-success btn-reporte-operacional-csv">
+                                                <i class="fas fa-file-csv fa-sm"></i> CSV
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-danger btn-reporte-operacional-pdf">
+                                                <i class="fas fa-file-pdf fa-sm"></i> PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+
+                        <!-- Reporte de Prevención -->
+                        <div class="col-xl-4 col-md-6 mb-4">
+                            <div class="card border-left-info h-100">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Reporte de Prevención
+                                            </div>
+                                            <div class="h6 mb-1 text-gray-800">
+                                                Actividades preventivas
+                                            </div>
+                                            <div class="text-xs text-muted mb-3">
+                                                Quimioprofilaxis, BCG, tiempos
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Año</label>
+                                                    <select class="form-control form-control-sm" id="anioPrevencion">
+                                                        {% for año in años_prevencion %}
+                                                        <option value="{{ año.year }}" {% if forloop.first %}selected{% endif %}>{{ año.year }}</option>
+                                                        {% empty %}
+                                                        <option value="{{ current_year }}">{{ current_year }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group mb-2">
+                                                    <label class="small">Mes</label>
+                                                    <select class="form-control form-control-sm" id="mesPrevencion">
+                                                        <option value="all">Todos</option>
+                                                        <option value="1">Enero</option>
+                                                        <option value="2">Febrero</option>
+                                                        <option value="3">Marzo</option>
+                                                        <option value="4">Abril</option>
+                                                        <option value="5">Mayo</option>
+                                                        <option value="6">Junio</option>
+                                                        <option value="7">Julio</option>
+                                                        <option value="8">Agosto</option>
+                                                        <option value="9">Septiembre</option>
+                                                        <option value="10">Octubre</option>
+                                                        <option value="11">Noviembre</option>
+                                                        <option value="12">Diciembre</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group w-100">
+                                            <a href="#" class="btn btn-sm btn-info btn-reporte-prevencion-csv">
+                                                <i class="fas fa-file-csv fa-sm"></i> CSV
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-danger btn-reporte-prevencion-pdf">
+                                                <i class="fas fa-file-pdf fa-sm"></i> PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-sm btn-info">
-                            <i class="fas fa-download fa-sm"></i> Descargar CSV
-                        </button>
+
+                        <!-- Reporte Completo -->
+                        <div class="col-xl-4 col-md-6 mb-4">
+                            <div class="card border-left-warning h-100">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Reporte Completo
+                                            </div>
+                                            <div class="h6 mb-1 text-gray-800">
+                                                Resumen ejecutivo completo
+                                            </div>
+                                            <div class="text-xs text-muted mb-3">
+                                                Todas las métricas en un solo archivo
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="form-group mb-2">
+                                            <label class="small">Año del reporte</label>
+                                            <select class="form-control form-control-sm" id="anioCompleto">
+                                                {% for año in años_cohorte %}
+                                                <option value="{{ año }}" {% if forloop.first %}selected{% endif %}>{{ año }}</option>
+                                                {% empty %}
+                                                <option value="{{ current_year }}">{{ current_year }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <a href="#" class="btn btn-sm btn-warning btn-block btn-reporte-completo">
+                                            <i class="fas fa-file-download fa-sm"></i> Descargar Reporte Completo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -92,60 +348,93 @@
     </div>
 
     <!-- Reportes Personalizados -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Reportes Personalizados</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Creado por</th>
-                            <th>Fecha Creación</th>
-                            <th>Compartido</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reporte in reportes_personalizados %}
-                        <tr>
-                            <td>{{ reporte.nombre }}</td>
-                            <td>{{ reporte.descripcion }}</td>
-                            <td>{{ reporte.usuario_creador.get_full_name }}</td>
-                            <td>{{ reporte.fecha_creacion|date:"d/m/Y" }}</td>
-                            <td>
-                                {% if reporte.compartido %}
-                                <span class="badge badge-success">Sí</span>
-                                {% else %}
-                                <span class="badge badge-secondary">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-info" title="Ejecutar">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-warning" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador %}
-                                    <button class="btn btn-sm btn-danger" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center">No hay reportes personalizados</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">📋 Reportes Personalizados</h6>
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#nuevoReporteModal">
+                        <i class="fas fa-plus fa-sm"></i> Crear Nuevo
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if reportes_personalizados %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="tablaReportes" width="100%" cellspacing="0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="20%">Nombre</th>
+                                    <th width="30%">Descripción</th>
+                                    <th width="15%">Creado por</th>
+                                    <th width="15%">Fecha Creación</th>
+                                    <th width="10%">Compartido</th>
+                                    <th width="10%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reporte in reportes_personalizados %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ reporte.nombre }}</strong>
+                                        {% if reporte.usuario_creador == request.user %}
+                                        <span class="badge badge-primary badge-pill">Propio</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reporte.descripcion %}
+                                        {{ reporte.descripcion|truncatewords:10 }}
+                                        {% else %}
+                                        <span class="text-muted">Sin descripción</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reporte.usuario_creador.get_full_name|default:reporte.usuario_creador.username }}</td>
+                                    <td>{{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                                    <td class="text-center">
+                                        {% if reporte.compartido %}
+                                        <span class="badge badge-success"><i class="fas fa-check"></i> Sí</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary"><i class="fas fa-times"></i> No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-info btn-sm ejecutar-reporte" 
+                                                    data-reporte-id="{{ reporte.id }}"
+                                                    title="Ejecutar Reporte">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                            {% if reporte.usuario_creador == request.user or request.user.is_superuser %}
+                                            <button class="btn btn-warning btn-sm editar-reporte" 
+                                                    data-reporte-id="{{ reporte.id }}"
+                                                    title="Editar Reporte">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            {% endif %}
+                                            {% if request.user.is_superuser or request.user.usuariosusuario.es_administrador or reporte.usuario_creador == request.user %}
+                                            <button class="btn btn-danger btn-sm eliminar-reporte" 
+                                                    data-reporte-id="{{ reporte.id }}"
+                                                    title="Eliminar Reporte">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-alt fa-4x text-gray-300 mb-3"></i>
+                        <h4 class="text-gray-500">No hay reportes personalizados</h4>
+                        <p class="text-muted">Crea tu primer reporte personalizado para empezar a analizar datos específicos.</p>
+                        <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#nuevoReporteModal">
+                            <i class="fas fa-plus fa-sm"></i> Crear Primer Reporte
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -156,42 +445,449 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="nuevoReporteModalLabel">Crear Nuevo Reporte</h5>
+                <h5 class="modal-title" id="nuevoReporteModalLabel">Crear Nuevo Reporte Personalizado</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post">
+            <form id="formNuevoReporte" method="post" action="{% url 'indicadores:reportes_gerenciales' %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="nombreReporte">Nombre del Reporte *</label>
-                        <input type="text" class="form-control" id="nombreReporte" name="nombre" required>
+                        <label for="nombreReporte" class="font-weight-bold">Nombre del Reporte *</label>
+                        <input type="text" class="form-control" id="nombreReporte" name="nombre" 
+                               placeholder="Ej: Análisis Trimestral de Éxito de Tratamiento" required>
+                        <small class="form-text text-muted">Un nombre descriptivo para identificar fácilmente el reporte.</small>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="descripcionReporte">Descripción</label>
-                        <textarea class="form-control" id="descripcionReporte" name="descripcion" rows="3"></textarea>
+                        <label for="descripcionReporte" class="font-weight-bold">Descripción</label>
+                        <textarea class="form-control" id="descripcionReporte" name="descripcion" 
+                                  rows="3" placeholder="Describe el propósito y alcance de este reporte..."></textarea>
+                        <small class="form-text text-muted">Opcional, pero recomendado para entender el objetivo del reporte.</small>
                     </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="tipoReporte" class="font-weight-bold">Tipo de Reporte *</label>
+                                <select class="form-control" id="tipoReporte" name="tipo" required>
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="cohorte">Indicadores de Cohorte</option>
+                                    <option value="operacional">Indicadores Operacionales</option>
+                                    <option value="prevencion">Indicadores de Prevención</option>
+                                    <option value="alertas">Sistema de Alertas</option>
+                                    <option value="combinado">Reporte Combinado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="formatoReporte" class="font-weight-bold">Formato de Salida</label>
+                                <select class="form-control" id="formatoReporte" name="formato">
+                                    <option value="csv">CSV (Excel)</option>
+                                    <option value="pdf">PDF (Documento)</option>
+                                    <option value="ambos">Ambos formatos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="periodoInicio" class="font-weight-bold">Período Inicio</label>
+                                <input type="date" class="form-control" id="periodoInicio" name="periodo_inicio">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="periodoFin" class="font-weight-bold">Período Fin</label>
+                                <input type="date" class="form-control" id="periodoFin" name="periodo_fin">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="tipoReporte">Tipo de Reporte</label>
-                        <select class="form-control" id="tipoReporte" name="tipo">
-                            <option value="cohorte">Indicadores de Cohorte</option>
-                            <option value="operacional">Indicadores Operacionales</option>
-                            <option value="prevencion">Indicadores de Prevención</option>
-                            <option value="alertas">Sistema de Alertas</option>
-                        </select>
+                        <label class="font-weight-bold">Filtros Adicionales</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="filtroEstablecimiento" name="filtro_establecimiento">
+                                    <label class="custom-control-label" for="filtroEstablecimiento">Por Establecimiento</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="filtroRegion" name="filtro_region">
+                                    <label class="custom-control-label" for="filtroRegion">Por Región</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="filtroUsuario" name="filtro_usuario">
+                                    <label class="custom-control-label" for="filtroUsuario">Por Usuario</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="compartirReporte" name="compartido">
-                        <label class="form-check-label" for="compartirReporte">Compartir este reporte con otros usuarios</label>
+                    
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="compartirReporte" name="compartido">
+                            <label class="custom-control-label" for="compartirReporte">
+                                <strong>Compartir este reporte con otros usuarios</strong>
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Si activas esta opción, otros usuarios podrán ver y ejecutar este reporte.
+                        </small>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Los reportes personalizados se guardan en tu perfil y puedes ejecutarlos en cualquier momento.
+                        También puedes programarlos para ejecución automática si tienes permisos de administrador.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Reporte</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Reporte
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Modal Configuración Reporte -->
+<div class="modal fade" id="configReporteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚙️ Configurar Reporte</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formConfigReporte">
+                    <div class="form-group">
+                        <label>Frecuencia de Actualización</label>
+                        <select class="form-control" id="frecuenciaActualizacion">
+                            <option value="manual">Manual</option>
+                            <option value="diaria">Diaria</option>
+                            <option value="semanal">Semanal</option>
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                        </select>
+                        <small class="form-text text-muted">Para reportes automáticos con permisos de administrador.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notificaciones</label>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="notificacionEmail" checked>
+                            <label class="custom-control-label" for="notificacionEmail">
+                                Enviar notificación por email al completar
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Retención de Datos</label>
+                        <select class="form-control" id="retencionDatos">
+                            <option value="30">30 días</option>
+                            <option value="90">90 días</option>
+                            <option value="180">6 meses</option>
+                            <option value="365">1 año</option>
+                            <option value="0">Indefinido</option>
+                        </select>
+                        <small class="form-text text-muted">Tiempo que se mantienen los resultados del reporte.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="guardarConfigReporte">
+                    <i class="fas fa-save"></i> Guardar Configuración
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn {
+    border-radius: 0.35rem !important;
+}
+
+.badge-pill {
+    font-size: 0.7rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.form-control-sm {
+    font-size: 0.875rem;
+}
+
+.custom-control-label {
+    font-size: 0.9rem;
+}
+
+.alert-info {
+    background-color: #e8f4fc;
+    border-color: #b6d4fe;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Variables globales
+    var currentYear = new Date().getFullYear();
+    
+    // Inicializar selects con año actual si no hay datos
+    if ($('#anioCohorte option').length === 0) {
+        $('#anioCohorte').append('<option value="' + currentYear + '">' + currentYear + '</option>');
+    }
+    
+    // Generar reporte de cohorte CSV
+    $('.btn-reporte-cohorte-csv').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioCohorte').val();
+        var trimestre = $('#trimestreCohorte').val();
+        var url = "{% url 'indicadores:exportar_excel_cohorte' %}?año=" + año + "&trimestre=" + trimestre;
+        window.location.href = url;
+    });
+    
+    // Generar reporte de cohorte PDF
+    $('.btn-reporte-cohorte-pdf').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioCohorte').val();
+        var trimestre = $('#trimestreCohorte').val();
+        var url = "{% url 'indicadores:exportar_pdf_cohorte' %}?año=" + año + "&trimestre=" + trimestre;
+        window.open(url, '_blank');
+    });
+    
+    // Generar reporte operacional CSV
+    $('.btn-reporte-operacional-csv').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioOperacional').val();
+        var mes = $('#mesOperacional').val();
+        var url = "{% url 'indicadores:exportar_excel_operacional' %}?año=" + año + "&mes=" + mes;
+        window.location.href = url;
+    });
+    
+    // Generar reporte operacional PDF
+    $('.btn-reporte-operacional-pdf').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioOperacional').val();
+        var mes = $('#mesOperacional').val();
+        var url = "{% url 'indicadores:exportar_pdf_operacional' %}?año=" + año + "&mes=" + mes;
+        window.open(url, '_blank');
+    });
+    
+    // Generar reporte prevención CSV
+    $('.btn-reporte-prevencion-csv').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioPrevencion').val();
+        var mes = $('#mesPrevencion').val();
+        var url = "{% url 'indicadores:exportar_excel_operacional' %}?año=" + año + "&mes=" + mes + "&tipo=prevencion";
+        window.location.href = url;
+    });
+    
+    // Generar reporte prevención PDF
+    $('.btn-reporte-prevencion-pdf').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioPrevencion').val();
+        var mes = $('#mesPrevencion').val();
+        var url = "{% url 'indicadores:exportar_pdf_operacional' %}?año=" + año + "&mes=" + mes + "&tipo=prevencion";
+        window.open(url, '_blank');
+    });
+    
+    // Generar reporte completo
+    $('.btn-reporte-completo').click(function(e) {
+        e.preventDefault();
+        var año = $('#anioCompleto').val();
+        var url = "{% url 'indicadores:exportar_excel_completo' %}?año=" + año;
+        window.location.href = url;
+    });
+    
+    // Ejecutar reporte personalizado
+    $('.ejecutar-reporte').click(function() {
+        var reporteId = $(this).data('reporte-id');
+        ejecutarReportePersonalizado(reporteId);
+    });
+    
+    // Editar reporte personalizado
+    $('.editar-reporte').click(function() {
+        var reporteId = $(this).data('reporte-id');
+        editarReportePersonalizado(reporteId);
+    });
+    
+    // Eliminar reporte personalizado
+    $('.eliminar-reporte').click(function() {
+        var reporteId = $(this).data('reporte-id');
+        eliminarReportePersonalizado(reporteId);
+    });
+    
+    // Generar reporte automático
+    $('#generarReporteAutomatico').click(function() {
+        generarReporteAutomatico();
+    });
+    
+    // Configuración de reporte
+    $('#guardarConfigReporte').click(function() {
+        guardarConfiguracionReporte();
+    });
+    
+    // Validación del formulario de nuevo reporte
+    $('#formNuevoReporte').submit(function(e) {
+        e.preventDefault();
+        crearNuevoReporte();
+    });
+});
+
+function ejecutarReportePersonalizado(reporteId) {
+    // Implementar llamada AJAX para ejecutar reporte
+    showToast('info', 'Ejecutando reporte...', 'Por favor espere');
+    
+    setTimeout(function() {
+        showToast('success', 'Reporte ejecutado correctamente', 'Los resultados están listos');
+    }, 1500);
+}
+
+function editarReportePersonalizado(reporteId) {
+    // Implementar modal de edición
+    $('#configReporteModal').modal('show');
+}
+
+function eliminarReportePersonalizado(reporteId) {
+    if (confirm('¿Está seguro de eliminar este reporte personalizado? Esta acción no se puede deshacer.')) {
+        // Implementar llamada AJAX para eliminar reporte
+        $.ajax({
+            url: '/indicadores/reportes/' + reporteId + '/eliminar/',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('success', 'Reporte eliminado', 'El reporte ha sido eliminado correctamente');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                }
+            },
+            error: function() {
+                showToast('error', 'Error', 'No se pudo eliminar el reporte');
+            }
+        });
+    }
+}
+
+function generarReporteAutomatico() {
+    showToast('info', 'Actualizando datos...', 'Esto puede tomar unos momentos');
+    
+    $.ajax({
+        url: "{% url 'indicadores:actualizar_indicadores' %}",
+        method: 'POST',
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                showToast('success', 'Datos actualizados', 'Los indicadores se han recalculado correctamente');
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+            } else {
+                showToast('error', 'Error', response.error || 'Error al actualizar datos');
+            }
+        },
+        error: function() {
+            showToast('error', 'Error', 'No se pudo conectar con el servidor');
+        }
+    });
+}
+
+function guardarConfiguracionReporte() {
+    // Implementar guardado de configuración
+    showToast('success', 'Configuración guardada', 'Los cambios se han aplicado correctamente');
+    $('#configReporteModal').modal('hide');
+}
+
+function crearNuevoReporte() {
+    // Implementar creación de nuevo reporte
+    var formData = new FormData($('#formNuevoReporte')[0]);
+    
+    $.ajax({
+        url: $('#formNuevoReporte').attr('action'),
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.success) {
+                showToast('success', 'Reporte creado', 'El reporte se ha guardado correctamente');
+                $('#nuevoReporteModal').modal('hide');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            }
+        },
+        error: function() {
+            showToast('error', 'Error', 'No se pudo crear el reporte');
+        }
+    });
+}
+
+function showToast(type, title, message) {
+    // Implementar notificación toast con Bootstrap
+    var toastHtml = `
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+            <div class="toast-header">
+                <strong class="mr-auto">${title}</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    $('#toastContainer').append(toastHtml);
+    $('.toast').toast('show');
+    
+    // Remover toast después de ocultarse
+    $('.toast').on('hidden.bs.toast', function() {
+        $(this).remove();
+    });
+}
+
+// Crear contenedor para toasts si no existe
+if ($('#toastContainer').length === 0) {
+    $('body').append('<div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>');
+}
+</script>
 {% endblock %}

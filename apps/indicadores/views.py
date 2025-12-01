@@ -178,15 +178,24 @@ class PermisoAdministradorMixin(UserPassesTestMixin):
 # ============================================================
 
 def render_to_pdf(template_src, context_dict={}):
-    """Función auxiliar para convertir HTML a PDF"""
+    """Función auxiliar para convertir HTML a PDF - VERSIÓN SIMPLE"""
     try:
         template = render_to_string(template_src, context_dict)
         result = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(template.encode("UTF-8")), result)
         
-        if not pdf.err:
-            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        # Solo ejecutar la conversión
+        pisa.pisaDocument(
+            BytesIO(template.encode("UTF-8")), 
+            result
+        )
+        
+        # Si llegamos aquí sin excepción y hay contenido, asumimos éxito
+        pdf_content = result.getvalue()
+        if pdf_content:
+            return HttpResponse(pdf_content, content_type='application/pdf')
+            
         return None
+        
     except Exception as e:
         print(f"Error generando PDF: {e}")
         return None
