@@ -12,7 +12,7 @@ def lista_pacientes(request):
     Lista todos los pacientes con control de acceso por permisos
     Filtra según los permisos del usuario
     """
-    if request.user.has_perm('pacientes.view_pacientespaciente'):
+    if request.user.has_perm('pacientes.view_all_pacientes'):
         pacientes = PacientesPaciente.objects.all().order_by('-fecha_registro')
     else:
         pacientes = PacientesPaciente.objects.filter(
@@ -112,6 +112,7 @@ def detalle_paciente(request, pk):
         'paciente': paciente,
         'puede_editar': request.user.has_perm('pacientes.change_pacientespaciente'),
         'puede_eliminar': request.user.has_perm('pacientes.delete_pacientespaciente'),
+        'form': PacienteForm()  # Pasar el formulario para usar formatear_rut_con_puntos
     }
     return render(request, 'pacientes/detalle_paciente.html', context)
 
@@ -147,16 +148,26 @@ def buscar_pacientes(request):
     estado_filtro = request.GET.get('estado', '')
     comuna_filtro = request.GET.get('comuna', '')
 
-    if request.user.has_perm('pacientes.view_pacientespaciente'):
+    if request.user.has_perm('pacientes.view_all_pacientes'):
         pacientes = PacientesPaciente.objects.all()
     else:
         pacientes = PacientesPaciente.objects.filter(usuario_registro=request.user)
 
     if query:
-        pacientes = pacientes.filter(
-            Q(nombre__icontains=query) |
-            Q(rut__icontains=query)
-        )
+        # Normalizar el RUT de búsqueda para comparar con el formato almacenado
+        form_helper = PacienteForm()
+        try:
+            rut_normalizado = form_helper.normalizar_rut(query)
+            pacientes = pacientes.filter(
+                Q(nombre__icontains=query) |
+                Q(rut__icontains=rut_normalizado) |
+                Q(rut__icontains=query.replace('.', '').replace('-', '').upper())
+            )
+        except:
+            pacientes = pacientes.filter(
+                Q(nombre__icontains=query) |
+                Q(rut__icontains=query)
+            )
 
     if estado_filtro:
         pacientes = pacientes.filter(estado=estado_filtro)

@@ -78,7 +78,7 @@
                 <tbody>
                     {% for p in pacientes %}
                     <tr>
-                        <td class="fw-bold">{{ p.rut }}</td>
+                        <td class="fw-bold">{{ p.get_rut_formateado }}</td>
                         <td>{{ p.nombre }}</td>
                         <td>{{ p.get_edad }} años</td>
                         <td>{{ p.comuna }}</td>

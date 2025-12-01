@@ -48,7 +48,7 @@ class PacientesPaciente(models.Model):
 
     # Campos principales del paciente
     id = models.BigAutoField(primary_key=True)
-    rut = models.CharField(unique=True, max_length=12)
+    rut = models.CharField(unique=True, max_length=12)  # Guardado como 18444840-8
     nombre = models.CharField(max_length=200)
     fecha_nacimiento = models.DateField()
     sexo = models.CharField(max_length=1, choices=SEXO_CHOICES)
@@ -108,7 +108,26 @@ class PacientesPaciente(models.Model):
     
     def get_sexo_display(self):
         """Método manual para obtener el display del sexo"""
-        return dict(self.SEXO_CHOICES).get(self.sexo, self.sexo)
+        sexo_dict = dict(self.SEXO_CHOICES)
+        return sexo_dict.get(self.sexo, self.sexo)
+
+    def get_tipo_tbc_display(self):
+        """Método manual para obtener el display del tipo de TBC"""
+        tipo_dict = dict(self.TIPO_TBC_CHOICES)
+        return tipo_dict.get(self.tipo_tbc, self.tipo_tbc)
+
+    def get_estado_display(self):
+        """Método manual para obtener el display del estado"""
+        estado_dict = dict(self.ESTADO_CHOICES)
+        return estado_dict.get(self.estado, self.estado)
+
+    def get_poblacion_prioritaria_display(self):
+        """Método manual para obtener el display de población prioritaria"""
+        poblacion_dict = dict(self.POBLACION_PRIORITARIA_CHOICES)
+        # Verificar si el valor no es None ni vacío
+        if self.poblacion_prioritaria:
+            return poblacion_dict.get(self.poblacion_prioritaria, self.poblacion_prioritaria)
+        return "No aplica"
 
     def get_enfermedades_list(self):
         """
@@ -138,3 +157,19 @@ class PacientesPaciente(models.Model):
             paciente=self,
             resultado_final__in=[None, 'En Tratamiento']
         ).exists()
+    
+    def get_rut_formateado(self):
+        """Devuelve el RUT formateado con puntos: 12.345.678-9"""
+        if not self.rut or '-' not in self.rut:
+            return self.rut
+        
+        numero, dv = self.rut.split('-')
+        numero_formateado = ''
+        
+        # Formatear con puntos cada 3 dígitos desde el final
+        while len(numero) > 3:
+            numero_formateado = '.' + numero[-3:] + numero_formateado
+            numero = numero[:-3]
+        numero_formateado = numero + numero_formateado
+        
+        return f"{numero_formateado}-{dv}"

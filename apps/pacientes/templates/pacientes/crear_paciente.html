@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{% if paciente %}Editar Paciente{% else %}Registrar Nuevo Paciente{% endif %} - Sistema TBC{% endblock %}
+{% block title %}Registrar Nuevo Paciente - Sistema TBC{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -11,7 +11,7 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-user-plus me-2"></i>
-                        {% if paciente %}Editar Paciente{% else %}Registrar Nuevo Paciente{% endif %}
+                        Registrar Nuevo Paciente
                     </h4>
                 </div>
                 <div class="card-body">
@@ -28,7 +28,6 @@
                         {% endif %}
 
                         <div class="row">
-                            <!-- Columna 1: Datos Personales -->
                             <div class="col-md-6">
                                 <h5 class="border-bottom pb-2 mb-3 text-primary">
                                     <i class="fas fa-id-card me-2"></i>Datos Personales
@@ -78,7 +77,6 @@
                                 </div>
                             </div>
 
-                            <!-- Columna 2: Dirección y Contacto -->
                             <div class="col-md-6">
                                 <h5 class="border-bottom pb-2 mb-3 text-primary">
                                     <i class="fas fa-home me-2"></i>Dirección y Contacto
@@ -110,7 +108,6 @@
                             </div>
                         </div>
 
-                        <!-- Segunda fila: Datos Médicos -->
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <h5 class="border-bottom pb-2 mb-3 text-primary">
@@ -173,7 +170,6 @@
                             </div>
                         </div>
 
-                        <!-- Tercera fila: Enfermedades y Alergias Preexistentes -->
                         <div class="row mt-4">
                             <div class="col-md-12">
                                 <h5 class="border-bottom pb-2 mb-3 text-primary">
@@ -181,7 +177,6 @@
                                 </h5>
                                 
                                 <div class="row">
-                                    <!-- Enfermedades Preexistentes -->
                                     <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header bg-light">
@@ -199,7 +194,6 @@
                                                 </div>
                                                 
                                                 <div id="lista-enfermedades" class="mb-3">
-                                                    <!-- Lista de enfermedades se mostrará aquí -->
                                                 </div>
                                                 
                                                 {{ form.enfermedades_preexistentes }}
@@ -207,7 +201,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Alergias -->
                                     <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header bg-light">
@@ -225,7 +218,6 @@
                                                 </div>
                                                 
                                                 <div id="lista-alergias" class="mb-3">
-                                                    <!-- Lista de alergias se mostrará aquí -->
                                                 </div>
                                                 
                                                 {{ form.alergias }}
@@ -244,7 +236,7 @@
                                     </a>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i>
-                                        {% if paciente %}Actualizar Paciente{% else %}Registrar Paciente{% endif %}
+                                        Registrar Paciente
                                     </button>
                                 </div>
                             </div>
@@ -282,7 +274,7 @@
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -296,16 +288,19 @@
     border: none;
     color: #dc3545;
     cursor: pointer;
+    padding: 0.25rem 0.5rem;
+}
+
+.btn-eliminar-item:hover {
+    color: #bd2130;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Arrays para almacenar enfermedades y alergias
     let enfermedades = [];
     let alergias = [];
     
-    // Elementos del DOM
     const enfermedadInput = document.getElementById('nueva-enfermedad');
     const alergiaInput = document.getElementById('nueva-alergia');
     const agregarEnfermedadBtn = document.getElementById('agregar-enfermedad');
@@ -314,8 +309,54 @@ document.addEventListener('DOMContentLoaded', function() {
     const listaAlergias = document.getElementById('lista-alergias');
     const enfermedadesHidden = document.getElementById('enfermedades-input');
     const alergiasHidden = document.getElementById('alergias-input');
+    const rutInput = document.getElementById('rut-input');
     
-    // Función para agregar enfermedad
+    function formatearRutInput(valor) {
+        let rut = valor.replace(/[^0-9Kk\-]/g, '');
+        
+        if (rut.includes('-') || rut.length > 8) {
+            let numero = rut.split('-')[0] || rut.slice(0, -1);
+            let dv = rut.includes('-') ? rut.split('-')[1] : rut.slice(-1);
+            
+            let numeroFormateado = '';
+            while (numero.length > 3) {
+                numeroFormateado = '.' + numero.slice(-3) + numeroFormateado;
+                numero = numero.slice(0, -3);
+            }
+            numeroFormateado = numero + numeroFormateado;
+            
+            return dv ? numeroFormateado + '-' + dv.toUpperCase() : numeroFormateado;
+        }
+        
+        let numeroFormateado = '';
+        let tempNumero = rut;
+        while (tempNumero.length > 3) {
+            numeroFormateado = '.' + tempNumero.slice(-3) + numeroFormateado;
+            tempNumero = tempNumero.slice(0, -3);
+        }
+        numeroFormateado = tempNumero + numeroFormateado;
+        
+        return numeroFormateado;
+    }
+    
+    if (rutInput) {
+        rutInput.addEventListener('input', function(e) {
+            let cursorPos = e.target.selectionStart;
+            let valorOriginal = e.target.value;
+            
+            let valorFormateado = formatearRutInput(valorOriginal);
+            
+            e.target.value = valorFormateado;
+            
+            let diferencia = valorFormateado.length - valorOriginal.length;
+            e.target.setSelectionRange(cursorPos + diferencia, cursorPos + diferencia);
+        });
+        
+        rutInput.addEventListener('blur', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    }
+    
     function agregarEnfermedad() {
         const enfermedad = enfermedadInput.value.trim();
         if (enfermedad && !enfermedades.includes(enfermedad)) {
@@ -326,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Función para agregar alergia
     function agregarAlergia() {
         const alergia = alergiaInput.value.trim();
         if (alergia && !alergias.includes(alergia)) {
@@ -337,7 +377,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Función para actualizar lista de enfermedades
     function actualizarListaEnfermedades() {
         listaEnfermedades.innerHTML = '';
         enfermedades.forEach((enfermedad, index) => {
@@ -354,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
         enfermedadesHidden.value = enfermedades.join(',');
     }
     
-    // Función para actualizar lista de alergias
     function actualizarListaAlergias() {
         listaAlergias.innerHTML = '';
         alergias.forEach((alergia, index) => {
@@ -371,7 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
         alergiasHidden.value = alergias.join(',');
     }
     
-    // Funciones globales para eliminar items
     window.eliminarEnfermedad = function(index) {
         enfermedades.splice(index, 1);
         actualizarListaEnfermedades();
@@ -382,7 +419,6 @@ document.addEventListener('DOMContentLoaded', function() {
         actualizarListaAlergias();
     };
     
-    // Event listeners
     agregarEnfermedadBtn.addEventListener('click', agregarEnfermedad);
     agregarAlergiaBtn.addEventListener('click', agregarAlergia);
     
@@ -399,19 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
             agregarAlergia();
         }
     });
-    
-    // Cargar datos existentes si estamos editando
-    {% if paciente %}
-        {% if paciente.enfermedades_preexistentes %}
-            enfermedades = [{% for enfermedad in paciente.get_enfermedades_list %}'{{ enfermedad }}'{% if not forloop.last %},{% endif %}{% endfor %}];
-            actualizarListaEnfermedades();
-        {% endif %}
-        
-        {% if paciente.alergias %}
-            alergias = [{% for alergia in paciente.get_alergias_list %}'{{ alergia }}'{% if not forloop.last %},{% endif %}{% endfor %}];
-            actualizarListaAlergias();
-        {% endif %}
-    {% endif %}
 });
 </script>
 {% endblock %}

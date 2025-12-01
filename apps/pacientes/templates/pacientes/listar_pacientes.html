@@ -49,7 +49,7 @@
                 <tbody>
                     {% for paciente in pacientes %}
                     <tr>
-                        <td class="fw-bold">{{ paciente.rut }}</td>
+                        <td class="fw-bold">{{ paciente.get_rut_formateado }}</td>
                         <td>{{ paciente.nombre }}</td>
                         <td>{{ paciente.get_edad }} años</td>
                         <td>{{ paciente.fecha_diagnostico|default:"-"|date:"d/m/Y" }}</td>
