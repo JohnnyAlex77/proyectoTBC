@@ -1,7 +1,8 @@
-# services.py - Servicios para cálculo de indicadores
+# apps/indicadores/services.py
 from django.db.models import Count, Q, Avg
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone  # <-- AÑADIR ESTA IMPORTACIÓN
 from apps.pacientes.models import PacientesPaciente
 from apps.tratamientos.models import Tratamiento
 from apps.contactos.models import ContactosContacto
@@ -162,7 +163,7 @@ class CalculadorIndicadores:
     @staticmethod
     def calcular_todos_indicadores():
         """Calcula todos los indicadores para el año actual"""
-        from django.utils import timezone
+        # No es necesario importar timezone aquí ya que está importado arriba
         hoy = timezone.now()
         año_actual = hoy.year
         mes_actual = hoy.month
@@ -193,7 +194,7 @@ class GeneradorAlertas:
     @staticmethod
     def verificar_alertas_vencimientos():
         """Verifica y genera alertas por vencimientos con datos reales"""
-        from django.utils import timezone
+        # timezone ya está importado arriba, se puede usar directamente
         hoy = timezone.now().date()
 
         # Alertas de vencimiento de tratamientos
@@ -224,6 +225,7 @@ class GeneradorAlertas:
     @staticmethod
     def verificar_alertas_estudio_contactos():
         """Verifica contactos con estudio pendiente"""
+        # timezone ya está importado arriba
         contactos_pendientes = ContactosContacto.objects.filter(
             estado_estudio='pendiente',
             fecha_registro__lte=timezone.now().date() - timedelta(days=7)

@@ -1,12 +1,21 @@
+# apps/indicadores/views.py
 from django.views.generic import TemplateView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count, Avg, Sum, Q
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.conf import settings
 from datetime import timedelta, datetime
+from django.contrib import messages
 import json
 import csv
+import os
+import tempfile
+from io import BytesIO
+import xhtml2pdf.pisa as pisa
+from django.urls import reverse
 
 from .models import (
     IndicadoresCohorte,
@@ -20,11 +29,22 @@ from .services import CalculadorIndicadores, GeneradorAlertas
 from apps.pacientes.models import PacientesPaciente
 from apps.tratamientos.models import Tratamiento
 from apps.contactos.models import ContactosContacto
+from django.contrib.auth.models import User
 
-# Mixins de permisos para el módulo de indicadores
+# ============================================================
+# MIXINS DE PERMISOS PARA EL MÓDULO DE INDICADORES - CORREGIDOS
+# ============================================================
+
 class PermisoIndicadoresMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos generales del módulo de indicadores"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario tiene permisos para acceder al módulo"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -32,14 +52,22 @@ class PermisoIndicadoresMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos para acceder al módulo de Indicadores.")
+        """Maneja cuando el usuario no tiene permisos"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos para acceder al módulo de Indicadores.")
         return redirect('usuarios:dashboard')
 
 class PermisoCohorteMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos específicos de indicadores de cohorte"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario puede acceder a indicadores de cohorte"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -47,14 +75,22 @@ class PermisoCohorteMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos para acceder a los Indicadores de Cohorte.")
+        """Maneja cuando el usuario no tiene permisos"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos para acceder a los Indicadores de Cohorte.")
         return redirect('indicadores:dashboard')
 
 class PermisoOperacionalesMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos de indicadores operacionales"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario puede acceder a indicadores operacionales"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -62,14 +98,22 @@ class PermisoOperacionalesMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos para acceder a los Indicadores Operacionales.")
+        """Maneja cuando el usuario no tiene permisos"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos para acceder a los Indicadores Operacionales.")
         return redirect('indicadores:dashboard')
 
 class PermisoPrevencionMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos de indicadores de prevención"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario puede acceder a indicadores de prevención"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -77,14 +121,22 @@ class PermisoPrevencionMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos para acceder a los Indicadores de Prevención.")
+        """Maneja cuando el usuario no tiene permisos"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos para acceder a los Indicadores de Prevención.")
         return redirect('indicadores:dashboard')
 
 class PermisoReportesMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos de reportes gerenciales"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario puede acceder a reportes gerenciales"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -92,14 +144,22 @@ class PermisoReportesMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos para acceder a los Reportes Gerenciales.")
+        """Maneja cuando el usuario no tiene permisos"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos para acceder a los Reportes Gerenciales.")
         return redirect('indicadores:dashboard')
 
 class PermisoAdministradorMixin(UserPassesTestMixin):
+    """Mixin para verificar permisos de administrador"""
+    
     def test_func(self):
-        user = self.request.user
+        """Verifica si el usuario tiene permisos de administrador"""
+        request = getattr(self, 'request', None)
+        if not request:
+            return False
+            
+        user = request.user
         if user.is_superuser:
             return True
         if hasattr(user, 'usuariosusuario'):
@@ -107,12 +167,34 @@ class PermisoAdministradorMixin(UserPassesTestMixin):
         return False
 
     def handle_no_permission(self):
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        messages.error(self.request, "No tiene permisos de administrador para esta acción.")
+        """Maneja cuando el usuario no tiene permisos de administrador"""
+        request = getattr(self, 'request', None)
+        if request:
+            messages.error(request, "No tiene permisos de administrador para esta acción.")
         return redirect('indicadores:dashboard')
 
-# Vistas principales
+# ============================================================
+# FUNCIONES AUXILIARES
+# ============================================================
+
+def render_to_pdf(template_src, context_dict={}):
+    """Función auxiliar para convertir HTML a PDF"""
+    try:
+        template = render_to_string(template_src, context_dict)
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(template.encode("UTF-8")), result)
+        
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None
+    except Exception as e:
+        print(f"Error generando PDF: {e}")
+        return None
+
+# ============================================================
+# VISTAS PRINCIPALES
+# ============================================================
+
 class DashboardPrincipalView(PermisoIndicadoresMixin, LoginRequiredMixin, TemplateView):
     """Vista principal del dashboard con datos reales"""
     template_name = 'indicadores/dashboard_principal.html'
@@ -157,7 +239,9 @@ class DashboardPrincipalView(PermisoIndicadoresMixin, LoginRequiredMixin, Templa
         tasas_abandono = []
 
         for ind in indicadores:
-            trimestres.append(f"{ind.año}-{ind.get_trimestre_display()}")
+            # Usar método get_trimestre_display() que ahora existe en el modelo
+            trimestre_display = ind.get_trimestre_display()
+            trimestres.append(f"{ind.año}-{trimestre_display}")
             tasas_exito.append(float(ind.exito_tratamiento_porcentaje))
             tasas_abandono.append(float(ind.tasa_abandono))
 
@@ -358,6 +442,9 @@ class AlertasView(PermisoIndicadoresMixin, LoginRequiredMixin, ListView):
         # Estadísticas para el dashboard de alertas
         alertas = Alerta.objects.all()
 
+        # Obtener usuarios activos
+        usuarios_activos = User.objects.filter(is_active=True)
+
         context.update({
             'alertas_criticas': alertas.filter(nivel='CRITICA', resuelta=False).count(),
             'alertas_altas': alertas.filter(nivel='ALTA', resuelta=False).count(),
@@ -367,7 +454,7 @@ class AlertasView(PermisoIndicadoresMixin, LoginRequiredMixin, ListView):
                 fecha_resolucion__gte=timezone.now() - timedelta(days=7)
             ).count(),
             'establecimientos': Establecimiento.objects.all(),
-            'usuarios': self.request.user.__class__.objects.filter(is_active=True),
+            'usuarios': usuarios_activos,
             'tiempo_promedio_resolucion': self._calcular_tiempo_promedio_resolucion()
         })
         return context
@@ -403,10 +490,373 @@ class ReportesView(PermisoReportesMixin, LoginRequiredMixin, TemplateView):
         context['total_contactos'] = ContactosContacto.objects.count()
         context['total_alertas'] = Alerta.objects.count()
         
+        # Años disponibles para filtros
+        context['años_cohorte'] = IndicadoresCohorte.objects.values_list('año', flat=True).distinct().order_by('-año')
+        context['años_operacionales'] = IndicadoresOperacionales.objects.dates('periodo', 'year', order='DESC')
+        context['años_prevencion'] = IndicadoresPrevencion.objects.dates('periodo', 'year', order='DESC')
+        
         return context
 
+# ============================================================
+# VISTAS DE EXPORTACIÓN A EXCEL (SIMPLIFICADAS)
+# ============================================================
+
+class GenerarReporteCohorteExcelView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista simplificada para generar reportes de cohorte en CSV"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        trimestre = request.GET.get('trimestre', 'all')
+        
+        # Filtrar datos
+        queryset = IndicadoresCohorte.objects.filter(año=año)
+        if trimestre != 'all':
+            queryset = queryset.filter(trimestre=trimestre)
+        
+        # Crear respuesta HTTP con archivo CSV
+        response = HttpResponse(content_type='text/csv')
+        filename = f"reporte_cohorte_{año}_{trimestre}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Año', 'Trimestre', 'Establecimiento', 'Casos Nuevos', 'Casos Retratamiento',
+            'Total Casos', 'Curados', 'Abandonos', 'Fallecidos', 'Éxito Tratamiento %', 'Tasa Abandono %'
+        ])
+            
+        for indicador in queryset:
+            writer.writerow([
+                indicador.año,
+                indicador.get_trimestre_display(),
+                indicador.establecimiento.nombre,
+                indicador.casos_nuevos,
+                indicador.casos_retratamiento,
+                indicador.total_casos,
+                indicador.curados,
+                indicador.abandonos,
+                indicador.fallecidos,
+                indicador.exito_tratamiento_porcentaje,
+                indicador.tasa_abandono
+            ])
+        
+        return response
+
+class GenerarReporteOperacionalExcelView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista simplificada para generar reportes operacionales en CSV"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        mes = request.GET.get('mes', 'all')
+        
+        queryset = IndicadoresOperacionales.objects.filter(periodo__year=año)
+        if mes != 'all':
+            queryset = queryset.filter(periodo__month=mes)
+        
+        # Crear respuesta HTTP con archivo CSV
+        response = HttpResponse(content_type='text/csv')
+        filename = f"reporte_operacional_{año}_{mes}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Periodo', 'Establecimiento', 'Sintomáticos Respiratorios', 'Baciloscopias Realizadas',
+            'Casos TB Encontrados', 'Contactos Identificados', 'Contactos Estudiados',
+            'Pacientes TAES', 'Pacientes Adherentes', 'Índice Pesquisa %', 'Cobertura Contactos %', 'Adherencia TAES %'
+        ])
+            
+        for indicador in queryset:
+            writer.writerow([
+                indicador.periodo.strftime("%Y-%m"),
+                indicador.establecimiento.nombre,
+                indicador.sintomaticos_respiratorios,
+                indicador.baciloscopias_realizadas,
+                indicador.casos_tb_encontrados,
+                indicador.contactos_identificados,
+                indicador.contactos_estudiados,
+                indicador.pacientes_taes,
+                indicador.pacientes_adherentes,
+                indicador.indice_pesquisa,
+                indicador.cobertura_estudio_contactos,
+                indicador.adherencia_taes
+            ])
+        
+        return response
+
+class GenerarReportePrevencionExcelView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista simplificada para generar reportes de prevención en CSV"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        mes = request.GET.get('mes', 'all')
+        
+        queryset = IndicadoresPrevencion.objects.filter(periodo__year=año)
+        if mes != 'all':
+            queryset = queryset.filter(periodo__month=mes)
+        
+        # Crear respuesta HTTP con archivo CSV
+        response = HttpResponse(content_type='text/csv')
+        filename = f"reporte_prevencion_{año}_{mes}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Periodo', 'Establecimiento', 'Contactos Elegibles QP',
+            'Contactos Iniciados QP', 'Contactos Completados QP',
+            'Recién Nacidos', 'Recién Nacidos Vacunados',
+            'Cobertura QP %', 'Adherencia QP %', 'Cobertura BCG %'
+        ])
+            
+        for indicador in queryset:
+            writer.writerow([
+                indicador.periodo.strftime("%Y-%m"),
+                indicador.establecimiento.nombre,
+                indicador.contactos_elegibles_qp,
+                indicador.contactos_iniciados_qp,
+                indicador.contactos_completados_qp,
+                indicador.recien_nacidos,
+                indicador.recien_nacidos_vacunados,
+                indicador.cobertura_quimioprofilaxis,
+                indicador.adherencia_quimioprofilaxis,
+                indicador.cobertura_vacunacion_bcg
+            ])
+        
+        return response
+
+# ============================================================
+# VISTAS DE EXPORTACIÓN A PDF
+# ============================================================
+
+class GenerarReporteCohortePDFView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista para generar reportes de cohorte en PDF"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        trimestre = request.GET.get('trimestre', 'all')
+        
+        # Filtrar datos
+        queryset = IndicadoresCohorte.objects.filter(año=año)
+        if trimestre != 'all':
+            queryset = queryset.filter(trimestre=trimestre)
+        
+        # Calcular estadísticas
+        total_registros = queryset.count()
+        total_casos = sum(i.total_casos for i in queryset) if queryset.exists() else 0
+        promedio_exito = sum(i.exito_tratamiento_porcentaje for i in queryset) / queryset.count() if queryset.exists() else 0
+        promedio_abandono = sum(i.tasa_abandono for i in queryset) / queryset.count() if queryset.exists() else 0
+        
+        # Contexto para la plantilla
+        context = {
+            'queryset': queryset,
+            'año': año,
+            'trimestre': trimestre if trimestre != 'all' else 'Todos',
+            'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'usuario': request.user.get_full_name() or request.user.username,
+            'total_registros': total_registros,
+            'total_casos': total_casos,
+            'promedio_exito': round(promedio_exito, 2),
+            'promedio_abandono': round(promedio_abandono, 2),
+            'titulo': f"Reporte de Indicadores de Cohorte - Año {año}"
+        }
+        
+        pdf = render_to_pdf('indicadores/pdf_reporte_cohorte.html', context)
+        
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            filename = f"reporte_cohorte_{año}_{trimestre}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        
+        return HttpResponse("Error al generar el PDF", status=500)
+
+class GenerarReporteOperacionalPDFView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista para generar reportes operacionales en PDF"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        mes = request.GET.get('mes', 'all')
+        
+        queryset = IndicadoresOperacionales.objects.filter(periodo__year=año)
+        if mes != 'all':
+            queryset = queryset.filter(periodo__month=mes)
+        
+        # Calcular estadísticas
+        total_registros = queryset.count()
+        promedio_indice_pesquisa = sum(i.indice_pesquisa for i in queryset) / queryset.count() if queryset.exists() else 0
+        promedio_cobertura_contactos = sum(i.cobertura_estudio_contactos for i in queryset) / queryset.count() if queryset.exists() else 0
+        
+        # Contexto para la plantilla
+        context = {
+            'queryset': queryset,
+            'año': año,
+            'mes': mes if mes != 'all' else 'Todos',
+            'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'usuario': request.user.get_full_name() or request.user.username,
+            'total_registros': total_registros,
+            'promedio_indice_pesquisa': round(promedio_indice_pesquisa, 2),
+            'promedio_cobertura_contactos': round(promedio_cobertura_contactos, 2),
+            'titulo': f"Reporte de Indicadores Operacionales - Año {año}"
+        }
+        
+        pdf = render_to_pdf('indicadores/pdf_reporte_operacional.html', context)
+        
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            filename = f"reporte_operacional_{año}_{mes}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        
+        return HttpResponse("Error al generar el PDF", status=500)
+
+class GenerarReportePrevencionPDFView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Vista para generar reportes de prevención en PDF"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        mes = request.GET.get('mes', 'all')
+        
+        queryset = IndicadoresPrevencion.objects.filter(periodo__year=año)
+        if mes != 'all':
+            queryset = queryset.filter(periodo__month=mes)
+        
+        # Calcular estadísticas
+        total_registros = queryset.count()
+        promedio_cobertura_qp = sum(i.cobertura_quimioprofilaxis for i in queryset) / queryset.count() if queryset.exists() else 0
+        promedio_cobertura_bcg = sum(i.cobertura_vacunacion_bcg for i in queryset) / queryset.count() if queryset.exists() else 0
+        
+        # Contexto para la plantilla
+        context = {
+            'queryset': queryset,
+            'año': año,
+            'mes': mes if mes != 'all' else 'Todos',
+            'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'usuario': request.user.get_full_name() or request.user.username,
+            'total_registros': total_registros,
+            'promedio_cobertura_qp': round(promedio_cobertura_qp, 2),
+            'promedio_cobertura_bcg': round(promedio_cobertura_bcg, 2),
+            'titulo': f"Reporte de Indicadores de Prevención - Año {año}"
+        }
+        
+        pdf = render_to_pdf('indicadores/pdf_reporte_prevencion.html', context)
+        
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            filename = f"reporte_prevencion_{año}_{mes}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        
+        return HttpResponse("Error al generar el PDF", status=500)
+
+# ============================================================
+# VISTAS DE REPORTES COMPLETOS (SIMPLIFICADAS)
+# ============================================================
+
+class GenerarReporteCompletoExcelView(PermisoReportesMixin, LoginRequiredMixin, View):
+    """Genera un reporte completo con todas las métricas en CSV"""
+    
+    def get(self, request, *args, **kwargs):
+        año = request.GET.get('año', datetime.now().year)
+        
+        # Obtener datos de todas las fuentes
+        indicadores_cohorte = IndicadoresCohorte.objects.filter(año=año)
+        indicadores_operacionales = IndicadoresOperacionales.objects.filter(periodo__year=año)
+        indicadores_prevencion = IndicadoresPrevencion.objects.filter(periodo__year=año)
+        
+        # Crear respuesta HTTP con archivo CSV
+        response = HttpResponse(content_type='text/csv')
+        filename = f"reporte_completo_tbc_{año}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        writer = csv.writer(response)
+        
+        # Sección 1: Resumen Ejecutivo
+        writer.writerow([f"REPORTE COMPLETO SISTEMA TBC - AÑO {año}"])
+        writer.writerow(["Sistema TBC - Gestión de Tuberculosis"])
+        writer.writerow([f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}"])
+        writer.writerow([f"Usuario: {request.user.get_full_name() or request.user.username}"])
+        writer.writerow([])
+        
+        # Métricas clave
+        writer.writerow(["MÉTRICAS CLAVE"])
+        writer.writerow(["Total Pacientes Registrados", PacientesPaciente.objects.count()])
+        writer.writerow(["Pacientes Activos en Tratamiento", PacientesPaciente.objects.filter(estado='activo').count()])
+        writer.writerow(["Total Tratamientos", Tratamiento.objects.count()])
+        writer.writerow(["Contactos Identificados", ContactosContacto.objects.count()])
+        writer.writerow(["Alertas Pendientes", Alerta.objects.filter(resuelta=False).count()])
+        writer.writerow([])
+        
+        # Sección 2: Indicadores de Cohorte
+        writer.writerow(["INDICADORES DE COHORTE"])
+        writer.writerow(['Año', 'Trimestre', 'Establecimiento', 'Casos Nuevos', 'Casos Retratamiento',
+                        'Total Casos', 'Curados', 'Abandonos', 'Fallecidos', 'Éxito %', 'Abandono %'])
+        
+        for indicador in indicadores_cohorte:
+            writer.writerow([
+                indicador.año,
+                indicador.get_trimestre_display(),
+                indicador.establecimiento.nombre,
+                indicador.casos_nuevos,
+                indicador.casos_retratamiento,
+                indicador.total_casos,
+                indicador.curados,
+                indicador.abandonos,
+                indicador.fallecidos,
+                indicador.exito_tratamiento_porcentaje,
+                indicador.tasa_abandono
+            ])
+        writer.writerow([])
+        
+        # Sección 3: Indicadores Operacionales
+        writer.writerow(["INDICADORES OPERACIONALES"])
+        writer.writerow(['Periodo', 'Establecimiento', 'Sintomáticos', 'Baciloscopias',
+                        'Casos TB', 'Contactos Id.', 'Contactos Est.', 'Pac. TAES',
+                        'Pac. Adherentes', 'Índice Pesquisa %', 'Cobertura Contactos %', 'Adherencia TAES %'])
+        
+        for indicador in indicadores_operacionales:
+            writer.writerow([
+                indicador.periodo.strftime("%m/%Y"),
+                indicador.establecimiento.nombre,
+                indicador.sintomaticos_respiratorios,
+                indicador.baciloscopias_realizadas,
+                indicador.casos_tb_encontrados,
+                indicador.contactos_identificados,
+                indicador.contactos_estudiados,
+                indicador.pacientes_taes,
+                indicador.pacientes_adherentes,
+                indicador.indice_pesquisa,
+                indicador.cobertura_estudio_contactos,
+                indicador.adherencia_taes
+            ])
+        writer.writerow([])
+        
+        # Sección 4: Indicadores de Prevención
+        writer.writerow(["INDICADORES DE PREVENCIÓN"])
+        writer.writerow(['Periodo', 'Establecimiento', 'Contactos Elegibles QP',
+                        'Contactos Iniciados QP', 'Contactos Completados QP',
+                        'Recién Nacidos', 'Recién Nacidos Vacunados',
+                        'Cobertura QP %', 'Adherencia QP %', 'Cobertura BCG %'])
+        
+        for indicador in indicadores_prevencion:
+            writer.writerow([
+                indicador.periodo.strftime("%m/%Y"),
+                indicador.establecimiento.nombre,
+                indicador.contactos_elegibles_qp,
+                indicador.contactos_iniciados_qp,
+                indicador.contactos_completados_qp,
+                indicador.recien_nacidos,
+                indicador.recien_nacidos_vacunados,
+                indicador.cobertura_quimioprofilaxis,
+                indicador.adherencia_quimioprofilaxis,
+                indicador.cobertura_vacunacion_bcg
+            ])
+        
+        return response
+
+# ============================================================
+# VISTAS EXISTENTES (MANTENIDAS PARA COMPATIBILIDAD)
+# ============================================================
+
 class GenerarReporteCohorteView(PermisoReportesMixin, LoginRequiredMixin, View):
-    """Vista para generar reportes de cohorte en CSV"""
+    """Vista para generar reportes de cohorte en CSV (mantenida para compatibilidad)"""
     
     def get(self, request, *args, **kwargs):
         año = request.GET.get('año', datetime.now().year)
@@ -428,9 +878,10 @@ class GenerarReporteCohorteView(PermisoReportesMixin, LoginRequiredMixin, View):
             queryset = queryset.filter(trimestre=trimestre)
             
         for indicador in queryset:
+            trimestre_display = indicador.get_trimestre_display()
             writer.writerow([
                 indicador.año,
-                indicador.get_trimestre_display(),
+                trimestre_display,
                 indicador.establecimiento.nombre,
                 indicador.casos_nuevos,
                 indicador.casos_retratamiento,
@@ -445,7 +896,7 @@ class GenerarReporteCohorteView(PermisoReportesMixin, LoginRequiredMixin, View):
         return response
 
 class GenerarReporteOperacionalView(PermisoReportesMixin, LoginRequiredMixin, View):
-    """Vista para generar reportes operacionales en CSV"""
+    """Vista para generar reportes operacionales en CSV (mantenida para compatibilidad)"""
     
     def get(self, request, *args, **kwargs):
         año = request.GET.get('año', datetime.now().year)
@@ -498,7 +949,8 @@ class ResolverAlertaView(LoginRequiredMixin, View):
     
     def post(self, request, alerta_id):
         try:
-            alerta = get_object_or_404(Alerta, id=alerta_id)
+            # Usar get_object_or_404 con pk
+            alerta = get_object_or_404(Alerta, pk=alerta_id)
             # Verificar que el usuario tenga permisos para resolver esta alerta
             if (request.user == alerta.usuario_asignado or 
                 request.user.is_superuser or 
@@ -538,7 +990,7 @@ class CrearAlertaView(LoginRequiredMixin, View):
             establecimiento = get_object_or_404(Establecimiento, id=establecimiento_id)
             usuario_asignado = None
             if usuario_asignado_id:
-                usuario_asignado = get_object_or_404(request.user.__class__, id=usuario_asignado_id)
+                usuario_asignado = get_object_or_404(User, id=usuario_asignado_id)
             
             alerta = Alerta.objects.create(
                 titulo=titulo,
@@ -550,7 +1002,7 @@ class CrearAlertaView(LoginRequiredMixin, View):
                 fecha_vencimiento=datetime.fromisoformat(fecha_vencimiento.replace('Z', '+00:00'))
             )
             
-            return JsonResponse({'success': True, 'alerta_id': alerta.id})
+            return JsonResponse({'success': True, 'alerta_id': alerta.pk})
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -560,7 +1012,7 @@ class EliminarAlertaView(PermisoAdministradorMixin, LoginRequiredMixin, View):
     
     def post(self, request, alerta_id):
         try:
-            alerta = get_object_or_404(Alerta, id=alerta_id)
+            alerta = get_object_or_404(Alerta, pk=alerta_id)
             alerta.delete()
             return JsonResponse({'success': True})
         except Exception as e:

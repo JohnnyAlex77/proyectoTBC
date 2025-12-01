@@ -427,6 +427,29 @@ def buscar_paciente_contacto_ajax(request):
         'contactos': []
     }
     
+    # Diccionario para mapear parentesco
+    PARENTESCO_MAP = {
+        '': 'Seleccione parentesco',
+        'esposo_esposa': 'Esposo/a',
+        'hijo_hija': 'Hijo/a',
+        'padre_madre': 'Padre/Madre',
+        'hermano_hermana': 'Hermano/a',
+        'abuelo_abuela': 'Abuelo/a',
+        'nieto_nieta': 'Nieto/a',
+        'tio_tia': 'Tío/a',
+        'sobrino_sobrina': 'Sobrino/a',
+        'primo_prima': 'Primo/a',
+        'cuñado_cuñada': 'Cuñado/a',
+        'suegro_suegra': 'Suegro/a',
+        'yerno_nuera': 'Yerno/Nuera',
+        'otro_familiar': 'Otro Familiar',
+        'no_familiar': 'No Familiar',
+        'vecino': 'Vecino',
+        'compañero_trabajo': 'Compañero de Trabajo',
+        'compañero_estudio': 'Compañero de Estudio',
+        'otro': 'Otro',
+    }
+    
     # Buscar pacientes
     pacientes_qs = PacientesPaciente.objects.filter(estado='activo')
     if not (request.user.is_superuser or _es_administrador(request.user)):
@@ -458,12 +481,15 @@ def buscar_paciente_contacto_ajax(request):
     contactos = contactos_qs.filter(rut_contacto__icontains=rut)[:5]
     
     for contacto in contactos:
+        # Obtener el display del parentesco manualmente
+        parentesco_display = PARENTESCO_MAP.get(contacto.parentesco, contacto.parentesco)
+        
         resultados['contactos'].append({
             'id': contacto.id,
             'rut': contacto.rut_contacto,
             'nombre': contacto.nombre_contacto,
             'tipo': 'contacto',
-            'parentesco': contacto.get_parentesco_display(),
+            'parentesco': parentesco_display,
             'paciente_indice': str(contacto.paciente_indice)
         })
     

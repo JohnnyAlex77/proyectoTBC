@@ -1,3 +1,4 @@
+# apps/indicadores/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from apps.pacientes.models import PacientesPaciente
@@ -66,6 +67,22 @@ class IndicadoresCohorte(models.Model):
         if self.total_casos > 0:
             return round((self.fallecidos / self.total_casos) * 100, 2)
         return 0
+
+    # Métodos para obtener display de campos choices
+    def _get_choice_display(self, choices, value):
+        """Método auxiliar para obtener display de campos choices"""
+        if value is None:
+            return ""
+        choices_dict = dict(choices)
+        return choices_dict.get(value, value)
+
+    def _get_trimestre_display(self):
+        """Método manual para obtener el display del trimestre"""
+        return self._get_choice_display(self.ESTADOS_COHORTE, self.trimestre)
+
+    def get_trimestre_display(self):
+        """Método alias para compatibilidad con Django"""
+        return self._get_trimestre_display()
 
     class Meta:
         unique_together = ['año', 'trimestre', 'establecimiento']
@@ -196,6 +213,20 @@ class Alerta(models.Model):
     resuelta = models.BooleanField(default=False)
     datos_relacionados = models.JSONField(default=dict, blank=True)
 
+    # Métodos para obtener display de campos choices
+    def _get_choice_display(self, choices, value):
+        """Método auxiliar para obtener display de campos choices"""
+        if value is None:
+            return ""
+        choices_dict = dict(choices)
+        return choices_dict.get(value, value)
+
+    def get_tipo_display(self):
+        return self._get_choice_display(self.TIPOS_ALERTA, self.tipo)
+
+    def get_nivel_display(self):
+        return self._get_choice_display(self.NIVELES_ALERTA, self.nivel)
+
     class Meta:
         ordering = ['-fecha_creacion']
         verbose_name = "Alerta"
@@ -208,6 +239,12 @@ class Alerta(models.Model):
     def esta_vencida(self):
         from django.utils import timezone
         return not self.resuelta and timezone.now() > self.fecha_vencimiento
+
+    # Propiedad id para compatibilidad (ya existe por defecto en Django)
+    @property
+    def id_property(self):
+        """Propiedad para acceder al id sin conflictos con Pylance"""
+        return self.pk
 
 class ReportePersonalizado(models.Model):
     """Configuración de reportes personalizados"""

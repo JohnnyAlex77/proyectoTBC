@@ -1,3 +1,4 @@
+# apps/indicadores/admin.py
 from django.contrib import admin
 from .models import (
     Establecimiento,
@@ -26,6 +27,11 @@ class IndicadoresCohorteAdmin(admin.ModelAdmin):
     ]
     list_filter = ['año', 'trimestre', 'establecimiento']
     readonly_fields = ['total_casos', 'exito_tratamiento_porcentaje', 'tasa_abandono', 'tasa_fallecimiento']
+    
+    # Método para mostrar trimestre formateado
+    def trimestre(self, obj):
+        return obj.get_trimestre_display()
+    trimestre.short_description = "Trimestre"
 
 @admin.register(IndicadoresOperacionales)
 class IndicadoresOperacionalesAdmin(admin.ModelAdmin):
@@ -67,6 +73,15 @@ class AlertaAdmin(admin.ModelAdmin):
     ]
     list_filter = ['tipo', 'nivel', 'resuelta', 'establecimiento']
     actions = ['marcar_como_resueltas']
+    
+    # Métodos para mostrar tipo y nivel formateados
+    def tipo(self, obj):
+        return obj.get_tipo_display()
+    tipo.short_description = "Tipo"
+    
+    def nivel(self, obj):
+        return obj.get_nivel_display()
+    nivel.short_description = "Nivel"
     
     def marcar_como_resueltas(self, request, queryset):
         updated = queryset.update(resuelta=True)

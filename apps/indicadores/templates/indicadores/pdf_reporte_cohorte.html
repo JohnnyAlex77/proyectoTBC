@@ -1,0 +1,382 @@
+<!-- apps/indicadores/templates/indicadores/pdf_reporte_cohorte.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+            @top-center {
+                content: "SISTEMA TBC - REPORTE OFICIAL";
+                font-size: 10px;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 10px;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #3498db;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .info-value {
+            color: #7f8c8d;
+        }
+        
+        .table-container {
+            margin-top: 20px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .table th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid #34495e;
+        }
+        
+        .table td {
+            padding: 6px 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .highlight {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 9px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .statistics {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+        
+        .watermark {
+            position: fixed;
+            bottom: 50%;
+            left: 25%;
+            opacity: 0.05;
+            font-size: 80px;
+            color: #3498db;
+            transform: rotate(-45deg);
+            z-index: -1;
+        }
+        
+        .summary {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        .summary-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+        
+        .metric-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .metric-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .metric-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Marca de agua -->
+    <div class="watermark">SISTEMA TBC</div>
+    
+    <!-- Encabezado -->
+    <div class="header">
+        <div class="logo">
+            <div class="title">SISTEMA TBC</div>
+            <div class="subtitle">Gestión de Tuberculosis</div>
+            <div class="logo-text">Reporte Oficial de Indicadores</div>
+        </div>
+    </div>
+    
+    <!-- Información del reporte -->
+    <div class="info-box">
+        <div class="info-row">
+            <span class="info-label">Título del Reporte:</span>
+            <span class="info-value">{{ titulo }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Año:</span>
+            <span class="info-value">{{ año }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Trimestre:</span>
+            <span class="info-value">{{ trimestre }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Fecha de Generación:</span>
+            <span class="info-value">{{ fecha_generacion }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Usuario Generador:</span>
+            <span class="info-value">{{ usuario }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Total de Registros:</span>
+            <span class="info-value highlight">{{ total_registros }}</span>
+        </div>
+    </div>
+    
+    <!-- Estadísticas principales -->
+    <div class="statistics">
+        <div class="stat-item">
+            <div class="stat-value">{{ total_casos }}</div>
+            <div class="stat-label">Total de Casos</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ promedio_exito }}%</div>
+            <div class="stat-label">Éxito Tratamiento</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ promedio_abandono }}%</div>
+            <div class="stat-label">Tasa Abandono</div>
+        </div>
+    </div>
+    
+    <!-- Resumen ejecutivo -->
+    <div class="summary">
+        <div class="summary-title">📊 Resumen Ejecutivo</div>
+        <p>
+            Este reporte muestra los indicadores de cohorte para el año {{ año }}. 
+            {% if promedio_exito >= 85 %}
+                <span class="metric-badge metric-success">Meta de éxito alcanzada ({{ promedio_exito }}%)</span>
+            {% else %}
+                <span class="metric-badge metric-warning">Meta de éxito por alcanzar ({{ promedio_exito }}%)</span>
+            {% endif %}
+            
+            {% if promedio_abandono <= 5 %}
+                <span class="metric-badge metric-success">Abandono controlado ({{ promedio_abandono }}%)</span>
+            {% else %}
+                <span class="metric-badge metric-danger">Abandono elevado ({{ promedio_abandono }}%)</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <!-- Tabla de datos -->
+    <h3 style="color: #2c3e50; margin-top: 20px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+        📋 Detalle de Indicadores por Trimestre
+    </h3>
+    
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Año</th>
+                    <th>Trimestre</th>
+                    <th>Establecimiento</th>
+                    <th>Casos Nuevos</th>
+                    <th>Casos Retratamiento</th>
+                    <th>Total Casos</th>
+                    <th>Curados</th>
+                    <th>Abandonos</th>
+                    <th>Fallecidos</th>
+                    <th>Éxito %</th>
+                    <th>Abandono %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for indicador in queryset %}
+                <tr>
+                    <td>{{ indicador.año }}</td>
+                    <td>{{ indicador.get_trimestre_display }}</td>
+                    <td>{{ indicador.establecimiento.nombre|truncatechars:20 }}</td>
+                    <td>{{ indicador.casos_nuevos }}</td>
+                    <td>{{ indicador.casos_retratamiento }}</td>
+                    <td><strong>{{ indicador.total_casos }}</strong></td>
+                    <td>{{ indicador.curados }}</td>
+                    <td>{{ indicador.abandonos }}</td>
+                    <td>{{ indicador.fallecidos }}</td>
+                    <td>
+                        {% if indicador.exito_tratamiento_porcentaje >= 85 %}
+                            <span class="metric-badge metric-success">{{ indicador.exito_tratamiento_porcentaje }}%</span>
+                        {% else %}
+                            <span class="metric-badge metric-warning">{{ indicador.exito_tratamiento_porcentaje }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if indicador.tasa_abandono <= 5 %}
+                            <span class="metric-badge metric-success">{{ indicador.tasa_abandono }}%</span>
+                        {% else %}
+                            <span class="metric-badge metric-danger">{{ indicador.tasa_abandono }}%</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" style="text-align: center; padding: 20px;">
+                        No hay datos disponibles para los filtros seleccionados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Interpretación de resultados -->
+    <div class="summary">
+        <div class="summary-title">📈 Interpretación de Resultados</div>
+        <p>
+            <strong>Meta de éxito de tratamiento:</strong> ≥85%<br>
+            <strong>Meta de abandono:</strong> ≤5%<br>
+            <strong>Total de casos analizados:</strong> {{ total_casos }}<br>
+            <strong>Promedio de éxito:</strong> 
+            {% if promedio_exito >= 85 %}
+                <span class="metric-badge metric-success">{{ promedio_exito }}% (CUMPLE)</span>
+            {% else %}
+                <span class="metric-badge metric-warning">{{ promedio_exito }}% (NO CUMPLE)</span>
+            {% endif %}
+            <br>
+            <strong>Promedio de abandono:</strong> 
+            {% if promedio_abandono <= 5 %}
+                <span class="metric-badge metric-success">{{ promedio_abandono }}% (CUMPLE)</span>
+            {% else %}
+                <span class="metric-badge metric-danger">{{ promedio_abandono }}% (NO CUMPLE)</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <!-- Pie de página -->
+    <div class="footer">
+        <p>
+            Reporte generado automáticamente por el Sistema TBC<br>
+            Este es un documento oficial - Fecha: {{ fecha_generacion }}<br>
+            Sistema TBC v1.0 - © {% now "Y" %} Ministerio de Salud
+        </p>
+    </div>
+</body>
+</html>

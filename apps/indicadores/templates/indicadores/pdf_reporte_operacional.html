@@ -1,0 +1,357 @@
+<!-- apps/indicadores/templates/indicadores/pdf_reporte_operacional.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+            @top-center {
+                content: "SISTEMA TBC - REPORTE OPERACIONAL";
+                font-size: 10px;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 10px;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #3498db;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .info-value {
+            color: #7f8c8d;
+        }
+        
+        .table-container {
+            margin-top: 20px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .table th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid #34495e;
+        }
+        
+        .table td {
+            padding: 6px 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .metric-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        
+        .metric-good {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .metric-regular {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .metric-poor {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .watermark {
+            position: fixed;
+            bottom: 50%;
+            left: 25%;
+            opacity: 0.05;
+            font-size: 80px;
+            color: #3498db;
+            transform: rotate(-45deg);
+            z-index: -1;
+        }
+        
+        .summary {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        .summary-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .statistics {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Marca de agua -->
+    <div class="watermark">SISTEMA TBC</div>
+    
+    <!-- Encabezado -->
+    <div class="header">
+        <div class="title">REPORTE OPERACIONAL</div>
+        <div class="subtitle">Indicadores de Pesquisa, Contactos y TAES</div>
+        <div style="font-size: 12px; color: #7f8c8d;">Sistema TBC - Gestión de Tuberculosis</div>
+    </div>
+    
+    <!-- Información del reporte -->
+    <div class="info-box">
+        <div class="info-row">
+            <span class="info-label">Período:</span>
+            <span class="info-value">Año {{ año }} {% if mes != 'Todos' %}- Mes {{ mes }}{% endif %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Fecha de Generación:</span>
+            <span class="info-value">{{ fecha_generacion }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Usuario:</span>
+            <span class="info-value">{{ usuario }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Total de Registros:</span>
+            <span class="info-value">{{ total_registros }}</span>
+        </div>
+    </div>
+    
+    <!-- Estadísticas principales -->
+    <div class="statistics">
+        <div class="stat-item">
+            <div class="stat-value">{{ promedio_indice_pesquisa }}%</div>
+            <div class="stat-label">Índice de Pesquisa</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ promedio_cobertura_contactos }}%</div>
+            <div class="stat-label">Cobertura Contactos</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ total_registros }}</div>
+            <div class="stat-label">Establecimientos</div>
+        </div>
+    </div>
+    
+    <!-- Tabla de datos -->
+    <h3 style="color: #2c3e50; margin-top: 20px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+        📊 Detalle de Indicadores por Establecimiento
+    </h3>
+    
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Periodo</th>
+                    <th>Establecimiento</th>
+                    <th>Sintomáticos</th>
+                    <th>Baciloscopias</th>
+                    <th>Casos TB</th>
+                    <th>Contactos Id.</th>
+                    <th>Contactos Est.</th>
+                    <th>Pac. TAES</th>
+                    <th>Pac. Adherentes</th>
+                    <th>Índice Pesquisa</th>
+                    <th>Cobertura Contactos</th>
+                    <th>Adherencia TAES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for indicador in queryset %}
+                <tr>
+                    <td>{{ indicador.periodo|date:"m/Y" }}</td>
+                    <td>{{ indicador.establecimiento.nombre|truncatechars:15 }}</td>
+                    <td>{{ indicador.sintomaticos_respiratorios }}</td>
+                    <td>{{ indicador.baciloscopias_realizadas }}</td>
+                    <td>{{ indicador.casos_tb_encontrados }}</td>
+                    <td>{{ indicador.contactos_identificados }}</td>
+                    <td>{{ indicador.contactos_estudiados }}</td>
+                    <td>{{ indicador.pacientes_taes }}</td>
+                    <td>{{ indicador.pacientes_adherentes }}</td>
+                    <td>
+                        {% if indicador.indice_pesquisa >= 80 %}
+                            <span class="metric-badge metric-good">{{ indicador.indice_pesquisa }}%</span>
+                        {% elif indicador.indice_pesquisa >= 60 %}
+                            <span class="metric-badge metric-regular">{{ indicador.indice_pesquisa }}%</span>
+                        {% else %}
+                            <span class="metric-badge metric-poor">{{ indicador.indice_pesquisa }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if indicador.cobertura_estudio_contactos >= 90 %}
+                            <span class="metric-badge metric-good">{{ indicador.cobertura_estudio_contactos }}%</span>
+                        {% elif indicador.cobertura_estudio_contactos >= 70 %}
+                            <span class="metric-badge metric-regular">{{ indicador.cobertura_estudio_contactos }}%</span>
+                        {% else %}
+                            <span class="metric-badge metric-poor">{{ indicador.cobertura_estudio_contactos }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if indicador.adherencia_taes >= 85 %}
+                            <span class="metric-badge metric-good">{{ indicador.adherencia_taes }}%</span>
+                        {% elif indicador.adherencia_taes >= 70 %}
+                            <span class="metric-badge metric-regular">{{ indicador.adherencia_taes }}%</span>
+                        {% else %}
+                            <span class="metric-badge metric-poor">{{ indicador.adherencia_taes }}%</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="12" style="text-align: center; padding: 20px;">
+                        No hay datos disponibles para los filtros seleccionados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Interpretación de resultados -->
+    <div class="summary">
+        <div class="summary-title">📈 Metas e Interpretación</div>
+        <p>
+            <strong>Metas del Sistema:</strong><br>
+            • Índice de Pesquisa: ≥80%<br>
+            • Cobertura de Estudio de Contactos: ≥90%<br>
+            • Adherencia a TAES: ≥85%<br><br>
+            
+            <strong>Estado Actual:</strong><br>
+            • Índice de Pesquisa promedio: 
+            {% if promedio_indice_pesquisa >= 80 %}
+                <span class="metric-badge metric-good">{{ promedio_indice_pesquisa }}% (CUMPLE)</span>
+            {% elif promedio_indice_pesquisa >= 60 %}
+                <span class="metric-badge metric-regular">{{ promedio_indice_pesquisa }}% (REGULAR)</span>
+            {% else %}
+                <span class="metric-badge metric-poor">{{ promedio_indice_pesquisa }}% (BAJO)</span>
+            {% endif %}
+            <br>
+            
+            • Cobertura de Contactos promedio: 
+            {% if promedio_cobertura_contactos >= 90 %}
+                <span class="metric-badge metric-good">{{ promedio_cobertura_contactos }}% (CUMPLE)</span>
+            {% elif promedio_cobertura_contactos >= 70 %}
+                <span class="metric-badge metric-regular">{{ promedio_cobertura_contactos }}% (REGULAR)</span>
+            {% else %}
+                <span class="metric-badge metric-poor">{{ promedio_cobertura_contactos }}% (BAJO)</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <!-- Recomendaciones -->
+    <div class="summary">
+        <div class="summary-title">💡 Recomendaciones</div>
+        <p>
+            {% if promedio_indice_pesquisa < 80 %}
+            • <strong>Índice de Pesquisa bajo:</strong> Incrementar pesquisa activa en población de riesgo.<br>
+            {% endif %}
+            {% if promedio_cobertura_contactos < 90 %}
+            • <strong>Cobertura de contactos baja:</strong> Fortalecer seguimiento de contactos intradomiciliarios.<br>
+            {% endif %}
+            • Monitorear adherencia a TAES para prevenir abandonos.<br>
+            • Mantener registro actualizado de sintomáticos respiratorios.
+        </p>
+    </div>
+    
+    <!-- Pie de página -->
+    <div style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 9px; color: #7f8c8d; text-align: center;">
+        <p>
+            Reporte generado automáticamente por el Sistema TBC<br>
+            Fecha: {{ fecha_generacion }} | Documento oficial<br>
+            Sistema TBC v1.0 - © {% now "Y" %} Ministerio de Salud
+        </p>
+    </div>
+</body>
+</html>
