@@ -14,7 +14,7 @@ class UsuariosUsuarioInline(admin.StackedInline):
 # Extender el UserAdmin por defecto
 class CustomUserAdmin(UserAdmin):
     inlines = (UsuariosUsuarioInline,)
-    list_display = ('username', 'email', 'get_rut', 'first_name', 'last_name', 'is_staff', 'get_rol')  # CORREGIDO: línea completa
+    list_display = ('username', 'email', 'get_rut', 'first_name', 'last_name', 'is_staff', 'get_rol')
     list_select_related = ('usuariosusuario',)
 
     def get_rut(self, obj):
@@ -29,7 +29,7 @@ class CustomUserAdmin(UserAdmin):
             return obj.usuariosusuario.get_rol_display()
         except UsuariosUsuario.DoesNotExist:
             return "No asignado"
-    get_rol.short_description = 'Rol'  # CORREGIDO: 'Ro1' -> 'Rol'
+    get_rol.short_description = 'Rol'
 
 # Re-registrar el User admin
 admin.site.unregister(User)
@@ -40,8 +40,8 @@ admin.site.register(User, CustomUserAdmin)
 class UsuariosUsuarioAdmin(admin.ModelAdmin):
     list_display = ('rut', 'get_username', 'get_email', 'get_full_name', 'rol', 'establecimiento', 'telefono')
     list_filter = ('rol', 'establecimiento')
-    search_fields = ('rut', 'user__username', 'user__first_name', 'user__last_name', 'user__email')  # CORREGIDO: user_ -> user__
-    ordering = ('user__first_name', 'user__last_name')  # CORREGIDO: user_ -> user__
+    search_fields = ('rut', 'user__username', 'user__first_name', 'user__last_name', 'user__email')
+    ordering = ('user__first_name', 'user__last_name')
 
     def get_username(self, obj):
         return obj.user.username
@@ -55,7 +55,7 @@ class UsuariosUsuarioAdmin(admin.ModelAdmin):
         return obj.user.get_full_name()
     get_full_name.short_description = 'Nombre completo'
 
-    # Form para crear/editar - VERSION CORREGIDA
+    # Form para crear/editar
     def get_form(self, request, obj=None, **kwargs):
         # Si estamos creando un nuevo objeto, hacer que el campo user sea requerido
         if obj is None:
@@ -69,7 +69,7 @@ class UsuariosUsuarioAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('user', 'rut', 'rol', 'establecimiento', 'telefono')
         }),
-    )  # CORREGIDO: ); -> ),
+    )
 
     def get_readonly_fields(self, request, obj=None):
         # Si estamos editando un objeto existente, hacer el campo user de solo lectura

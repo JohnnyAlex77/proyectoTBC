@@ -65,6 +65,14 @@ class UsuariosUsuario(models.Model):
     def is_superuser(self):
         return self.user.is_superuser
 
+    # Método para obtener el nombre del rol
+    def get_rol_display(self):
+        """Devuelve el nombre legible del rol"""
+        for codigo, nombre in self.ROL_CHOICES:
+            if codigo == self.rol:
+                return nombre
+        return self.rol
+
     # Método para verificar permisos por rol
     def tiene_permiso_rol(self, roles_permitidos):
         return self.rol in roles_permitidos or self.user.is_superuser
@@ -85,9 +93,10 @@ class UsuariosUsuario(models.Model):
     def es_paramedico(self):
         return self.rol == 'paramedico'
 
-# En el signal, corregir la creación del perfil
+# Señal para crear perfil automáticamente
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Crea un perfil de usuario automáticamente cuando se crea un User"""
     if created and not hasattr(instance, 'usuariosusuario'):
         # Crear perfil por defecto con todos los campos requeridos
         UsuariosUsuario.objects.create(
@@ -100,6 +109,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
+    """Guarda el perfil de usuario cuando se guarda el User"""
     try:
         instance.usuariosusuario.save()
     except UsuariosUsuario.DoesNotExist:

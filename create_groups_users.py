@@ -1,4 +1,3 @@
-# 1_create_groups_users_FIXED.py
 import os
 import django
 from datetime import datetime

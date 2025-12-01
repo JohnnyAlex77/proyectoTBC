@@ -3,8 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import update_session_auth_hash, logout
-from django.db import transaction, IntegrityError
-from django.http import HttpResponseForbidden
+from django.db import transaction
 from .models import UsuariosUsuario
 from .forms import UsuarioCreateForm, UsuarioUpdateForm, PasswordChangeCustomForm
 
@@ -23,6 +22,7 @@ def es_administrador(user):
         pass
     return user.is_authenticated and user.is_superuser
 
+
 def puede_ver_pacientes(user):
     """Verifica si el usuario puede ver pacientes (todos los roles médicos)"""
     if not user.is_authenticated:
@@ -34,6 +34,7 @@ def puede_ver_pacientes(user):
     except UsuariosUsuario.DoesNotExist:
         return user.is_superuser
 
+
 def puede_crear_pacientes(user):
     """Verifica si el usuario puede crear pacientes"""
     if not user.is_authenticated:
@@ -44,6 +45,7 @@ def puede_crear_pacientes(user):
         return usuario_ext.rol in roles_permitidos or user.is_superuser
     except UsuariosUsuario.DoesNotExist:
         return user.is_superuser
+
 
 # ===========================================================
 # VISTAS PRINCIPALES Y AUTENTICACIÓN
@@ -63,63 +65,70 @@ def dashboard(request):
         if usuario_ext.rol == 'admin' or request.user.is_superuser:
             # Dashboard de administrador
             from django.contrib.auth.models import User
-            from apps.pacientes.models import PacientesPaciente as Paciente 
+            from apps.pacientes.models import PacientesPaciente as Paciente
 
-            context.update({
+            # SOLUCIÓN: Crear un nuevo diccionario combinando ambos
+            context_admin = {
+                'usuario': usuario_ext,
                 'total_usuarios': User.objects.count(),
                 'total_pacientes': Paciente.objects.count() if 'apps.pacientes.models' in globals() else 0,
-                'total_tratamientos': 0,  # Agregar lógica real según tu sistema
-                'contactos_pendientes': 0,  # Agregar lógica real según tu sistema
-            })
-            return render(request, 'usuarios/dashboard_admin.html', context)
+                'total_tratamientos': 0,
+                'contactos_pendientes': 0,
+            }
+            return render(request, 'usuarios/dashboard_admin.html', context_admin)
 
         elif usuario_ext.rol == 'medico':
             # Dashboard de médico
-            context.update({
+            context_medico = {
+                'usuario': usuario_ext,
                 'pacientes_asignados': 25,
                 'tratamientos_activos': 15,
                 'controles_pendientes': 3,
                 'examenes_pendientes': 5,
-            })
-            return render(request, 'usuarios/dashboard_medico.html', context)
+            }
+            return render(request, 'usuarios/dashboard_medico.html', context_medico)
 
         elif usuario_ext.rol == 'enfermera':
             # Dashboard de enfermera
-            context.update({
+            context_enfermera = {
+                'usuario': usuario_ext,
                 'pacientes_cuidado': 15,
                 'dosis_hoy': 8,
                 'controles_pendientes': 3,
                 'visitas_hoy': 5,
-            })
-            return render(request, 'usuarios/dashboard_enfermera.html', context)
+            }
+            return render(request, 'usuarios/dashboard_enfermera.html', context_enfermera)
 
         elif usuario_ext.rol == 'tecnologo':
             # Dashboard de tecnólogo
-            context.update({
+            context_tecnologo = {
+                'usuario': usuario_ext,
                 'examenes_pendientes': 12,
                 'examenes_hoy': 8,
                 'resultados_listos': 15,
                 'casos_positivos': 2,
-            })
-            return render(request, 'usuarios/dashboard_tecnologo.html', context)
+            }
+            return render(request, 'usuarios/dashboard_tecnologo.html', context_tecnologo)
 
         elif usuario_ext.rol == 'paramedico':
             # Dashboard de paramédico
-            context.update({
+            context_paramedico = {
+                'usuario': usuario_ext,
                 'pacientes_asignados': 18,
                 'dosis_hoy': 22,
                 'visitas_hoy': 6,
                 'seguimientos': 4,
-            })
-            return render(request, 'usuarios/dashboard_paramedico.html', context)
+            }
+            return render(request, 'usuarios/dashboard_paramedico.html', context_paramedico)
 
         else:
             # Rol no reconocido - dashboard básico
-            return render(request, 'usuarios/dashboard_base.html', context)
+            return render(request, 'usuarios/dashboard_base.html', {'usuario': usuario_ext})
 
     except UsuariosUsuario.DoesNotExist:
         # Usuario sin perfil extendido - dashboard básico
         return render(request, 'usuarios/dashboard_base.html', {'usuario': None})
+
 
 @login_required
 def custom_logout(request):
@@ -141,28 +150,29 @@ def custom_logout(request):
     # Si es GET, mostrar página de confirmación
     return render(request, 'usuarios/logout_confirm.html')
 
+
 # ===========================================================
 # VISTAS DE GESTIÓN DE USUARIOS (SOLO ADMINISTRADORES)
 # ===========================================================
 
-# Listado de usuarios - Solo administradores
 @login_required
 @user_passes_test(es_administrador, login_url='/usuarios/login/')
 def lista_usuarios(request):
+    """Lista todos los usuarios del sistema (solo administradores)"""
     usuarios = UsuariosUsuario.objects.all().select_related('user').order_by('user__first_name')
     return render(request, 'usuarios/lista_usuarios.html', {'usuarios': usuarios})
 
-# Crear usuario - Solo administradores
+
 @login_required
 @user_passes_test(es_administrador, login_url='/usuarios/login/')
 def crear_usuario(request):
+    """Crea un nuevo usuario en el sistema (solo administradores)"""
     if request.method == 'POST':
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
             try:
                 with transaction.atomic():
                     usuario = form.save(commit=False)
-                    # Asegurar que se guarde correctamente
                     usuario.save()
                     messages.success(request, f'Usuario {usuario.user.get_full_name()} creado correctamente.')
                     return redirect('usuarios:lista')
@@ -174,11 +184,11 @@ def crear_usuario(request):
         form = UsuarioCreateForm()
     return render(request, 'usuarios/registro.html', {'form': form})
 
-# Editar usuario - Solo administradores
-# Editar usuario - Solo administradores
+
 @login_required
 @user_passes_test(es_administrador, login_url='/usuarios/login/')
 def editar_usuario(request, pk):
+    """Edita un usuario existente (solo administradores)"""
     usuario = get_object_or_404(UsuariosUsuario, pk=pk)
 
     if request.method == 'POST':
@@ -194,7 +204,6 @@ def editar_usuario(request, pk):
         else:
             messages.error(request, 'Por favor corrige los errores del formulario.')
     else:
-        # Pasar los datos iniciales al formulario
         initial_data = {
             'username': usuario.user.username,
             'rut': usuario.rut,
@@ -209,10 +218,11 @@ def editar_usuario(request, pk):
     
     return render(request, 'usuarios/editar_usuario.html', {'form': form, 'usuario': usuario})
 
-# Eliminar usuario - Solo administradores
+
 @login_required
 @user_passes_test(es_administrador, login_url='/usuarios/login/')
 def eliminar_usuario(request, pk):
+    """Elimina un usuario del sistema (solo administradores)"""
     usuario = get_object_or_404(UsuariosUsuario, pk=pk)
 
     if request.method == 'POST':
@@ -226,25 +236,27 @@ def eliminar_usuario(request, pk):
             messages.error(request, f'Error al eliminar el usuario: {str(e)}')
     return render(request, 'usuarios/confirm_delete.html', {'usuario': usuario})
 
+
 # ===========================================================
 # VISTAS DE PERFIL Y CONFIGURACIÓN
 # ===========================================================
 
-# Ver perfil de usuario - Propio perfil o administradores
 @login_required
 def perfil_usuario(request, pk):
+    """Muestra el perfil de un usuario (propio perfil o administradores)"""
     usuario = get_object_or_404(UsuariosUsuario, pk=pk)
 
     # Solo permitir ver el propio perfil o si es administrador
     if request.user != usuario.user and not es_administrador(request.user):
         messages.error(request, 'No tienes permisos para ver este perfil.')
-        return redirect('usuarios:dashboard')  # Redirige al dashboard en lugar de pacientes
+        return redirect('usuarios:dashboard')
 
     return render(request, 'usuarios/perfil.html', {'usuario': usuario})
 
-# Cambiar contraseña - Usuario actual
+
 @login_required
 def cambiar_password(request):
+    """Permite al usuario cambiar su contraseña"""
     if request.method == 'POST':
         form = PasswordChangeCustomForm(request.user, request.POST)
         if form.is_valid():
@@ -258,8 +270,9 @@ def cambiar_password(request):
         form = PasswordChangeCustomForm(request.user)
     return render(request, 'usuarios/cambiar_password.html', {'form': form})
 
+
 # ===========================================================
-# VISTAS AUXILIARES
+# FUNCIONES AUXILIARES
 # ===========================================================
 
 def get_user_dashboard_data(user):
@@ -310,6 +323,7 @@ def get_user_dashboard_data(user):
     
     return {}
 
+
 def check_user_permissions(user, required_roles):
     """Verifica si el usuario tiene los roles requeridos"""
     try:
@@ -317,6 +331,7 @@ def check_user_permissions(user, required_roles):
         return usuario_ext.rol in required_roles or user.is_superuser
     except UsuariosUsuario.DoesNotExist:
         return user.is_superuser
+
 
 # Decorador para verificar permisos de módulo
 def require_roles(roles_requeridos):
@@ -327,12 +342,3 @@ def require_roles(roles_requeridos):
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
-
-# Ejemplo de uso del decorador en otras vistas (puedes agregar esto a otros módulos)
-"""
-@login_required
-@require_roles(['admin', 'medico'])
-def alguna_vista_protegida(request):
-    # Solo accesible para admin y médico
-    pass
-"""

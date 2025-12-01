@@ -1,0 +1,67 @@
+<!-- templates/usuarios/confirm_delete.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmar Eliminación - Sistema TBC{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-user-slash me-2 text-danger"></i>Confirmar Eliminación
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-skull-crossbones me-2"></i>¡ADVERTENCIA!</h5>
+                    <p class="mb-0">
+                        Está a punto de eliminar permanentemente al usuario:
+                    </p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">Información del Usuario</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Nombre:</strong> {{ usuario.user.get_full_name }}</li>
+                            <li><strong>RUT:</strong> {{ usuario.rut }}</li>
+                            <li><strong>Usuario:</strong> {{ usuario.user.username }}</li>
+                            <li><strong>Email:</strong> {{ usuario.user.email }}</li>
+                            <li><strong>Rol:</strong> {{ usuario.get_rol_display }}</li>
+                            <li><strong>Establecimiento:</strong> {{ usuario.establecimiento }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-info-circle me-2"></i>Consecuencias de la eliminación:</h6>
+                    <ul class="mb-0">
+                        <li>El usuario no podrá acceder al sistema</li>
+                        <li>Los registros asociados (pacientes, tratamientos) permanecerán en el sistema</li>
+                        <li>Esta acción no se puede deshacer</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'usuarios:lista' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
