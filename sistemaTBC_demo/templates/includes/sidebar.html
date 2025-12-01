@@ -1,5 +1,6 @@
+<!-- templates/includes/sidebar.html -->
 <nav class="sidebar border-end p-3">
-    <div class="sidebar-content">  <!-- Contenedor nuevo para el scroll -->
+    <div class="sidebar-content">
         <div class="sidebar-header mb-4 text-center">
             <h5 class="fw-bold">
                 <i class="fas fa-lungs me-2"></i>SistemaTBC
@@ -27,9 +28,9 @@
             {% endif %}
         </div>
 
-        <div class="sidebar-menu">  <!-- Contenedor para el menú con scroll -->
+        <div class="sidebar-menu">
             <ul class="nav nav-pills flex-column">
-                <!-- Dashboard -->
+                <!-- Dashboard (siempre visible) -->
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                        href="{% url 'usuarios:dashboard' %}">
@@ -37,79 +38,78 @@
                     </a>
                 </li>
 
-                <!-- Módulos según rol -->
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol == 'admin' %}
-                    <!-- ADMIN - Todos los módulos -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'usuarios' %}active{% endif %}" 
-                           href="{% url 'usuarios:lista' %}">
-                            <i class="fas fa-users"></i> Usuarios
-                        </a>
-                    </li>
+                <!-- Módulo Usuarios (Solo administradores) -->
+                {% if user.is_superuser or user.usuariosusuario.rol == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'usuarios' and request.resolver_match.url_name != 'dashboard' and request.resolver_match.url_name != 'perfil' and request.resolver_match.url_name != 'cambiar_password' %}active{% endif %}" 
+                       href="{% url 'usuarios:lista' %}">
+                        <i class="fas fa-users"></i> Usuarios
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera,paramedico,tecnologo' %}
-                    <!-- Módulo Pacientes -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'pacientes' %}active{% endif %}" 
-                           href="{% url 'pacientes:lista' %}">
-                            <i class="fas fa-user-injured"></i> Pacientes
-                        </a>
-                    </li>
+                <!-- Módulo Pacientes (todos los roles excepto algunos) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,tecnologo,paramedico' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'pacientes' %}active{% endif %}" 
+                       href="{% url 'pacientes:lista' %}">
+                        <i class="fas fa-user-injured"></i> Pacientes
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera,paramedico' %}
-                    <!-- Módulo Tratamientos -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'tratamientos' %}active{% endif %}" 
-                           href="{% url 'tratamientos:lista' %}">
-                            <i class="fas fa-pills"></i> Tratamientos
-                        </a>
-                    </li>
+                <!-- Módulo Tratamientos (roles clínicos) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,paramedico' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'tratamientos' %}active{% endif %}" 
+                       href="{% url 'tratamientos:lista' %}">
+                        <i class="fas fa-pills"></i> Tratamientos
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera,tecnologo,paramedico' %}
-                    <!-- Módulo Exámenes -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'examenes' %}active{% endif %}" 
-                           href="{% url 'examenes:lista_examenes' %}">
-                            <i class="fas fa-microscope"></i> Exámenes
-                        </a>
-                    </li>
+                <!-- Módulo Exámenes (médicos, tecnólogos y administradores) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,tecnologo,enfermera' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'examenes' %}active{% endif %}" 
+                       href="{% url 'examenes:lista_examenes' %}">
+                        <i class="fas fa-microscope"></i> Exámenes
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera,paramedico' %}
-                    <!-- Módulo Contactos -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'contactos' %}active{% endif %}" 
-                           href="{% url 'contactos:lista' %}">
-                            <i class="fas fa-people-arrows"></i> Contactos
-                        </a>
-                    </li>
+                <!-- Módulo Contactos (roles de campo y clínicos) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,paramedico' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'contactos' %}active{% endif %}" 
+                       href="{% url 'contactos:lista' %}">
+                        <i class="fas fa-people-arrows"></i> Contactos
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'enfermera,paramedico' %}
-                    <!-- Módulo Prevención -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'prevencion' %}active{% endif %}" 
-                           href="{% url 'prevencion:quimioprofilaxis_lista' %}">
-                            <i class="fas fa-shield-virus"></i> Prevención
-                        </a>
-                    </li>
+                <!-- Módulo Prevención (enfermeras, paramédicos y administradores) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,enfermera,paramedico' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'prevencion' %}active{% endif %}" 
+                       href="{% url 'prevencion:quimioprofilaxis_lista' %}">
+                        <i class="fas fa-shield-virus"></i> Prevención
+                    </a>
+                </li>
                 {% endif %}
 
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol == 'tecnologo' %}
-                    <!-- Módulo Laboratorio -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.namespace == 'laboratorio' %}active{% endif %}" 
-                           href="{% url 'laboratorio:laboratorios_lista' %}">
-                            <i class="fas fa-flask"></i> Laboratorio
-                        </a>
-                    </li>
+                <!-- Módulo Laboratorio (solo tecnólogos y administradores) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,tecnologo' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'laboratorio' %}active{% endif %}" 
+                       href="{% url 'laboratorio:laboratorios_lista' %}">
+                        <i class="fas fa-flask"></i> Laboratorio
+                    </a>
+                </li>
                 {% endif %}
 
-                <!-- Módulo Indicadores (Solo para roles específicos) -->
-                {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera,tecnologo' %}
+                <!-- Módulo Indicadores (roles específicos con acceso) -->
+                {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,tecnologo' %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'indicadores' %}active{% endif %}" 
                        href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -123,8 +123,8 @@
                             </a>
                         </li>
                         
-                        <!-- Solo médicos y administradores pueden ver indicadores de cohorte -->
-                        {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol == 'medico' %}
+                        <!-- Solo médicos y administradores -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico' %}
                         <li>
                             <a class="dropdown-item {% if request.resolver_match.url_name == 'indicadores_cohorte' %}active{% endif %}" 
                                href="{% url 'indicadores:indicadores_cohorte' %}">
@@ -133,8 +133,8 @@
                         </li>
                         {% endif %}
                         
-                        <!-- Médicos, enfermeras y administradores pueden ver operacionales -->
-                        {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol in 'medico,enfermera' %}
+                        <!-- Médicos, enfermeras y administradores -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera' %}
                         <li>
                             <a class="dropdown-item {% if request.resolver_match.url_name == 'indicadores_operacionales' %}active{% endif %}" 
                                href="{% url 'indicadores:indicadores_operacionales' %}">
@@ -143,8 +143,8 @@
                         </li>
                         {% endif %}
                         
-                        <!-- Enfermeras y administradores pueden ver prevención -->
-                        {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol == 'enfermera' %}
+                        <!-- Enfermeras y administradores -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,enfermera' %}
                         <li>
                             <a class="dropdown-item {% if request.resolver_match.url_name == 'indicadores_prevencion' %}active{% endif %}" 
                                href="{% url 'indicadores:indicadores_prevencion' %}">
@@ -153,7 +153,7 @@
                         </li>
                         {% endif %}
                         
-                        <!-- Todos los roles autorizados pueden ver alertas -->
+                        <!-- Todos los roles autorizados -->
                         <li>
                             <a class="dropdown-item {% if request.resolver_match.url_name == 'alertas_lista' %}active{% endif %}" 
                                href="{% url 'indicadores:alertas_lista' %}">
@@ -161,8 +161,8 @@
                             </a>
                         </li>
                         
-                        <!-- Solo administradores y médicos pueden ver reportes gerenciales -->
-                        {% if user.is_superuser or user.usuariosusuario.es_administrador or user.usuariosusuario.rol == 'medico' %}
+                        <!-- Solo administradores y médicos -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico' %}
                         <li>
                             <a class="dropdown-item {% if request.resolver_match.url_name == 'reportes_gerenciales' %}active{% endif %}" 
                                href="{% url 'indicadores:reportes_gerenciales' %}">
@@ -183,9 +183,10 @@
                 </li>
                 {% endif %}
 
-                <!-- Perfil -->
+                <!-- Perfil (siempre visible) -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'usuarios:perfil' user.usuariosusuario.pk %}">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}" 
+                       href="{% url 'usuarios:perfil' user.usuariosusuario.pk %}">
                         <i class="fas fa-user-cog"></i> Mi Perfil
                     </a>
                 </li>
@@ -218,25 +219,24 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        overflow: hidden; /* Evita que todo el sidebar tenga scroll */
+        overflow: hidden;
     }
 
     .sidebar-header {
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
     }
 
     .sidebar-user {
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
     }
 
     .sidebar-menu {
-        flex: 1; /* Ocupa el espacio disponible */
-        overflow-y: auto; /* Scroll solo en el menú */
+        flex: 1;
+        overflow-y: auto;
         overflow-x: hidden;
-        padding-right: 5px; /* Espacio para el scroll */
+        padding-right: 5px;
     }
 
-    /* Estilos personalizados para la barra de scroll */
     .sidebar-menu::-webkit-scrollbar {
         width: 6px;
     }
@@ -256,7 +256,7 @@
     }
 
     .sidebar-footer {
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
     }
 
     .avatar-circle {
@@ -266,7 +266,6 @@
         font-size: 1.5rem;
     }
 
-    /* Estilos para los enlaces del menú */
     .sidebar .nav-link {
         color: rgba(255, 255, 255, 0.8);
         border-radius: 8px;
@@ -292,7 +291,6 @@
         margin-right: 10px;
     }
 
-    /* Estilos para el dropdown del menú */
     .sidebar .dropdown-menu {
         background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
         border: none;
