@@ -156,13 +156,18 @@ class PacienteViewSet(viewsets.ModelViewSet):
         Obtiene tratamientos de un paciente específico
         """
         paciente = self.get_object()
-        from apps.tratamientos.models import Tratamiento
-        tratamientos = Tratamiento.objects.filter(paciente=paciente)
         
-        # Serializar tratamientos
-        from api.serializers.tratamientos import TratamientoListSerializer
-        serializer = TratamientoListSerializer(tratamientos, many=True)
-        return Response(serializer.data)
+        # Import aquí para evitar import circular
+        try:
+            from apps.tratamientos.models import Tratamiento
+            tratamientos = Tratamiento.objects.filter(paciente=paciente)
+            
+            from api.serializers.tratamientos import TratamientoListSerializer
+            serializer = TratamientoListSerializer(tratamientos, many=True)
+            return Response(serializer.data)
+        except ImportError:
+            return Response({'error': 'Módulo de tratamientos no disponible'}, 
+                          status=status.HTTP_501_NOT_IMPLEMENTED)
     
     @action(detail=True, methods=['get'])
     def examenes(self, request, pk=None):
@@ -170,18 +175,29 @@ class PacienteViewSet(viewsets.ModelViewSet):
         Obtiene exámenes de un paciente específico
         """
         paciente = self.get_object()
-        from apps.examenes.models import ExamenesExamenbacteriologico
-        examenes = ExamenesExamenbacteriologico.objects.filter(paciente=paciente)
         
-        # Serializar exámenes simplificados
-        examenes_data = []
-        for examen in examenes:
-            examenes_data.append({
-                'id': examen.id,
-                'tipo_examen': examen.get_tipo_examen_display(),
-                'fecha_toma_muestra': examen.fecha_toma_muestra,
-                'resultado': examen.get_resultado_display(),
-                'estado_examen': examen.get_estado_examen_display()
-            })
-        
-        return Response(examenes_data)
+        try:
+            # Import aquí para evitar import circular
+            from apps.examenes.models import ExamenesExamenbacteriologico
+            
+            examenes = ExamenesExamenbacteriologico.objects.filter(paciente=paciente)
+            
+            # Serializar exámenes simplificados - CORRECCIÓN DEL ERROR PYLANCE
+            examenes_data = []
+            for examen in examenes:
+                # Usar pk en lugar de id para compatibilidad con Pylance
+                examen_id = examen.pk if hasattr(examen, 'pk') else getattr(examen, 'id', None)
+                
+                examenes_data.append({
+                    'id': examen_id,
+                    'tipo_examen': examen.get_tipo_examen_display(),
+                    'fecha_toma_muestra': examen.fecha_toma_muestra,
+                    'resultado': examen.get_resultado_display(),
+                    'estado_examen': examen.get_estado_examen_display()
+                })
+            
+            return Response(examenes_data)
+            
+        except ImportError:
+            return Response({'error': 'Módulo de exámenes no disponible'}, 
+                          status=status.HTTP_501_NOT_IMPLEMENTED)
