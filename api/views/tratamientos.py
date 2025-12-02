@@ -26,7 +26,7 @@ class TratamientoViewSet(viewsets.ModelViewSet):
     queryset = Tratamiento.objects.all()
     serializer_class = TratamientoSerializer
     permission_classes = [permissions.IsAuthenticated, EstablecimientoPermission, IsEnfermeraOrHigher]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['esquema', 'resultado_final', 'paciente__establecimiento_salud']
     search_fields = ['paciente__nombre', 'paciente__rut', 'observaciones']
     ordering_fields = ['fecha_inicio', 'fecha_termino_estimada', 'fecha_registro']

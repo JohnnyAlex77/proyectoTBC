@@ -23,7 +23,7 @@ class PacienteViewSet(viewsets.ModelViewSet):
     queryset = PacientesPaciente.objects.all()
     serializer_class = PacienteSerializer
     permission_classes = [permissions.IsAuthenticated, EstablecimientoPermission]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = [
         'estado', 'tipo_tbc', 'comuna', 'establecimiento_salud',
         'sexo', 'poblacion_prioritaria'
