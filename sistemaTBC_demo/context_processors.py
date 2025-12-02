@@ -1,7 +1,7 @@
-
-'''
+# sistemaTBC_demo/context_processors.py
+"""
 Custom context processors for Sistema TBC
-'''
+"""
 
 def api_settings(request):
     '''
@@ -10,8 +10,7 @@ def api_settings(request):
     from django.conf import settings
     
     return {
-        'API_BASE_URL': settings.API_BASE_URL,
-        'API_VERSION': settings.API_VERSION,
-        'API_DEMO_MODE': settings.EXTERNAL_APIS.get('DEMO_MODE', False),
-        'DEBUG': settings.DEBUG,
+        'API_BASE_URL': getattr(settings, 'API_BASE_URL', '/api/'),
+        'API_VERSION': getattr(settings, 'API_VERSION', 'v1'),
+        'DEBUG': getattr(settings, 'DEBUG', False),
     }

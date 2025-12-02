@@ -1,6 +1,6 @@
-# sistemaTBC/settings/production.py
+# sistemaTBC_demo/settings/production.py
 """
-Configuración para producción con MySQL - VERSIÓN FINAL SIN ERRORES
+Configuración para producción con MySQL - VERSIÓN FINAL CORREGIDA
 """
 import os
 from pathlib import Path
@@ -20,15 +20,11 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # ==============================
 # CORREGIDO: Manejo seguro de ALLOWED_HOSTS
 allowed_hosts_str = config('ALLOWED_HOSTS', default='localhost,127.0.0.1')
-if isinstance(allowed_hosts_str, str):
-    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',')]
-else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [host.strip() for host in str(allowed_hosts_str).split(',')]
 
 # ==============================
-# CONFIGURACIÓN DE BASE DE DATOS MYSQL - VERSIÓN SIMPLIFICADA
+# CONFIGURACIÓN DE BASE DE DATOS MYSQL
 # ==============================
-# VERSIÓN SIMPLIFICADA: Ignorar DATABASE_URL problemático y usar MySQL directo
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -59,9 +55,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # SEGURIDAD HTTPS - CORREGIDO
 # ==============================
 # CORREGIDO: Usar valores por defecto seguros
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default='False') == 'True'
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default='False') == 'True'
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default='False') == 'True'
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default='False', cast=lambda x: x == 'True')
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default='False', cast=lambda x: x == 'True')
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default='False', cast=lambda x: x == 'True')
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
@@ -139,36 +135,39 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
 # ==============================
-# EMAIL - CORREGIDO DEFINITIVAMENTE
+# EMAIL - COMPLETAMENTE CORREGIDO
 # ==============================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 
-# CORREGIDO: Evitar cast=bool problemático usando comparación directa
-email_port_str = config('EMAIL_PORT', default='587')
-#EMAIL_PORT = int(email_port_str) if email_port_str.isdigit() else 587
+# CORRECCIÓN: Asegurar que sea string antes de verificar isdigit()
+email_port_value = config('EMAIL_PORT', default='587')
+EMAIL_PORT = int(str(email_port_value)) if str(email_port_value).isdigit() else 587
 
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# CORREGIDO: Sin cast=bool, usando comparación directa
-email_use_tls_str = config('EMAIL_USE_TLS', default='True')
-#EMAIL_USE_TLS = email_use_tls_str.lower() in ['true', '1', 'yes', 'on']
+# CORRECCIÓN: Convertir a string y luego verificar
+email_use_tls_value = config('EMAIL_USE_TLS', default='True')
+EMAIL_USE_TLS = str(email_use_tls_value).lower() in ['true', '1', 'yes', 'on']
 
-email_use_ssl_str = config('EMAIL_USE_SSL', default='False')
-#EMAIL_USE_SSL = email_use_ssl_str.lower() in ['true', '1', 'yes', 'on']
+email_use_ssl_value = config('EMAIL_USE_SSL', default='False')
+EMAIL_USE_SSL = str(email_use_ssl_value).lower() in ['true', '1', 'yes', 'on']
 
+EMAIL_TIMEOUT = 30
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='sistema-tbc@inacap.cl')
+SERVER_EMAIL = config('SERVER_EMAIL', default='root@localhost')
 
 # ==============================
 # EXTERNAL APIS - CORREGIDO
 # ==============================
 OPENWEATHER_API_KEY = config('OPENWEATHER_API_KEY', default='')
 
-# CORREGIDO: Evitar .strip() en valor que podría ser booleano
+# CORRECCIÓN: Manejo seguro de tipo
 openweather_enabled = False
-if OPENWEATHER_API_KEY and isinstance(OPENWEATHER_API_KEY, str):
-    openweather_enabled = bool(OPENWEATHER_API_KEY.strip())
+if OPENWEATHER_API_KEY:
+    api_key_str = str(OPENWEATHER_API_KEY)
+    openweather_enabled = bool(api_key_str.strip()) if api_key_str else False
 
 EXTERNAL_APIS = {
     'OPENWEATHERMAP': {
@@ -185,7 +184,7 @@ EXTERNAL_APIS = {
         'USER_AGENT': 'SistemaTBC/1.0 (soporte@sistematbc.cl)',
         'CACHE_TIMEOUT': 86400,
     },
-    'DEMO_MODE': False,
+    'DEMO_MODE': config('API_DEMO_MODE', default='False', cast=lambda x: x == 'True'),
 }
 
 # ==============================
@@ -202,6 +201,76 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+
+# ==============================
+# CONFIGURACIONES ADICIONALES IMPORTANTES
+# ==============================
+# Estas configuraciones están en tu settings.py viejo pero faltan aquí:
+
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Third-party apps
+    'widget_tweaks',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'django_filters',
+    'django_extensions',
+    'drf_yasg',
+    
+    # Project apps
+    'apps.usuarios',
+    'apps.pacientes',
+    'apps.tratamientos',
+    'apps.examenes',
+    'apps.contactos',
+    'apps.prevencion',
+    'apps.laboratorio',
+    'apps.indicadores',
+    'api',
+]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'sistemaTBC_demo.urls'
+WSGI_APPLICATION = 'sistemaTBC_demo.wsgi.application'
+
+# Internationalization
+LANGUAGE_CODE = 'es-cl'
+TIME_ZONE = 'America/Santiago'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Static files (adicionales)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'sistemaTBC_demo/static'),
+]
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 print("=" * 50)
 print("✓ CONFIGURACIÓN PRODUCCIÓN MYSQL CARGADA CORRECTAMENTE")

@@ -82,6 +82,14 @@ INSTALLED_APPS = [
 # ============================================================================
 # MIDDLEWARE CONFIGURATION
 # ============================================================================
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        # ... otros backends ...
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
 
 MIDDLEWARE = [
     # CORS debe ir primero
@@ -871,47 +879,47 @@ if not DEBUG:
 
 if DEBUG:
     # Deshabilitar seguridad estricta en desarrollo
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
+   #  SESSION_COOKIE_SECURE = False
+    # CSRF_COOKIE_SECURE = False
+   #  SECURE_SSL_REDIRECT = False
     
     # CORS más permisivo en desarrollo
-    CORS_ALLOW_ALL_ORIGINS = True
+   #  CORS_ALLOW_ALL_ORIGINS = True
     
     # Extras para desarrollo
-    INSTALLED_APPS += [
-        'debug_toolbar',
-        'django_browser_reload',
-    ]
+  #   INSTALLED_APPS += [
+   #      'debug_toolbar',
+   #      'django_browser_reload',
+   #  ]
     
-    MIDDLEWARE = [
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-        'django_browser_reload.middleware.BrowserReloadMiddleware',
-    ] + MIDDLEWARE
+   #  MIDDLEWARE = [
+    #     'debug_toolbar.middleware.DebugToolbarMiddleware',
+   #      'django_browser_reload.middleware.BrowserReloadMiddleware',
+   #  ] + MIDDLEWARE
     
     # Debug toolbar settings
-    DEBUG_TOOLBAR_PANELS = [
-        'debug_toolbar.panels.history.HistoryPanel',
-        'debug_toolbar.panels.versions.VersionsPanel',
-        'debug_toolbar.panels.timer.TimerPanel',
-        'debug_toolbar.panels.settings.SettingsPanel',
-        'debug_toolbar.panels.headers.HeadersPanel',
-        'debug_toolbar.panels.request.RequestPanel',
-        'debug_toolbar.panels.sql.SQLPanel',
-        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-        'debug_toolbar.panels.templates.TemplatesPanel',
-        'debug_toolbar.panels.cache.CachePanel',
-        'debug_toolbar.panels.signals.SignalsPanel',
-        'debug_toolbar.panels.redirects.RedirectsPanel',
-        'debug_toolbar.panels.profiling.ProfilingPanel',
-    ]
+  #   DEBUG_TOOLBAR_PANELS = [
+   #      'debug_toolbar.panels.history.HistoryPanel',
+      #   'debug_toolbar.panels.versions.VersionsPanel',
+   # #      'debug_toolbar.panels.timer.TimerPanel',
+      #   'debug_toolbar.panels.settings.SettingsPanel',
+    #     'debug_toolbar.panels.headers.HeadersPanel',
+   #      'debug_toolbar.panels.request.RequestPanel',
+  #       'debug_toolbar.panels.sql.SQLPanel',
+  #       'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+  #       'debug_toolbar.panels.templates.TemplatesPanel',
+   #      'debug_toolbar.panels.cache.CachePanel',
+    #     'debug_toolbar.panels.signals.SignalsPanel',
+     #    'debug_toolbar.panels.redirects.RedirectsPanel',
+#         'debug_toolbar.panels.profiling.ProfilingPanel',
+ #    ]
     
-    DEBUG_TOOLBAR_CONFIG = {
-        'SHOW_TOOLBAR_CALLBACK': lambda request: True,
-        'RESULTS_CACHE_SIZE': 100,
-        'SHOW_COLLAPSED': True,
-        'SQL_WARNING_THRESHOLD': 100,
-    }
+  #   DEBUG_TOOLBAR_CONFIG = {
+   #      'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+  #       'RESULTS_CACHE_SIZE': 100,
+ #        'SHOW_COLLAPSED': True,
+  #       'SQL_WARNING_THRESHOLD': 100,
+ #    }
     
     # Internal IPs for debug toolbar
     INTERNAL_IPS = [

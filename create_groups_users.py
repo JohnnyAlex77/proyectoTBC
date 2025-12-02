@@ -1,4 +1,4 @@
-# script_usuarios_grupos.py - VERSIÓN CORREGIDA (Pylance compatible)
+# create_groups_users.py - VERSIÓN CORREGIDA
 import os
 import django
 import sys
@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional
 import traceback
 
 # Configurar Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC_demo.settings')
 django.setup()
 
 from django.db import transaction
@@ -240,26 +240,26 @@ def main():
                         if p.codename not in config['permisos_excluir']
                     ]
                 
-                    # Eliminar duplicados usando un dict para mantener orden
-                    # Eliminar duplicados manteniendo el orden
-                    permisos_unicos: List[Permission] = []
-                    codenames_vistos = set()
-                    
-                    for perm in permisos_grupo:
-                        # Verificar que sea un objeto Permission válido
-                        if not hasattr(perm, 'codename') or not hasattr(perm, 'content_type_id'):
-                            continue
-                    
-                    # Crear clave única
-                    perm_key = f"{perm.codename}_{perm.content_type_id}"
-                    
-                    # Si no hemos visto este permiso, añadirlo
-                    if perm_key not in codenames_vistos:
-                        codenames_vistos.add(perm_key)
-                        permisos_unicos.append(perm)
+                # Eliminar duplicados usando un dict para mantener orden
+                permisos_unicos: List[Permission] = []
+                vistos = set()
+                for perm in permisos_grupo:
+                    # Solución para error de Pylance: usar método seguro para obtener ID
+                    try:
+                        # Intentar obtener el ID del permiso
+                        perm_id = perm.id
+                        if perm_id not in vistos:
+                            vistos.add(perm_id)
+                            permisos_unicos.append(perm)
+                    except AttributeError:
+                        # Fallback: usar codename como identificador
+                        perm_key = perm.codename
+                        if perm_key not in vistos:
+                            vistos.add(perm_key)
+                            permisos_unicos.append(perm)
                 
-                # Asignar permisos al grupo
-                if permisos_unicos:
+                # Verificar que permisos_unicos existe antes de usarla - CORRECCIÓN DEL ERROR
+                if permisos_unicos:  # Ahora la variable está definida
                     grupo.permissions.set(permisos_unicos)
                     grupos_creados[grupo_nombre] = grupo
                     print(f"  ✅ Grupo '{grupo_nombre}' creado con {len(permisos_unicos)} permisos")
