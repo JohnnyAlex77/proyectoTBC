@@ -88,12 +88,12 @@ if not User.objects.filter(username='admin').exists():
     User.objects.create_superuser(
         username='admin',
         email='admin@sistematbc.cl',
-        password='AdminTBC2024!'
+        password='AdminTBC.2024'
     )
     print("Superusuario creado:")
     print("  Usuario: admin")
     print("  Email: admin@sistematbc.cl")
-    print("  Contraseña: AdminTBC2024!")
+    print("  Contraseña: AdminTBC.2024")
 else:
     print("Superusuario ya existe")
 EOF

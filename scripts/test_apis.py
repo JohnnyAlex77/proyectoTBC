@@ -8,9 +8,9 @@ import django
 import requests
 import json
 from datetime import datetime
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Configurar Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC_demo.settings.development')
 django.setup()
 
 BASE_URL = "http://localhost:8000/api/"
