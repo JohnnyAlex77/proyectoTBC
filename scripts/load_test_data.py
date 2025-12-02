@@ -5,9 +5,9 @@ Script para cargar datos de prueba en el sistema TBC
 import os
 import sys
 import django
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Configurar Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistemaTBC_demo.settings.development')
 django.setup()
 
 from django.contrib.auth.models import User, Group

@@ -6,7 +6,6 @@ Implementan CRUD completo con control de acceso por establecimiento
 from rest_framework import viewsets, filters, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
 from datetime import date, timedelta
 from django.utils import timezone
@@ -23,7 +22,7 @@ class PacienteViewSet(viewsets.ModelViewSet):
     queryset = PacientesPaciente.objects.all()
     serializer_class = PacienteSerializer
     permission_classes = [permissions.IsAuthenticated, EstablecimientoPermission]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter] 
     filterset_fields = [
         'estado', 'tipo_tbc', 'comuna', 'establecimiento_salud',
         'sexo', 'poblacion_prioritaria'

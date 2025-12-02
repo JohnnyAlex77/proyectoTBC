@@ -9,7 +9,7 @@ from .base import *
 SECRET_KEY = 'django-insecure-develop-key-123456-change-in-production'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.58.2.188']
 
@@ -45,5 +45,14 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# URL para redireccionar cuando se requiere login
+LOGIN_URL = '/'
+
+# URL a la que redirigir después del login exitoso
+LOGIN_REDIRECT_URL = '/usuarios/dashboard/'
+
+# URL a la que redirigir después del logout
+LOGOUT_REDIRECT_URL = '/'
 
 print("✓ Configuración de desarrollo cargada")

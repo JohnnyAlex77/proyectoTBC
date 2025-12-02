@@ -126,12 +126,19 @@ DATABASES = {
 # ============================================================================
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer', 
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -147,4 +154,12 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+# URL para redireccionar cuando se requiere login
+LOGIN_URL = '/'
+
+# URL a la que redirigir después del login exitoso
+LOGIN_REDIRECT_URL = '/usuarios/dashboard/'
+
+# URL a la que redirigir después del logout
+LOGOUT_REDIRECT_URL = '/'
 print("✓ Configuración base cargada")

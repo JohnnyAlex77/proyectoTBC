@@ -6,7 +6,6 @@ Gestión completa con seguimiento temporal
 from rest_framework import viewsets, filters, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from datetime import date, timedelta
 
@@ -26,7 +25,7 @@ class TratamientoViewSet(viewsets.ModelViewSet):
     queryset = Tratamiento.objects.all()
     serializer_class = TratamientoSerializer
     permission_classes = [permissions.IsAuthenticated, EstablecimientoPermission, IsEnfermeraOrHigher]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]  
     filterset_fields = ['esquema', 'resultado_final', 'paciente__establecimiento_salud']
     search_fields = ['paciente__nombre', 'paciente__rut', 'observaciones']
     ordering_fields = ['fecha_inicio', 'fecha_termino_estimada', 'fecha_registro']
