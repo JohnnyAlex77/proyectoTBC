@@ -38,6 +38,117 @@
                     </a>
                 </li>
 
+                <!-- API REST (todos los usuarios autenticados) -->
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if '/api/' in request.path %}active{% endif %}" 
+                       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-code me-2"></i> API REST
+                    </a>
+                    <ul class="dropdown-menu">
+                        <!-- Dashboard API -->
+                        <li>
+                            <a class="dropdown-item {% if '/api/dashboard/' in request.path %}active{% endif %}" 
+                               href="{% url 'schema-swagger-ui' %}">
+                                <i class="fas fa-chart-bar me-2"></i>Documentación API
+                            </a>
+                        </li>
+                        
+                        <!-- API Pacientes -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,tecnologo,paramedico' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/pacientes/' in request.path and not '/api/pacientes/' == '/api/pacientes/'|add:'?format=api' %}active{% endif %}" 
+                               href="/api/pacientes/" target="_blank">
+                                <i class="fas fa-user-injured me-2"></i>API Pacientes
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- API Tratamientos -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,paramedico' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/tratamientos/' in request.path %}active{% endif %}" 
+                               href="/api/tratamientos/" target="_blank">
+                                <i class="fas fa-pills me-2"></i>API Tratamientos
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- API Dashboard -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,tecnologo' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/dashboard/' in request.path %}active{% endif %}" 
+                               href="/api/dashboard/estadisticas/" target="_blank">
+                                <i class="fas fa-chart-pie me-2"></i>Dashboard API
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- API Externa: Clima -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/external/clima/' in request.path %}active{% endif %}" 
+                               href="/api/external/clima/?ciudad=Santiago" target="_blank">
+                                <i class="fas fa-cloud-sun me-2"></i>API Clima
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- API Externa: Geocodificación -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico,enfermera,paramedico' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/external/geocodificar/' in request.path %}active{% endif %}" 
+                               href="/api/external/geocodificar/" target="_blank">
+                                <i class="fas fa-map-marker-alt me-2"></i>Geocodificación
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- API Externa: Análisis Epidemiológico -->
+                        {% if user.is_superuser or user.usuariosusuario.rol in 'admin,medico' %}
+                        <li>
+                            <a class="dropdown-item {% if '/api/external/analisis-epidemiologico/' in request.path %}active{% endif %}" 
+                               href="/api/external/analisis-epidemiologico/?comuna=Santiago" target="_blank">
+                                <i class="fas fa-chart-line me-2"></i>Análisis Epidemiológico
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Estado de APIs -->
+                        <li>
+                            <a class="dropdown-item {% if '/api/status/' in request.path %}active{% endif %}" 
+                               href="/api/status/" target="_blank">
+                                <i class="fas fa-server me-2"></i>Estado del Sistema
+                            </a>
+                        </li>
+                        
+                        <!-- Interfaz API Testing -->
+                        <li>
+                            <a class="dropdown-item {% if '/api/dashboard/' in request.path and 'dashboard.html' in request.path %}active{% endif %}" 
+                               href="/api/dashboard/" target="_blank">
+                                <i class="fas fa-vial me-2"></i>Probar APIs
+                            </a>
+                        </li>
+                        
+                        <!-- Documentación Swagger -->
+                        <li>
+                            <a class="dropdown-item {% if '/api/docs/' in request.path %}active{% endif %}" 
+                               href="/api/docs/" target="_blank">
+                                <i class="fas fa-book me-2"></i>Documentación Swagger
+                            </a>
+                        </li>
+                        
+                        <!-- Documentación ReDoc -->
+                        <li>
+                            <a class="dropdown-item {% if '/api/redoc/' in request.path %}active{% endif %}" 
+                               href="/api/redoc/" target="_blank">
+                                <i class="fas fa-book-open me-2"></i>Documentación ReDoc
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
                 <!-- Módulo Usuarios (Solo administradores) -->
                 {% if user.is_superuser or user.usuariosusuario.rol == 'admin' %}
                 <li class="nav-item">
@@ -194,10 +305,18 @@
         </div>
 
         <div class="sidebar-footer mt-auto pt-3 border-top border-light opacity-50">
-            <small class="text-light opacity-75">
-                <i class="fas fa-info-circle me-1"></i>
-                {{ user.usuariosusuario.establecimiento|default:"Sistema TBC" }}
-            </small>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-light opacity-75">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ user.usuariosusuario.establecimiento|default:"Sistema TBC" }}
+                </small>
+                {% if user.is_authenticated %}
+                <small class="text-light opacity-75">
+                    <i class="fas fa-code me-1"></i>
+                    API v1.0
+                </small>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>
@@ -291,11 +410,23 @@
         margin-right: 10px;
     }
 
+    /* Estilos específicos para API REST */
+    .sidebar .nav-link[href*="/api/"] {
+        background: rgba(155, 89, 182, 0.2);
+        border-left: 4px solid #9b59b6;
+    }
+
+    .sidebar .nav-link[href*="/api/"]:hover,
+    .sidebar .nav-link[href*="/api/"].active {
+        background: rgba(155, 89, 182, 0.4);
+    }
+
     .sidebar .dropdown-menu {
         background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
         border: none;
         border-radius: 8px;
         margin-left: 10px;
+        min-width: 250px;
     }
 
     .sidebar .dropdown-item {
@@ -316,7 +447,100 @@
         background: rgba(52, 152, 219, 0.5);
     }
 
+    /* Estilos específicos para items de API */
+    .sidebar .dropdown-item[href*="/api/"] {
+        border-left: 3px solid #9b59b6;
+    }
+
+    .sidebar .dropdown-item[href*="/docs/"],
+    .sidebar .dropdown-item[href*="/redoc/"] {
+        border-left: 3px solid #f39c12;
+    }
+
+    .sidebar .dropdown-item[href*="/status/"] {
+        border-left: 3px solid #2ecc71;
+    }
+
     .sidebar .dropdown-toggle::after {
         margin-left: auto;
     }
+
+    /* Indicador de API activa */
+    .api-active-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #2ecc71;
+        border-radius: 50%;
+        margin-left: 5px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+        }
+    }
 </style>
+
+<script>
+// Script para verificar estado de APIs y mostrar indicador
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar estado de APIs cada 30 segundos
+    function checkAPIStatus() {
+        fetch('/api/status/')
+            .then(response => response.json())
+            .then(data => {
+                const apiStatusElement = document.getElementById('api-status-indicator');
+                if (apiStatusElement) {
+                    if (data.api_rest && data.base_datos) {
+                        apiStatusElement.style.backgroundColor = '#2ecc71'; // Verde
+                        apiStatusElement.title = 'APIs funcionando correctamente';
+                    } else {
+                        apiStatusElement.style.backgroundColor = '#e74c3c'; // Rojo
+                        apiStatusElement.title = 'Algunas APIs no están disponibles';
+                    }
+                }
+            })
+            .catch(error => {
+                console.log('No se pudo verificar estado de APIs');
+            });
+    }
+
+    // Agregar indicador visual al menú API
+    const apiMenuLink = document.querySelector('.nav-link[href*="/api/"]');
+    if (apiMenuLink) {
+        const indicator = document.createElement('span');
+        indicator.id = 'api-status-indicator';
+        indicator.className = 'api-active-indicator';
+        indicator.title = 'Verificando estado de APIs...';
+        apiMenuLink.appendChild(indicator);
+        
+        // Verificar estado inicial
+        checkAPIStatus();
+        
+        // Verificar periódicamente
+        setInterval(checkAPIStatus, 30000);
+    }
+
+    // Abrir enlaces API en nueva pestaña
+    document.querySelectorAll('.dropdown-item[href*="/api/"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Solo abrir en nueva pestaña si no es Ctrl+click
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                window.open(this.href, '_blank');
+            }
+        });
+    });
+});
+</script>

@@ -15,6 +15,10 @@ from django.utils import timezone
 from datetime import date, timedelta
 import random
 
+# CORREGIDO: Importar modelos desde ubicaciones correctas
+from apps.pacientes.models import PacientesPaciente
+from apps.tratamientos.models import Tratamiento, EsquemaMedicamento
+
 def crear_grupos():
     """Crear grupos de usuarios si no existen"""
     grupos = [
@@ -62,7 +66,7 @@ def crear_usuarios_prueba():
 
 def crear_pacientes_prueba():
     """Crear pacientes de prueba"""
-    from apps.pacientes.models import PacientesPaciente
+    # CORREGIDO: PacientesPaciente ya está importado al inicio
     
     comunas_chile = [
         'Santiago', 'Puente Alto', 'Maipú', 'La Florida', 'Las Condes',
@@ -120,8 +124,7 @@ def crear_pacientes_prueba():
 
 def crear_tratamientos_prueba():
     """Crear tratamientos de prueba"""
-    from apps.pacientes.models import PacientesPaciente
-    from apps.tratamientos.models import Tratamiento, EsquemaMedicamento
+    # CORREGIDO: Tratamiento ya está importado al inicio
     
     pacientes = PacientesPaciente.objects.all()[:10]
     

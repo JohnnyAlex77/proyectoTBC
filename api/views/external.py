@@ -12,7 +12,7 @@ import json
 from django.core.cache import cache
 from django.conf import settings
 from datetime import date, timedelta
-
+from django.utils import timezone
 from apps.pacientes.models import PacientesPaciente
 from apps.tratamientos.models import Tratamiento
 from apps.examenes.models import ExamenesExamenbacteriologico

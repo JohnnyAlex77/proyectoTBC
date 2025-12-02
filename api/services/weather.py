@@ -59,7 +59,7 @@ class WeatherService:
     
     @classmethod
     def obtener_clima(cls, ciudad: str, pais: str = "CL", 
-                     modo_demo: bool = None) -> Dict:
+                     modo_demo: Optional[bool] = None) -> Dict:
         """
         Obtiene condiciones climáticas actuales para una ciudad
         
@@ -174,7 +174,7 @@ class WeatherService:
     
     @classmethod
     def obtener_pronostico(cls, ciudad: str, pais: str = "CL", 
-                          dias: int = 3, modo_demo: bool = None) -> Dict:
+                          dias: int = 3, modo_demo: Optional[bool] = None) -> Dict:
         """
         Obtiene pronóstico para varios días
         

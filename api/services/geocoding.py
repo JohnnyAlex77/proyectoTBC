@@ -37,8 +37,8 @@ class GeocodingService:
     }
     
     @classmethod
-    def geocodificar(cls, direccion: str, comuna: str = None, 
-                     ciudad: str = None, pais: str = "Chile") -> Dict:
+    def geocodificar(cls, direccion: str, comuna: str = "", 
+                     ciudad: str = "", pais: str = "Chile") -> Dict:
         """
         Geocodifica una dirección a coordenadas geográficas
         
@@ -260,9 +260,9 @@ class GeocodingService:
         return result
     
     @staticmethod
-    def _procesar_respuesta_fallida(query: str, comuna: str = None, 
-                                   ciudad: str = None, pais: str = "Chile",
-                                   error: str = None) -> Dict:
+    def _procesar_respuesta_fallida(query: str, comuna: str = "", 
+                                   ciudad: str = "", pais: str = "Chile",
+                                   error: str = "") -> Dict:
         """Procesa una respuesta fallida de la API"""
         # Coordenadas por defecto basadas en la comuna/ciudad
         default_coords = GeocodingService._obtener_coordenadas_por_defecto(comuna, ciudad)
@@ -288,8 +288,8 @@ class GeocodingService:
         return result
     
     @staticmethod
-    def _obtener_resultado_fallback(direccion: str, comuna: str = None,
-                                   ciudad: str = None, pais: str = "Chile") -> Dict:
+    def _obtener_resultado_fallback(direccion: str, comuna: str = "",
+                                   ciudad: str = "", pais: str = "Chile") -> Dict:
         """Obtiene resultado de fallback cuando la API falla"""
         # Primero intentar con coordenadas por defecto
         result = GeocodingService._procesar_respuesta_fallida(direccion, comuna, ciudad, pais)
@@ -358,7 +358,7 @@ class GeocodingService:
         return categorias.get(tipo, 'desconocido')
     
     @staticmethod
-    def _obtener_coordenadas_por_defecto(comuna: str = None, ciudad: str = None) -> Dict:
+    def _obtener_coordenadas_por_defecto(comuna: str = "", ciudad: str = "") -> Dict:
         """Obtiene coordenadas por defecto basadas en comuna/ciudad"""
         # Base de datos de coordenadas por comuna/ciudad en Chile
         coordenadas_chile = {
@@ -396,7 +396,7 @@ class GeocodingService:
         return {'latitud': -33.4489, 'longitud': -70.6693}
     
     @staticmethod
-    def _obtener_region_por_comuna(comuna: str = None) -> str:
+    def _obtener_region_por_comuna(comuna: str = "") -> str:
         """Obtiene la región basada en la comuna"""
         if not comuna:
             return "Región Metropolitana"
@@ -464,7 +464,7 @@ class GeocodingService:
 
 
 # Función de conveniencia para uso rápido
-def geocodificar_direccion(direccion: str, comuna: str = None, **kwargs) -> Dict:
+def geocodificar_direccion(direccion: str, comuna: str = "", **kwargs) -> Dict:
     """
     Función de conveniencia para geocodificar una dirección
     

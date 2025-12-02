@@ -6,12 +6,12 @@ Proporciona métricas clave y estadísticas
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from django.db.models import Count, Q, Avg, Max, Min
+from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth, TruncYear
 from django.utils import timezone
 from datetime import date, timedelta
-import statistics
 
+# Importar modelos desde ubicaciones correctas
 from apps.pacientes.models import PacientesPaciente
 from apps.tratamientos.models import Tratamiento
 from apps.examenes.models import ExamenesExamenbacteriologico
@@ -55,10 +55,10 @@ class DashboardEstadisticasView(APIView):
         }
         
         # Tratamientos (filtrando por establecimiento a través del paciente)
+        establecimientos_ids = pacientes.values_list('establecimiento_salud', flat=True)
         tratamientos = Tratamiento.objects.filter(
-            paciente__establecimiento_salud__in=[est.establecimiento_salud 
-               for est in pacientes.values('establecimiento_salud').distinct()]
-        ) if establecimiento_filtro else Tratamiento.objects.all()
+            paciente__establecimiento_salud__in=establecimientos_ids
+        ) if establecimientos_ids else Tratamiento.objects.all()
         
         tratamientos_estadisticas = {
             'total': tratamientos.count(),
@@ -72,9 +72,8 @@ class DashboardEstadisticasView(APIView):
         
         # Exámenes
         examenes = ExamenesExamenbacteriologico.objects.filter(
-            paciente__establecimiento_salud__in=[est.establecimiento_salud 
-               for est in pacientes.values('establecimiento_salud').distinct()]
-        ) if establecimiento_filtro else ExamenesExamenbacteriologico.objects.all()
+            paciente__establecimiento_salud__in=establecimientos_ids
+        ) if establecimientos_ids else ExamenesExamenbacteriologico.objects.all()
         
         examenes_estadisticas = {
             'total': examenes.count(),
@@ -86,9 +85,8 @@ class DashboardEstadisticasView(APIView):
         
         # Contactos
         contactos = ContactosContacto.objects.filter(
-            paciente_indice__establecimiento_salud__in=[est.establecimiento_salud 
-               for est in pacientes.values('establecimiento_salud').distinct()]
-        ) if establecimiento_filtro else ContactosContacto.objects.all()
+            paciente_indice__establecimiento_salud__in=establecimientos_ids
+        ) if establecimientos_ids else ContactosContacto.objects.all()
         
         contactos_estadisticas = {
             'total': contactos.count(),
@@ -99,7 +97,6 @@ class DashboardEstadisticasView(APIView):
         
         # Prevención
         prevencion = PrevencionQuimioprofilaxis.objects.all()
-        # Filtrar por acceso si es necesario
         
         prevencion_estadisticas = {
             'total': prevencion.count(),
@@ -267,12 +264,13 @@ class DashboardAlertasView(APIView):
         
         for examen in examenes_pendientes:
             dias_pendiente = (hoy - examen.fecha_toma_muestra).days
+            # USAR .pk EN LUGAR DE .id PARA EVITAR ERRORES
             alertas.append({
                 'tipo': 'examen',
                 'nivel': 'warning' if dias_pendiente <= 14 else 'danger',
                 'mensaje': f"Examen {examen.get_tipo_examen_display()} de {examen.paciente.nombre} pendiente por {dias_pendiente} días",
                 'fecha': examen.fecha_toma_muestra,
-                'url': f"/examenes/{examen.id}/"
+                'url': f"/examenes/{examen.pk}/"  # CORREGIDO: usar .pk
             })
         
         # Alertas de quimioprofilaxis vencida
@@ -283,12 +281,28 @@ class DashboardAlertasView(APIView):
         
         for quimio in quimio_vencida:
             dias_vencida = (hoy - quimio.fecha_termino_prevista).days
+            
+            # VERSIÓN SEGURA: Usar métodos más genéricos
+            nombre_paciente = "Paciente/Contacto"
+            
+            # Verificar diferentes posibles atributos
+            if hasattr(quimio, 'contacto') and quimio.contacto:
+                contacto_obj = quimio.contacto
+                # Intentar diferentes atributos comunes
+                for attr_name in ['nombres', 'nombre', 'full_name', 'nombre_completo', 'name']:
+                    if hasattr(contacto_obj, attr_name):
+                        nombre_paciente = getattr(contacto_obj, attr_name, "")
+                        break
+                # Si no se encontró atributo, usar string vacío
+                if nombre_paciente == "Paciente/Contacto":
+                    nombre_paciente = "Contacto sin nombre definido"
+            
             alertas.append({
                 'tipo': 'prevencion',
                 'nivel': 'warning',
-                'mensaje': f"Quimioprofilaxis de {quimio.get_nombre_paciente_contacto()} vencida hace {dias_vencida} días",
+                'mensaje': f"Quimioprofilaxis de {nombre_paciente} vencida hace {dias_vencida} días",
                 'fecha': quimio.fecha_termino_prevista,
-                'url': f"/prevencion/quimioprofilaxis/{quimio.id}/"
+                'url': f"/prevencion/quimioprofilaxis/{quimio.pk}/"  
             })
         
         # Ordenar alertas por nivel de prioridad
