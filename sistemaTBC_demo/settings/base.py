@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'drf_yasg',
+    'drf_spectacular',        
+    'drf_spectacular_sidecar',
     
     # Project apps
     'apps.usuarios',
@@ -97,12 +98,20 @@ TIME_ZONE = 'America/Santiago'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# Archivos estáticos (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Para producción
+
+# Directorios adicionales para archivos estáticos
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# Asegurar que Django encuentre los estáticos de drf-yasg
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -125,40 +134,114 @@ DATABASES = {
 # REST FRAMEWORK CONFIGURATION - BASE
 # ============================================================================
 
+# REST Framework configuration
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer', 
-    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
-    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # IMPORTANTE
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
 
-# ============================================================================
-# CORS CONFIGURATION - BASE
-# ============================================================================
-
+# DRF Spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Sistema TBC API',
+    'DESCRIPTION': '''
+    API RESTful completa para el Sistema de Gestión de Tuberculosis
+    
+    ## 📋 Características:
+    - Gestión completa de pacientes con TBC
+    - Seguimiento de tratamientos y medicamentos
+    - Sistema de alertas y notificaciones
+    - Integración con APIs externas (clima, geocodificación)
+    - Dashboard con estadísticas en tiempo real
+    
+    ## 🔐 Autenticación:
+    - Token-based authentication
+    - Permisos por rol (Administrador, Médico, Enfermera, etc.)
+    
+    ## 📊 Endpoints disponibles:
+    1. **/api/pacientes/** - CRUD completo de pacientes
+    2. **/api/tratamientos/** - Gestión de tratamientos
+    3. **/api/dashboard/** - Estadísticas y alertas
+    4. **/api/external/** - APIs externas
+    5. **/api/auth/** - Autenticación
+    ''',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    
+    # UI configuration
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+        'filter': True,
+        'docExpansion': 'list',
+        'defaultModelsExpandDepth': 3,
+        'defaultModelExpandDepth': 3,
+        'showExtensions': True,
+        'showCommonExtensions': True,
+    },
+    
+    # Redoc settings
+    'REDOC_UI_SETTINGS': {
+        'hideDownloadButton': False,
+        'expandResponses': '200,201',
+        'requiredPropsFirst': True,
+    },
+    
+    # General settings
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SORT_OPERATIONS': False,
+    
+    # Security
+    'SECURITY': [{'Bearer': []}],
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Token JWT en formato: Bearer <token>'
+        }
+    },
+    
+    # Tags
+    'TAGS': [
+        {'name': 'Pacientes', 'description': 'Gestión de pacientes con TBC'},
+        {'name': 'Tratamientos', 'description': 'Gestión de tratamientos y medicamentos'},
+        {'name': 'Dashboard', 'description': 'Estadísticas y alertas del sistema'},
+        {'name': 'APIs Externas', 'description': 'Clima y geocodificación'},
+        {'name': 'Autenticación', 'description': 'Login y tokens'},
+    ],
+}
+# CORS settings (importante para Swagger)
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
-CORS_ALLOW_CREDENTIALS = True
+
+# O si prefieres una configuración más segura:
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # URL para redireccionar cuando se requiere login
 LOGIN_URL = '/'
 
 # URL a la que redirigir después del login exitoso
-LOGIN_REDIRECT_URL = '/usuarios/dashboard/'
+LOGIN_REDIRECT_URL = '/'
 
 # URL a la que redirigir después del logout
 LOGOUT_REDIRECT_URL = '/'

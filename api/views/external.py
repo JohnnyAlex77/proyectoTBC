@@ -17,16 +17,204 @@ from apps.pacientes.models import PacientesPaciente
 from apps.tratamientos.models import Tratamiento
 from apps.examenes.models import ExamenesExamenbacteriologico
 from django.db.models import Count, Avg, Q
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
+from drf_spectacular.types import OpenApiTypes
 
 class GeocodificarView(APIView):
     """
     Vista para geocodificación de direcciones usando API externa
+    Acepta tanto GET como POST
     """
     permission_classes = [permissions.IsAuthenticated]
     
+    @extend_schema(
+        summary="Geocodificar dirección",
+        description="""Convierte una dirección en coordenadas geográficas (latitud/longitud).
+        
+        **Ejemplos:**
+        - GET: `/api/external/geocodificar/?direccion=Av+Principal+123&comuna=Santiago`
+        - POST: `{"direccion": "Av Principal 123", "comuna": "Santiago"}`
+        
+        **Fuente de datos:** OpenStreetMap Nominatim (servicio gratuito)
+        **Cache:** 24 horas para resultados exitosos
+        """,
+        parameters=[
+            OpenApiParameter(
+                name='direccion',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Dirección a geocodificar (ej: "Av Principal 123")',
+                required=True
+            ),
+            OpenApiParameter(
+                name='comuna',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Comuna (opcional, ej: "Santiago")',
+                required=False
+            ),
+            OpenApiParameter(
+                name='ciudad',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Ciudad (opcional, default: "Santiago")',
+                required=False
+            ),
+            OpenApiParameter(
+                name='pais',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='País (opcional, default: "Chile")',
+                required=False
+            ),
+        ],
+        request=OpenApiTypes.OBJECT,
+        examples=[
+            OpenApiExample(
+                'Ejemplo GET',
+                value={},
+                description='Uso por URL con parámetros query',
+                request_only=False,
+                response_only=False
+            ),
+            OpenApiExample(
+                'Ejemplo POST',
+                value={
+                    "direccion": "Av. Libertador Bernardo O'Higgins 123",
+                    "comuna": "Santiago",
+                    "ciudad": "Santiago",
+                    "pais": "Chile"
+                },
+                description='Uso por POST con JSON',
+                request_only=True,
+                response_only=False
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                description='Geocodificación exitosa',
+                examples=[
+                    OpenApiExample(
+                        'Respuesta exitosa',
+                        value={
+                            "exitoso": True,
+                            "direccion": "Avenida Libertador Bernardo O'Higgins 123, Santiago, Santiago Metropolitan Region, Chile",
+                            "latitud": -33.4488897,
+                            "longitud": -70.6692655,
+                            "tipo": "administrative",
+                            "importancia": 0.6748476595333333,
+                            "fuente": "OpenStreetMap Nominatim",
+                            "detalles": {
+                                "city": "Santiago",
+                                "state": "Santiago Metropolitan Region",
+                                "country": "Chile",
+                                "country_code": "cl"
+                            },
+                            "coordenadas": {
+                                "lat": -33.4488897,
+                                "lon": -70.6692655,
+                                "latitud": -33.4488897,
+                                "longitud": -70.6692655
+                            }
+                        }
+                    ),
+                    OpenApiExample(
+                        'Respuesta con cache',
+                        value={
+                            "exitoso": True,
+                            "direccion": "Avenida Principal 123, Santiago, Chile",
+                            "latitud": -33.4489,
+                            "longitud": -70.6693,
+                            "fuente": "cache",
+                            "cache": True,
+                            "detalles": {
+                                "comuna": "Santiago",
+                                "ciudad": "Santiago",
+                                "pais": "Chile"
+                            }
+                        }
+                    ),
+                ]
+            ),
+            400: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                description='Error: parámetros faltantes',
+                examples=[
+                    OpenApiExample(
+                        'Error 400',
+                        value={
+                            "error": "Se requiere una dirección",
+                            "ejemplo": "/api/external/geocodificar/?direccion=Av+Principal+123&comuna=Santiago"
+                        }
+                    )
+                ]
+            ),
+            500: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                description='Error interno del servidor',
+                examples=[
+                    OpenApiExample(
+                        'Error 500',
+                        value={
+                            "error": "Error en geocodificación: Timeout en la conexión",
+                            "exitoso": False
+                        }
+                    )
+                ]
+            ),
+        },
+        tags=['APIs Externas']
+    )
+    def get(self, request):
+        """
+        Geocodifica una dirección a coordenadas (método GET)
+        Útil para pruebas rápidas desde navegador
+        """
+        direccion = request.GET.get('direccion', '').strip()
+        comuna = request.GET.get('comuna', '').strip()
+        
+        if not direccion:
+            return Response(
+                {'error': 'Se requiere una dirección', 'ejemplo': '/api/external/geocodificar/?direccion=Av+Principal+123&comuna=Santiago'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Llamar a la función de geocodificación
+        resultado = self._geocodificar_direccion(direccion, comuna)
+        return Response(resultado)
+    
+    @extend_schema(
+        summary="Geocodificar dirección (POST)",
+        description="Geocodificación por POST con datos JSON",
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'direccion': {'type': 'string', 'example': 'Av Principal 123'},
+                    'comuna': {'type': 'string', 'example': 'Santiago'},
+                    'ciudad': {'type': 'string', 'example': 'Santiago'},
+                    'pais': {'type': 'string', 'example': 'Chile'},
+                },
+                'required': ['direccion']
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                description='Geocodificación exitosa'
+            ),
+            400: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                description='Parámetros faltantes o inválidos'
+            ),
+        },
+        tags=['APIs Externas']
+    )
     def post(self, request):
         """
-        Geocodifica una dirección a coordenadas
+        Geocodifica una dirección a coordenadas (método POST)
+        Para uso programático con datos JSON
         """
         direccion = request.data.get('direccion', '').strip()
         comuna = request.data.get('comuna', '').strip()
@@ -39,16 +227,29 @@ class GeocodificarView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Crear clave de cache
-        cache_key = f"geocoding_{direccion}_{comuna}_{ciudad}_{pais}"
+        # Llamar a la función de geocodificación
+        resultado = self._geocodificar_direccion(direccion, comuna, ciudad, pais)
+        return Response(resultado)
+    
+    def _geocodificar_direccion(self, direccion, comuna='', ciudad='Santiago', pais='Chile'):
+        """
+        Función interna para geocodificación
+        Usa Nominatim (OpenStreetMap) como servicio gratuito
+        """
+        import requests
+        from django.core.cache import cache
         
-        # Verificar cache primero
+        # Crear clave de cache
+        cache_key = f"geocoding_{direccion}_{comuna}_{ciudad}_{pais}".replace(' ', '_').lower()
+        
+        # Verificar cache primero (24 horas)
         cached_result = cache.get(cache_key)
         if cached_result:
-            return Response(cached_result)
+            cached_result['cache'] = True
+            return cached_result
         
         try:
-            # Construir consulta para Nominatim (OpenStreetMap)
+            # Construir consulta para Nominatim (OpenStreetMap) - SERVICIO GRATUITO
             query_parts = []
             if direccion:
                 query_parts.append(direccion)
@@ -64,7 +265,8 @@ class GeocodificarView(APIView):
             # Configurar headers para cumplir con TOS de Nominatim
             headers = {
                 'User-Agent': 'SistemaTBC/1.0 (contacto@sistematbc.cl)',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Language': 'es'
             }
             
             # Parámetros de la consulta
@@ -73,10 +275,12 @@ class GeocodificarView(APIView):
                 'format': 'json',
                 'limit': 1,
                 'countrycodes': 'cl',
-                'addressdetails': 1
+                'addressdetails': 1,
+                'polygon': 0,
+                'bounded': 0
             }
             
-            # Realizar consulta
+            # Realizar consulta a API pública de Nominatim
             response = requests.get(
                 'https://nominatim.openstreetmap.org/search',
                 params=params,
@@ -98,66 +302,94 @@ class GeocodificarView(APIView):
                         'tipo': location.get('type', 'unknown'),
                         'importancia': float(location.get('importance', 0)),
                         'fuente': 'OpenStreetMap Nominatim',
-                        'detalles': {
-                            'comuna': location.get('address', {}).get('city', comuna),
-                            'region': location.get('address', {}).get('state', ''),
-                            'pais': location.get('address', {}).get('country', 'Chile')
+                        'detalles': location.get('address', {}),
+                        'coordenadas': {
+                            'lat': float(location.get('lat', 0)),
+                            'lon': float(location.get('lon', 0)),
+                            'latitud': float(location.get('lat', 0)),
+                            'longitud': float(location.get('lon', 0))
                         }
                     }
-                    
-                    # Calcular exactitud basada en importancia y tipo
-                    exactitud = 0.5  # Base
-                    if location.get('type') in ['house', 'building']:
-                        exactitud = 0.95
-                    elif location.get('type') in ['street', 'road']:
-                        exactitud = 0.85
-                    elif location.get('type') in ['city', 'town', 'village']:
-                        exactitud = 0.7
-                    
-                    # Ajustar por importancia
-                    importancia = float(location.get('importance', 0))
-                    if importancia > 0:
-                        exactitud = min(exactitud + (importancia * 0.1), 1.0)
-                    
-                    result['exactitud'] = round(exactitud, 2)
                     
                     # Guardar en cache (24 horas)
                     cache.set(cache_key, result, 86400)
                     
-                    return Response(result)
+                    return result
             
-            # Si llegamos aquí, la geocodificación falló
+            # Si llegamos aquí, la geocodificación falló o no hay resultados
+            # Usar coordenadas por defecto basadas en comuna/ciudad
+            coordenadas_default = self._obtener_coordenadas_por_defecto(comuna or ciudad)
+            
             result = {
                 'exitoso': False,
                 'direccion': query,
-                'latitud': -33.4489,  # Santiago por defecto
-                'longitud': -70.6693,
-                'exactitud': 0.3,
-                'fuente': 'default',
-                'nota': 'Geocodificación aproximada usando coordenadas por defecto de Santiago',
+                'latitud': coordenadas_default['lat'],
+                'longitud': coordenadas_default['lon'],
+                'fuente': 'coordenadas_por_defecto',
+                'nota': 'Geocodificación aproximada usando coordenadas por defecto',
                 'detalles': {
                     'comuna': comuna or ciudad,
-                    'region': 'Región Metropolitana',
+                    'ciudad': ciudad,
                     'pais': 'Chile'
+                },
+                'coordenadas': {
+                    'lat': coordenadas_default['lat'],
+                    'lon': coordenadas_default['lon'],
+                    'latitud': coordenadas_default['lat'],
+                    'longitud': coordenadas_default['lon']
                 }
             }
             
             # Guardar en cache por menos tiempo (1 hora)
             cache.set(cache_key, result, 3600)
             
-            return Response(result)
+            return result
             
         except requests.exceptions.Timeout:
-            return Response(
-                {'error': 'Timeout en la geocodificación', 'exitoso': False},
-                status=status.HTTP_504_GATEWAY_TIMEOUT
-            )
+            return {
+                'exitoso': False,
+                'direccion': f"{direccion}, {comuna}",
+                'error': 'Timeout en la geocodificación',
+                'nota': 'Servicio de geocodificación no disponible temporalmente'
+            }
+            
         except Exception as e:
-            return Response(
-                {'error': f'Error en geocodificación: {str(e)}', 'exitoso': False},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
+            return {
+                'exitoso': False,
+                'direccion': f"{direccion}, {comuna}",
+                'error': f'Error en geocodificación: {str(e)}',
+                'nota': 'Error interno del servidor'
+            }
+    
+    def _obtener_coordenadas_por_defecto(self, lugar):
+        """
+        Devuelve coordenadas por defecto para ciudades comunes de Chile
+        """
+        coordenadas_chile = {
+            'santiago': {'lat': -33.4489, 'lon': -70.6693},
+            'puente alto': {'lat': -33.6167, 'lon': -70.5833},
+            'maipú': {'lat': -33.5167, 'lon': -70.7667},
+            'la florida': {'lat': -33.5500, 'lon': -70.5833},
+            'las condes': {'lat': -33.4167, 'lon': -70.5833},
+            'ñuñoa': {'lat': -33.4667, 'lon': -70.6000},
+            'san bernardo': {'lat': -33.6000, 'lon': -70.7167},
+            'peñalolén': {'lat': -33.4833, 'lon': -70.5500},
+            'el bosque': {'lat': -33.5667, 'lon': -70.6833},
+            'la pintana': {'lat': -33.5833, 'lon': -70.6333},
+            'valparaíso': {'lat': -33.0458, 'lon': -71.6197},
+            'viña del mar': {'lat': -33.0245, 'lon': -71.5518},
+            'concepción': {'lat': -36.8269, 'lon': -73.0503},
+            'temuco': {'lat': -38.7399, 'lon': -72.5901},
+            'antofagasta': {'lat': -23.6500, 'lon': -70.4000},
+            'iquique': {'lat': -20.2141, 'lon': -70.1524},
+            'arica': {'lat': -18.4783, 'lon': -70.3126},
+            'puerto montt': {'lat': -41.4718, 'lon': -72.9396},
+            'punta arenas': {'lat': -53.1638, 'lon': -70.9171},
+        }
+        
+        lugar_lower = lugar.lower().strip() if lugar else 'santiago'
+        
+        return coordenadas_chile.get(lugar_lower, {'lat': -33.4489, 'lon': -70.6693})
 
 class ClimaView(APIView):
     """

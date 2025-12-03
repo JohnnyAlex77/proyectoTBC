@@ -67,7 +67,6 @@ def dashboard(request):
             from django.contrib.auth.models import User
             from apps.pacientes.models import PacientesPaciente as Paciente
 
-            # SOLUCIÓN: Crear un nuevo diccionario combinando ambos
             context_admin = {
                 'usuario': usuario_ext,
                 'total_usuarios': User.objects.count(),
@@ -127,6 +126,7 @@ def dashboard(request):
 
     except UsuariosUsuario.DoesNotExist:
         # Usuario sin perfil extendido - dashboard básico
+        messages.warning(request, 'Por favor complete su perfil de usuario.')
         return render(request, 'usuarios/dashboard_base.html', {'usuario': None})
 
 

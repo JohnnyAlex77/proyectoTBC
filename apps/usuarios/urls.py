@@ -5,7 +5,7 @@ from . import views
 app_name = 'usuarios'
 
 urlpatterns = [
-    # Dashboard principal
+    # Dashboard principal (IMPORTANTE: importado desde views.py)
     path('dashboard/', views.dashboard, name='dashboard'),
     
     # Autenticación

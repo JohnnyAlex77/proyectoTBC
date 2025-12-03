@@ -6,6 +6,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Favicon - solución simple
+    path('favicon.ico', RedirectView.as_view(
+        url='/static/favicon.ico', 
+        permanent=False
+    )),
+    
     path('admin/', admin.site.urls),
     
     # Home/Login como página principal
@@ -30,10 +36,13 @@ urlpatterns = [
     # API REST
     path('api/', include('api.urls')),
     
-    # Documentación API
-    path('api-docs/', include('api.urls')),
-
-    
+    # =====================
+    # DOCUMENTACIÓN API - REDIRECCIONES CORREGIDAS
+    # =====================
+    path('api-docs/', RedirectView.as_view(url='/api/swagger/', permanent=True), name='api-docs'),
+    path('api-documentation/', RedirectView.as_view(url='/api/redoc/', permanent=True), name='api-documentation'),
+    path('api/swagger-ui/', RedirectView.as_view(url='/api/swagger/', permanent=True)),
+    path('api/redoc-ui/', RedirectView.as_view(url='/api/redoc/', permanent=True)),
 ]
 
 if settings.DEBUG:

@@ -120,3 +120,5 @@ class PacienteListSerializer(serializers.ModelSerializer):
             today = date.today()
             return today.year - obj.fecha_nacimiento.year
         return None
+    
+    
