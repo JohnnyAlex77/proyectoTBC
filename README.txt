@@ -30,7 +30,7 @@ Control de acceso: Matriz completa por endpoint
 
 ### Instalación Rápida
 1. Clonar repositorio
-git clone https://github.com/tuusuario/sistema-tbc.git
+git clone https://github.com/JohnnyAlex77/proyectoTBC.git
 cd sistema-tbc
 
 2. Crear entorno virtual
